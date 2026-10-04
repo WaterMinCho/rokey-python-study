@@ -19,8 +19,8 @@ jobs:
     name: 문제 은행 검증
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       # 모든 모범 답안이 테스트를 통과하는지, 정답표가 실제 실행 결과와 맞는지 확인
@@ -30,10 +30,10 @@ jobs:
     name: 채점
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       # PR: 풀이가 바뀐 사람만 채점 / main: 전체 현황판. 결과는 실행 요약(Summary)에 남습니다.
