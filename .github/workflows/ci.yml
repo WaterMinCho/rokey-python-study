@@ -1,0 +1,51 @@
+name: CI
+
+# public 저장소에서는 GitHub Actions 가 무료입니다.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bank:
+    name: 문제 은행 검증
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # 모든 모범 답안이 테스트를 통과하는지, 정답표가 실제 실행 결과와 맞는지 확인
+      - run: python tools/verify_bank.py
+
+  grade:
+    name: 채점
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # PR: 풀이가 바뀐 사람만 채점 / main: 전체 현황판. 결과는 실행 요약(Summary)에 남습니다.
+      - name: 채점 리포트
+        run: python tools/ci_report.py
+      # PR 에 점수 코멘트를 남깁니다(포크에서 온 PR 은 권한이 없어 건너뜁니다).
+      - name: PR 코멘트
+        if: always() && github.event_name == 'pull_request'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr comment "$PR" --body-file report.md --edit-last --create-if-none \
+            || gh pr comment "$PR" --body-file report.md

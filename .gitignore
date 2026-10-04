@@ -1,0 +1,14 @@
+# 내 로컬 설정
+.study_user
+.started
+report.md
+
+# 파이썬·OS
+__pycache__/
+*.pyc
+.DS_Store
+
+# 정답·해설 평문(출제자 작업본) — sealed.json 으로만 커밋합니다
+problems/*/quiz_key.json
+problems/*/*/solution.py
+problems/*/*/explain.md
