@@ -477,7 +477,7 @@ def print_report(s, items, sub_dir):
         if it["detail"]:
             print(indent(it["detail"], "         "))
     earned, total, ratio = totals(items)
-    verdict = "통과 🎉" if ratio >= PASS_RATIO else "통과 기준 %d%%" % int(PASS_RATIO * 100)
+    verdict = "통과" if ratio >= PASS_RATIO else "통과 기준 %d%%" % int(PASS_RATIO * 100)
     print("  ── 합계 %d/%d점 (%d%%) · %s" % (earned, total, round(ratio * 100), verdict))
     note = elapsed_note(s, sub_dir)
     if note:
@@ -503,7 +503,7 @@ def grade_user(user, set_ids=None):
 
 def render_markdown(user, graded):
     """CI(PR 코멘트·요약)용 마크다운 채점표."""
-    lines = ["### 📝 `%s` 채점 결과" % user, ""]
+    lines = ["### `%s` 채점 결과" % user, ""]
     if not graded:
         return "\n".join(lines + ["아직 시작한 세트가 없습니다.", ""])
     lines += ["| 세트 | 점수 | 득점률 | 통과 | 틀린 문항 |", "|---|---|---|---|---|"]
@@ -650,7 +650,7 @@ def cmd_status(args):
         all_earned += earned
         all_total += total
         print("  %s %-4s %s — %d/%d점 (%d%%)" % (
-            "✅" if ratio >= PASS_RATIO else "🔸", sid, set_title(s), earned, total, round(ratio * 100)))
+            "✅" if ratio >= PASS_RATIO else "·", sid, set_title(s), earned, total, round(ratio * 100)))
     if all_total:
         print("  ── 시작한 세트 합계 %d/%d점 (%d%%)" % (all_earned, all_total, round(all_earned / all_total * 100)))
 

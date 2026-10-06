@@ -43,7 +43,11 @@ def check_quiz(s, errors):
     if not has_key:
         errors.append("quiz.md 는 있는데 정답표(quiz_key.json)가 없습니다.")
         return
-    headings = re.findall(r"^## (Q\d+)\b", study.read_text(quiz_md), flags=re.M)
+    quiz_text = study.read_text(quiz_md)
+    headings = re.findall(r"^## (Q\d+)\b", quiz_text, flags=re.M)
+    sections = {}  # 문항별 본문(코드 블록 대조용)
+    for m in re.finditer(r"^## (Q\d+)\b(.*?)(?=^## Q\d+\b|\Z)", quiz_text, flags=re.M | re.S):
+        sections[m.group(1)] = m.group(2)
     ids = [q.get("id") for q in s["questions"]]
     if headings != ids:
         errors.append("quiz.md 의 문항(## Q1 …)과 정답표의 문항 순서·ID 가 다릅니다: %s vs %s" % (headings, ids))
@@ -72,6 +76,9 @@ def check_quiz(s, errors):
             if not isinstance(q.get("code"), str):
                 errors.append(where + "출력 예측 문항에는 실제로 실행해 볼 code 가 필요합니다.")
                 continue
+            blocks = re.findall(r"```[^\n]*\n(.*?)```", sections.get(q["id"], ""), flags=re.S)
+            if study.norm_out(q["code"]) not in [study.norm_out(b) for b in blocks]:
+                errors.append(where + "quiz.md 에 보이는 코드와 정답표의 code 가 다릅니다(글자 그대로 같아야 합니다).")
             spec = {"mode": "io", "cases": [{"stdin": q.get("stdin", ""), "stdout": answer}]}
             ok, _, detail = run_source(q["code"], spec)
             if not ok:

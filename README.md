@@ -18,31 +18,60 @@ ROKEY 11기 **파이썬 교과목 평가(10/16)** 를 스터디원 모두가 잘
 
 그래서 이 저장소의 문제는 **코드를 눈으로 읽고 머리로 실행하기**, **형식을 정확히 맞추기**를 연습하도록 만들었습니다.
 
-## 시작하기
+## 역할
+
+| 누가 | 하는 일 |
+|---|---|
+| 스터디장 | 스터디원을 저장소에 초대한다(Settings → Collaborators). 새 차시 자료가 나오면 문제 세트를 추가해 올린다. |
+| 스터디원 | 저장소를 내려받아 문제를 풀고 채점한다. 원하면 PR 로 제출해 점수를 공유한다. |
+
+강의 자료(PDF)는 저작물이라 저장소에 넣지 않았습니다. 저장소에는 문제와 개념 정리만 있고, 강의 자료는 각자 받은 것을 봅니다.
+
+## 처음 한 번 (5분)
 
 ```bash
 git clone https://github.com/WaterMinCho/rokey-python-study.git
 cd rokey-python-study
-python study.py init <내 깃허브 ID>     # 내 풀이 폴더 만들기 (처음 한 번)
+python study.py init <내 깃허브 ID>     # 내 풀이 폴더 만들기
 python study.py start 0                # 0차시(사용법 익히기) 문제 받기
 python study.py grade 0                # 채점
 ```
 
-> `python` 명령이 없으면 `python3` 로 실행하세요.
+> `python` 명령이 없으면 `python3` 로 실행하세요. git 이 처음이면 [docs/GIT_GUIDE.md](docs/GIT_GUIDE.md) 를 따라 하면 됩니다.
 
-0차시는 도구와 제출 흐름을 익히는 연습 세트입니다. 여기까지 되면 준비 끝입니다.
+0차시는 도구 사용법을 익히는 연습 세트입니다. 여기까지 되면 준비가 끝납니다.
 
 ## 매일 루틴 (16:40 스터디)
 
-1. `git switch main && git pull` — 최신 문제 받기
-2. `git switch -c <내ID>/s03` — 오늘 차시 브랜치 만들기
-3. `python study.py start 3` — 문제 받기. `problems/s03/README.md`(개념 정리)부터 읽기
-4. 퀴즈(`quiz.md`)는 **실행하지 않고** 풀어 `quiz.py` 에 답 적기 → 코드 문제 풀기
-5. `python study.py grade 3` — 채점. 틀린 문제는 해설을 보기 전에 한 번 더 풀기
-6. 커밋 → 푸시 → PR. 서로의 PR 에서 틀린 문제를 설명해 주기
-7. 그래도 모르겠으면 `python study.py explain 3 Q5` 로 해설 확인
+### 필수 — 혼자 할 때도 이것만 하면 됩니다
 
-git 명령이 처음이면 [docs/GIT_GUIDE.md](docs/GIT_GUIDE.md) 를 그대로 따라 하면 됩니다.
+1. `git pull` — 새로 올라온 문제를 받는다.
+2. `python study.py start 3` — 오늘 차시(예: 3차시) 문제를 받는다. `submissions/<내 ID>/s03/` 에 파일이 생긴다.
+3. `problems/s03/README.md` 로 개념을 훑고, `problems/s03/quiz.md` 를 **실행하지 않고** 풀어 `quiz.py` 에 답을 적는다.
+4. 코드 문제(`p01.py` …)를 푼다. 문제 설명은 `problems/s03/p01/problem.md` 에 있다.
+5. `python study.py grade 3` — 채점한다. 틀린 문제는 해설을 보기 전에 한 번 더 푼다.
+6. 그래도 모르면 `python study.py explain 3 Q5` 로 해설을 본다.
+
+### 선택 — PR 로 제출 (git 연습 + 점수 공유)
+
+```bash
+git switch -c <내ID>/s03                 # 풀기 전에 브랜치를 만들어 두면 좋습니다
+git add submissions/<내ID>/s03
+git commit -m "s03 풀이"
+git push -u origin <내ID>/s03
+```
+
+GitHub 에서 PR 을 만들면 자동 채점 결과가 코멘트로 달립니다([예시 PR](https://github.com/WaterMinCho/rokey-python-study/pull/1)).
+스터디 시간에 서로의 PR 을 보며 틀린 문제를 설명해 주고, 끝나면 머지합니다.
+
+### 스터디 시간 진행 예
+
+| 시간 | 내용 |
+|---|---|
+| 16:40 ~ 16:50 | 각자 `git pull`, 오늘 차시 `start`, README 로 개념 훑기 |
+| 16:50 ~ 17:30 | 각자 풀기 (퀴즈는 실행 금지) |
+| 17:30 ~ 17:40 | 각자 `grade`, 틀린 문제 다시 풀기 |
+| 17:40 ~ 18:00 | 틀린 문제를 서로 설명하기, 해설 확인, PR 제출 |
 
 ## 명령어
 

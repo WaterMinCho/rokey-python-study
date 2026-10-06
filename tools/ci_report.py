@@ -41,10 +41,10 @@ def main():
                 parts.append(study.render_markdown(user, study.grade_user(user)))
         report = "\n".join(parts)
     else:
-        report = "### 📊 스터디 현황판\n\n" + study.render_board()
+        report = "### 스터디 현황판\n\n" + study.render_board()
 
     if problems:
-        report = "### ⚠️ PR 규칙 확인\n\n" + "\n".join("- " + p for p in problems) + "\n\n" + report
+        report = "### PR 규칙 확인\n\n" + "\n".join("- " + p for p in problems) + "\n\n" + report
     study.write_text(os.path.join(study.ROOT, "report.md"), report)
     summary = os.environ.get("GITHUB_STEP_SUMMARY")
     if summary:
