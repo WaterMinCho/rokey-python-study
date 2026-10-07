@@ -2,5 +2,6 @@
   "id": "s11",
   "title": "GUI 프로그래밍(PyQt6 · tkinter)",
   "kind": "session",
-  "week": 4
+  "week": 4,
+  "priority": 1.5
 }

@@ -45,6 +45,11 @@ def short_title(s):
     return s["meta"].get("title", s["id"])
 
 
+def unit_priority():
+    """단원 중요도(meta.json 의 priority, 기본 1.0). 시험 비중이 큰 단원을 더 자주, 준비도 계산에도 더 무겁게."""
+    return {s["id"]: float(s["meta"].get("priority", 1.0)) for s in units()}
+
+
 def catalog():
     """{문항키: 문항}. 키는 's03/Q4', 's03/p02' 형태."""
     items = {}
@@ -121,6 +126,25 @@ def all_states(prof, cat):
     return [unit_state(prof, cat, s["id"]) for s in units()]
 
 
+def unit_score(st):
+    """단원 준비도 0~100. 숙달 85, 심화까지 100, 진행 중은 레벨과 정답률로."""
+    if st["done"]:
+        return 100
+    if st["mastered"]:
+        return 85
+    if not st["tested"]:
+        return 0
+    base = 20 if st["level"] == 1 else 55
+    return round(base + 25 * (st["accuracy"] or 0))
+
+
+def readiness(states):
+    """시험 준비도 0~100 — 단원 준비도의 중요도 가중 평균."""
+    priority = unit_priority()
+    total = sum(priority.get(st["unit"], 1.0) for st in states)
+    return round(sum(unit_score(st) * priority.get(st["unit"], 1.0) for st in states) / total) if total else 0
+
+
 def rank_units(states):
     """약한 단원 먼저: 미숙달 → 낮은 레벨 → 낮은 정답률 → 차시 순."""
     def key(st):
@@ -194,14 +218,25 @@ def deep_review(states):
     return sum(1 for st in states if st["mastered"]) * 2 >= len(states)
 
 
-def unit_weight(st):
-    """약한 단원일수록 자주 뽑힌다. 숙달 단원도 복습으로 가끔 나온다."""
+def rounds_since_seen(prof, cat):
+    """단원별로 마지막으로 문항이 나온 뒤 지난 회차 수(한 번도 안 나왔으면 큰 수)."""
+    last = {}
+    for index, rnd in enumerate(prof["rounds"]):
+        for key in rnd["items"]:
+            if key in cat:
+                last[cat[key]["unit"]] = index
+    total = len(prof["rounds"])
+    return {u: total - 1 - i for u, i in last.items()}
+
+
+def unit_weight(st, since=0):
+    """약한 단원일수록 자주 뽑힌다. 숙달 단원은 오래 안 볼수록 복습 가중치가 커진다(간격 반복)."""
     if not st["tested"]:
         return 3.0
     if st["done"]:
-        return 0.3
+        return 0.3 + 0.15 * min(since, 4)
     if st["mastered"]:
-        return 0.6
+        return 0.5 + 0.25 * min(since, 4)
     w = (4 - st["level"]) + (2 if st["retry"] else 0)
     if st["accuracy"] is not None:
         w += 1 - st["accuracy"]
@@ -229,6 +264,27 @@ def pick_one(prof, cat, unit_id, level, exclude, rng, prefer):
             if cands:
                 return rng.choice(cands)
     return None
+
+
+RETEST_GAP = 2  # 틀린 문항은 최소 이만큼 회차가 지난 뒤 다시 낸다
+RETEST_SLOTS = 2  # 한 회차에 다시 내는 오답 문항 수 상한
+
+
+def retest_pool(prof, cat):
+    """첫 시도에 틀렸고 아직 다른 회차에서 맞히지 못한 문항 중, 마지막으로 본 지 RETEST_GAP 회차 이상 지난 것."""
+    index_of = {r["id"]: i for i, r in enumerate(prof["rounds"])}
+    last_seen, ever_wrong, later_ok = {}, set(), set()
+    for a in sorted(prof["attempts"], key=lambda a: index_of.get(a["round"], 0)):
+        key = a["item"]
+        if key not in cat:
+            continue
+        last_seen[key] = index_of.get(a["round"], 0)
+        if a["try"] == 1 and not a["ok"]:
+            ever_wrong.add(key)
+        elif a["try"] == 1 and a["ok"] and key in ever_wrong:
+            later_ok.add(key)
+    current = len(prof["rounds"])
+    return [k for k in ever_wrong - later_ok if current - last_seen[k] >= RETEST_GAP]
 
 
 def weighted_choice(rng, weights):
@@ -269,11 +325,21 @@ def build_round(prof, cat):
     size, reason = round_size(prof, states)
     rng = random.Random(prof["seed"] * 1000 + len(prof["rounds"]))
     cap = max(2, size // 4)  # 한 단원이 회차를 독차지하지 않게
-    weights = {st["unit"]: unit_weight(st) for st in states}
+    since = rounds_since_seen(prof, cat)
+    priority = unit_priority()
+    weights = {st["unit"]: unit_weight(st, since.get(st["unit"], 9)) * priority.get(st["unit"], 1.0) for st in states}
     counts = {u: 0 for u in weights}
     items, shortages = [], {}
     code_target = round(size * CODE_RATIO)
     code_n = 0
+    # 오답 재출제: 예전에 틀린 문항을 간격을 두고 다시 낸다
+    retest = retest_pool(prof, cat)
+    rng.shuffle(retest)
+    for key in retest[:min(RETEST_SLOTS, size // 4)]:
+        items.append(key)
+        counts[cat[key]["unit"]] += 1
+        if cat[key]["kind"] == "code":
+            code_n += 1
     for _ in range(size * 8):
         if len(items) >= size:
             break
@@ -299,6 +365,7 @@ def build_round(prof, cat):
     focus.sort(key=lambda f: -f["count"])
     rid = "r%02d" % (1 + sum(1 for r in prof["rounds"] if r["id"].startswith("r")))
     return {"id": rid, "kind": "round", "size_reason": reason, "focus": focus, "items": items,
+            "retest": [k for k in items if k in retest],
             "shortages": [{"unit": u, "level": L, "missing": n} for (u, L), n in sorted(shortages.items())],
             "created": now(), "tries": 0,
             "avg_level": round(sum(cat[k]["level"] for k in items) / len(items), 2)}
@@ -439,7 +506,8 @@ def weak_tags(prof, cat, limit=6):
 
 def guide_text(prof, cat, rnd=None, show_next=False):
     states = all_states(prof, cat)
-    lines = ["", "단원별 숙달도 (✅ = 레벨%d 통과)" % MASTER_LEVEL] + mastery_lines(states, cat)
+    lines = ["", "시험 준비도 %d%% (단원 준비도의 중요도 가중 평균)" % readiness(states),
+             "단원별 숙달도 (✅ = 레벨%d 통과)" % MASTER_LEVEL] + mastery_lines(states, cat)
     tags = weak_tags(prof, cat)
     if tags:
         lines.append("  약한 개념: " + ", ".join(tags))
@@ -461,6 +529,8 @@ def guide_text(prof, cat, rnd=None, show_next=False):
             else:
                 verdict = "레벨%d 유지 → 같은 레벨 문항을 조금 더" % f["level"]
             lines.append("  %s %s %s" % (f["unit"], pad(cat_unit_title(cat, f["unit"])[:14], 28), verdict))
+    if rnd and rnd.get("retest"):
+        lines.append("  다시 낸 오답 문항: " + ", ".join(fname_of(k) for k in rnd["retest"]))
     if rnd and rnd.get("unanswered"):
         lines.append("  아직 답하지 않은 문항 %d개 — 마저 풀고 다시 채점하면 기록됩니다." % rnd["unanswered"])
     lines.append("")
@@ -497,7 +567,7 @@ def user_analysis_markdown(user, cat):
         acc = "-" if st["accuracy"] is None else "%d%%" % round(st["accuracy"] * 100)
         lines.append("| %s %s | %s | %s | %d |" % (st["unit"], cat_unit_title(cat, st["unit"]), state_label(st), acc, st["attempted"]))
     mastered = sum(1 for st in states if st["mastered"])
-    lines += ["", "숙달 %d/%d 단원 · 라운드 %d회 · 시도 %d문항" % (mastered, len(states), len(prof["rounds"]), len(first_attempts(prof)))]
+    lines += ["", "시험 준비도 %d%% · 숙달 %d/%d 단원 · 회차 %d회 · 시도 %d문항" % (readiness(states), mastered, len(states), len(prof["rounds"]), len(first_attempts(prof)))]
     tags = weak_tags(prof, cat)
     if tags:
         lines.append("약한 개념: " + ", ".join(tags))
@@ -523,7 +593,7 @@ def team_analysis_markdown(cat):
         return "### 학습 현황\n\n아직 진단 테스트를 한 사람이 없습니다.\n", {}
     unit_ids = [s["id"] for s in units()]
     lines = ["### 학습 현황 (단원별 상태)", "",
-             "| 이름 | 숙달 | " + " | ".join(unit_ids) + " |", "|---|---|" + "---|" * len(unit_ids)]
+             "| 이름 | 준비도 | 숙달 | " + " | ".join(unit_ids) + " |", "|---|---|---|" + "---|" * len(unit_ids)]
     weak_count = {u: 0 for u in unit_ids}
     profiles = []
     for user in users:
@@ -540,7 +610,7 @@ def team_analysis_markdown(cat):
             else:
                 cells.append("L%d%s" % (st["level"], "!" if st["retry"] else ""))
                 weak_count[u] += (4 - st["level"]) + (2 if st["retry"] else 0)  # 낮은 레벨·재도전일수록 약함
-        lines.append("| %s | %d/%d | %s |" % (user, sum(1 for s in states.values() if s["mastered"]), len(unit_ids), " | ".join(cells)))
+        lines.append("| %s | %d%% | %d/%d | %s |" % (user, readiness(list(states.values())), sum(1 for s in states.values() if s["mastered"]), len(unit_ids), " | ".join(cells)))
     weakest = sorted(weak_count.items(), key=lambda x: -x[1])[:5]
     lines += ["", "L1~L3 = 진행 중인 레벨, ! = 재도전, · = 미진단", "",
               "팀 전체 약한 단원(약한 순): " + ", ".join(u for u, n in weakest if n)]
