@@ -1,0 +1,13 @@
+{
+  "title": "책 정보 초기화",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "exec",
+  "tags": ["__init__", "self"],
+  "cases": [
+    {"code": "b = Book(\"파이썬 입문\", 18000)\nb.info()", "stdout": "제목: 파이썬 입문\n가격: 18000\n"},
+    {"code": "b = Book(\"로봇 공학\", 32000)\nprint(b.title)\nprint(b.price)", "stdout": "로봇 공학\n32000\n"},
+    {"code": "a = Book(\"A\", 100)\nb = Book(\"B\", 200)\na.info()\nb.info()\nprint(a.price + b.price)", "stdout": "제목: A\n가격: 100\n제목: B\n가격: 200\n300\n"}
+  ]
+}

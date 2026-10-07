@@ -1,0 +1,23 @@
+{
+  "title": "입장료 계산",
+  "type": "return",
+  "level": 3,
+  "points": 8,
+  "mode": "call",
+  "tags": ["elif 사슬", "논리 연산자", "경계값"],
+  "cases": [
+    {"call": "solution(10, False)", "expected": "2000"},
+    {"call": "solution(19, True)", "expected": "2000"},
+    {"call": "solution(30, False)", "expected": "5000"},
+    {"call": "solution(70, True)", "expected": "0"},
+    {"call": "solution(7, False)", "expected": "0"},
+    {"call": "solution(8, False)", "expected": "2000"},
+    {"call": "solution(13, True)", "expected": "1000"},
+    {"call": "solution(14, False)", "expected": "3000"},
+    {"call": "solution(20, True)", "expected": "4000"},
+    {"call": "solution(64, False)", "expected": "5000"},
+    {"call": "solution(65, False)", "expected": "0"},
+    {"call": "solution(3, True)", "expected": "0"},
+    {"call": "solution(0, False)", "expected": "0"}
+  ]
+}

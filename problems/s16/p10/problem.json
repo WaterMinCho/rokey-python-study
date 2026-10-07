@@ -1,0 +1,15 @@
+{
+  "title": "브라우저 방문 기록",
+  "type": "print",
+  "level": 3,
+  "points": 8,
+  "mode": "exec",
+  "tags": ["스택 클래스", "빈 자료구조 처리"],
+  "cases": [
+    {"code": "b = Browser()\nb.visit(\"home\")\nb.visit(\"news\")\nb.back()\nprint(b.current())", "stdout": "방문: home\n방문: news\n뒤로: home\nhome\n"},
+    {"code": "b = Browser()\nb.back()\nprint(b.current())\nb.visit(\"a\")\nb.back()\nprint(b.pages)", "stdout": "뒤로 갈 수 없음\nNone\n방문: a\n뒤로 갈 수 없음\n['a']\n"},
+    {"code": "b = Browser()\nb.visit(\"home\")\nb.visit(\"news\")\nb.visit(\"sports\")\nb.back()\nprint(b.current())\nb.back()\nb.back()\nprint(b.pages)", "stdout": "방문: home\n방문: news\n방문: sports\n뒤로: news\nnews\n뒤로: home\n뒤로 갈 수 없음\n['home']\n"},
+    {"code": "b = Browser()\nb.visit(\"x\")\nb.visit(\"y\")\nb.visit(\"z\")\nb.back()\nb.visit(\"w\")\nprint(b.pages)\nprint(b.current())", "stdout": "방문: x\n방문: y\n방문: z\n뒤로: y\n방문: w\n['x', 'y', 'w']\nw\n"},
+    {"code": "a = Browser()\nb = Browser()\na.visit(\"1\")\nb.visit(\"2\")\nb.visit(\"3\")\nb.back()\nprint(a.pages, b.pages)\nprint(a.current(), b.current())", "stdout": "방문: 1\n방문: 2\n방문: 3\n뒤로: 2\n['1'] ['2']\n1 2\n"}
+  ]
+}

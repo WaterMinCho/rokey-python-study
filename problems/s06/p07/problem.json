@@ -1,0 +1,16 @@
+{
+  "title": "공백을 뺀 글자 수",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["return", "매개변수와 인수"],
+  "cases": [
+    {"call": "solution(\"hello world\")", "expected": "10"},
+    {"call": "solution(\"abc\")", "expected": "3"},
+    {"call": "solution(\" a b \")", "expected": "2"},
+    {"call": "solution(\"\")", "expected": "0"},
+    {"call": "solution(\"   \")", "expected": "0"},
+    {"call": "solution(\"I love ROKEY 11\")", "expected": "12"}
+  ]
+}

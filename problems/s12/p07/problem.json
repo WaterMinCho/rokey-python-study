@@ -1,0 +1,11 @@
+{
+  "title": "준비물 파일 만들기",
+  "type": "print",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["write 규칙", "줄바꿈 처리"],
+  "cases": [
+    {"stdout": "연필\n지우개\n공책\n", "expect_files": {"items.txt": "연필\n지우개\n공책\n"}}
+  ]
+}

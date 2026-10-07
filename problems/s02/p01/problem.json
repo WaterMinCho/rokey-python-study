@@ -1,0 +1,13 @@
+{
+  "title": "상자 수 더하기",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["input은 문자열", "자료형 변환"],
+  "cases": [
+    {"stdin": "25\n", "stdout": "상자 수: 35\n"},
+    {"stdin": "0\n", "stdout": "상자 수: 10\n"},
+    {"stdin": "190\n", "stdout": "상자 수: 200\n"}
+  ]
+}

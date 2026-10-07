@@ -1,0 +1,16 @@
+{
+  "title": "첫 숫자의 위치",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["match와 search", "match 객체 메서드", "None 처리"],
+  "cases": [
+    {"call": "solution(\"abc123def\")", "expected": "(3, 6)"},
+    {"call": "solution(\"7up\")", "expected": "(0, 1)"},
+    {"call": "solution(\"none\")", "expected": "(-1, -1)"},
+    {"call": "solution(\"a1b22\")", "expected": "(1, 2)"},
+    {"call": "solution(\"  42\")", "expected": "(2, 4)"},
+    {"call": "solution(\"\")", "expected": "(-1, -1)"}
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "title": "로봇 정보 딕셔너리",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["딕셔너리 추가·수정", "딕셔너리 키"],
+  "cases": [
+    {"stdin": "blue\n", "stdout": "{'name': 'ROKEY', 'battery': 100, 'color': 'blue'}\nblue\n"},
+    {"stdin": "빨강\n", "stdout": "{'name': 'ROKEY', 'battery': 100, 'color': '빨강'}\n빨강\n"},
+    {"stdin": "white\n", "stdout": "{'name': 'ROKEY', 'battery': 100, 'color': 'white'}\nwhite\n"}
+  ]
+}

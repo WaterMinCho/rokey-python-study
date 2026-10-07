@@ -1,0 +1,19 @@
+{
+  "title": "전시회 입장료",
+  "type": "return",
+  "level": 1,
+  "points": 4,
+  "mode": "call",
+  "tags": ["if-elif 분기", "경계값"],
+  "cases": [
+    {"call": "solution(30)", "expected": "12000"},
+    {"call": "solution(7)", "expected": "0"},
+    {"call": "solution(8)", "expected": "5000"},
+    {"call": "solution(13)", "expected": "5000"},
+    {"call": "solution(14)", "expected": "12000"},
+    {"call": "solution(64)", "expected": "12000"},
+    {"call": "solution(65)", "expected": "6000"},
+    {"call": "solution(0)", "expected": "0"},
+    {"call": "solution(120)", "expected": "6000"}
+  ]
+}

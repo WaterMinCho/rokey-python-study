@@ -1,0 +1,15 @@
+{
+  "title": "날씨 판별",
+  "type": "fill",
+  "level": 2,
+  "points": 6,
+  "mode": "io",
+  "tags": ["return", "함수 호출"],
+  "cases": [
+    {"stdin": "30\n", "stdout": "30 -> hot\n"},
+    {"stdin": "28\n", "stdout": "28 -> hot\n"},
+    {"stdin": "5\n", "stdout": "5 -> cold\n"},
+    {"stdin": "17\n", "stdout": "17 -> mild\n"},
+    {"stdin": "-2\n", "stdout": "-2 -> cold\n"}
+  ]
+}

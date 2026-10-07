@@ -1,0 +1,57 @@
+{
+  "title": "입장권 요금 계산",
+  "type": "return",
+  "level": 3,
+  "points": 8,
+  "mode": "call",
+  "tags": [
+    "오버라이딩",
+    "자식 __init__"
+  ],
+  "cases": [
+    {
+      "call": "solution([[\"일반\", 10000]])",
+      "expected": "10000"
+    },
+    {
+      "call": "solution([[\"일반\", 10000], [\"학생\", 10000]])",
+      "expected": "15000"
+    },
+    {
+      "call": "solution([[\"경로\", 10000]])",
+      "expected": "7000"
+    },
+    {
+      "call": "solution([[\"학생\", 9000], [\"경로\", 9000], [\"일반\", 9000]])",
+      "expected": "19800"
+    },
+    {
+      "call": "solution([])",
+      "expected": "0"
+    },
+    {
+      "call": "solution([[\"학생\", 9999], [\"학생\", 1]])",
+      "expected": "4999"
+    },
+    {
+      "call": "StudentTicket(9999).cost()",
+      "expected": "4999"
+    },
+    {
+      "call": "SeniorTicket(5000).cost()",
+      "expected": "3500"
+    },
+    {
+      "call": "SeniorTicket(5000).price",
+      "expected": "5000"
+    },
+    {
+      "call": "Ticket(1234).cost()",
+      "expected": "1234"
+    },
+    {
+      "call": "solution([[\"경로\", 0], [\"일반\", 0]])",
+      "expected": "0"
+    }
+  ]
+}

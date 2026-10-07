@@ -1,0 +1,17 @@
+{
+  "title": "변환 가능한 값의 합",
+  "type": "return",
+  "level": 3,
+  "points": 8,
+  "mode": "call",
+  "tags": ["try-except 흐름"],
+  "cases": [
+    {"call": "solution([\"10\", \"x\", \"25\", \"3.5\"])", "expected": "[35, ['x', '3.5']]"},
+    {"call": "solution([\"1\", \"2\", \"3\"])", "expected": "[6, []]"},
+    {"call": "solution([\"a\", \"b\"])", "expected": "[0, ['a', 'b']]"},
+    {"call": "solution([\"-7\", \"7\", \"\"])", "expected": "[0, ['']]"},
+    {"call": "solution([])", "expected": "[0, []]"},
+    {"call": "solution([\"100\"])", "expected": "[100, []]"},
+    {"call": "solution([\"5\", \"five\", \"05\", \"5.0\", \"-5\"])", "expected": "[5, ['five', '5.0']]"}
+  ]
+}

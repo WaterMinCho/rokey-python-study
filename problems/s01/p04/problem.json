@@ -1,0 +1,11 @@
+{
+  "title": "오류 고치기",
+  "type": "print",
+  "level": 2,
+  "points": 6,
+  "mode": "io",
+  "tags": ["대소문자 구분", "따옴표와 문자열", "실행 순서"],
+  "cases": [
+    {"stdout": "IDLE\nVSCode\nColab\n"}
+  ]
+}

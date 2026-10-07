@@ -1,0 +1,16 @@
+{
+  "title": "약어 만들기",
+  "type": "return",
+  "level": 1,
+  "points": 4,
+  "mode": "call",
+  "tags": ["문자열 split", "인덱싱", "문자열 이어 붙이기"],
+  "cases": [
+    {"call": "solution(\"robot operating system\")", "expected": "'ros'"},
+    {"call": "solution(\"python\")", "expected": "'p'"},
+    {"call": "solution(\"a b c\")", "expected": "'abc'"},
+    {"call": "solution(\"rokey boot camp eleven\")", "expected": "'rbce'"},
+    {"call": "solution(\"x y\")", "expected": "'xy'"},
+    {"call": "solution(\"deep learning robot arm control\")", "expected": "'dlrac'"}
+  ]
+}

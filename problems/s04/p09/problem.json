@@ -1,0 +1,14 @@
+{
+  "title": "회원 정보 추가",
+  "type": "print",
+  "level": 2,
+  "points": 6,
+  "mode": "io",
+  "tags": ["딕셔너리 추가·수정", "출력 형식"],
+  "cases": [
+    {"stdin": "지역\n판교\n", "stdout": "dict_keys(['이름', '기수', '트랙', '지역'])\ndict_values(['지우', 11, '로봇', '판교'])\n"},
+    {"stdin": "트랙\nAI\n", "stdout": "dict_keys(['이름', '기수', '트랙'])\ndict_values(['지우', 11, 'AI'])\n"},
+    {"stdin": "취미\n등산\n", "stdout": "dict_keys(['이름', '기수', '트랙', '취미'])\ndict_values(['지우', 11, '로봇', '등산'])\n"},
+    {"stdin": "이름\n서준\n", "stdout": "dict_keys(['이름', '기수', '트랙'])\ndict_values(['서준', 11, '로봇'])\n"}
+  ]
+}

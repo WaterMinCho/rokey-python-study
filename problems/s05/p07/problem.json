@@ -1,0 +1,16 @@
+{
+  "title": "구간 안 3의 배수의 합",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "tags": ["누적 패턴", "range 끝값"],
+  "mode": "call",
+  "cases": [
+    {"call": "solution(1, 10)", "expected": "18"},
+    {"call": "solution(3, 9)", "expected": "18"},
+    {"call": "solution(4, 5)", "expected": "0"},
+    {"call": "solution(6, 6)", "expected": "6"},
+    {"call": "solution(10, 30)", "expected": "147"},
+    {"call": "solution(1, 100)", "expected": "1683"}
+  ]
+}

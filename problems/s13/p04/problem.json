@@ -1,0 +1,14 @@
+{
+  "title": "숫자 리스트와 제곱",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["map", "람다"],
+  "cases": [
+    {"stdin": "1 2 3\n", "stdout": "[1, 2, 3]\n[1, 4, 9]\n"},
+    {"stdin": "10 -2 5\n", "stdout": "[10, -2, 5]\n[100, 4, 25]\n"},
+    {"stdin": "7\n", "stdout": "[7]\n[49]\n"},
+    {"stdin": "0 12\n", "stdout": "[0, 12]\n[0, 144]\n"}
+  ]
+}

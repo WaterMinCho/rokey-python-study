@@ -1,0 +1,21 @@
+{
+  "title": "IP 주소 모양 검사",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["문자 클래스", "앵커 ^와 $", "반복 메타 문자"],
+  "cases": [
+    {"call": "solution(\"192.168.0.1\")", "expected": "True"},
+    {"call": "solution(\"10.0.0.255\")", "expected": "True"},
+    {"call": "solution(\"0.0.0.0\")", "expected": "True"},
+    {"call": "solution(\"999.999.999.999\")", "expected": "True"},
+    {"call": "solution(\"192x168x0x1\")", "expected": "False"},
+    {"call": "solution(\"1.2.3\")", "expected": "False"},
+    {"call": "solution(\"1.2.3.4.5\")", "expected": "False"},
+    {"call": "solution(\"1234.1.1.1\")", "expected": "False"},
+    {"call": "solution(\"a.b.c.d\")", "expected": "False"},
+    {"call": "solution(\"1.2.3.4 \")", "expected": "False"},
+    {"call": "solution(\"\")", "expected": "False"}
+  ]
+}

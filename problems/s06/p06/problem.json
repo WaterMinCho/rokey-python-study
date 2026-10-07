@@ -1,0 +1,16 @@
+{
+  "title": "배수의 합",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["return", "매개변수와 인수"],
+  "cases": [
+    {"call": "solution(3, 10)", "expected": "18"},
+    {"call": "solution(5, 5)", "expected": "5"},
+    {"call": "solution(7, 6)", "expected": "0"},
+    {"call": "solution(1, 10)", "expected": "55"},
+    {"call": "solution(9, 100)", "expected": "594"},
+    {"call": "solution(4, 100)", "expected": "1300"}
+  ]
+}

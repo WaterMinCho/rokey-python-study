@@ -1,0 +1,18 @@
+{
+  "title": "계좌 입출금",
+  "type": "return",
+  "level": 3,
+  "points": 8,
+  "mode": "call",
+  "tags": ["메서드 반환값", "디폴트 매개변수", "경계값"],
+  "cases": [
+    {"call": "solution(1000, [500, -300])", "expected": "[1200, 0]"},
+    {"call": "solution(0, [-100])", "expected": "[0, 1]"},
+    {"call": "solution(100, [-100, -1, 50, -50])", "expected": "[0, 1]"},
+    {"call": "solution(500, [])", "expected": "[500, 0]"},
+    {"call": "solution(10, [-20, -30, 100, -110, -1])", "expected": "[0, 3]"},
+    {"call": "Account().balance", "expected": "0"},
+    {"call": "Account(300).withdraw(500)", "expected": "False"},
+    {"call": "Account(300).withdraw(300)", "expected": "True"}
+  ]
+}

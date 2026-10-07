@@ -1,0 +1,17 @@
+{
+  "title": "평균 이상인 점수의 개수",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["반환값", "지역 변수"],
+  "cases": [
+    {"call": "solution([10, 20, 30, 40, 50])", "expected": "3"},
+    {"call": "solution([90, 80, 100, 60])", "expected": "2"},
+    {"call": "solution([70, 70, 70])", "expected": "3"},
+    {"call": "solution([1, 2])", "expected": "1"},
+    {"call": "solution([0, 0, 1])", "expected": "1"},
+    {"call": "solution([55])", "expected": "1"},
+    {"call": "solution([100, 0, 0, 0, 100, 51])", "expected": "3"}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "title": "날짜 나누기",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["split·strip·join", "map"],
+  "cases": [
+    {"call": "solution(\"2026-10-16\")", "expected": "[2026, 10, 16]"},
+    {"call": "solution(\"1996-01-24\")", "expected": "[1996, 1, 24]"},
+    {"call": "solution(\"2000-12-01\")", "expected": "[2000, 12, 1]"},
+    {"call": "solution(\"2024-07-07\")", "expected": "[2024, 7, 7]"},
+    {"call": "solution(\"0999-02-03\")", "expected": "[999, 2, 3]"}
+  ]
+}

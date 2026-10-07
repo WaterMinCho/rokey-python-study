@@ -1,0 +1,16 @@
+{
+  "title": "자전거 정보 출력",
+  "type": "fill",
+  "level": 2,
+  "points": 6,
+  "mode": "io",
+  "tags": [
+    "super()",
+    "__name__"
+  ],
+  "cases": [
+    {
+      "stdout": "자전거 25\n기어: 7\n"
+    }
+  ]
+}

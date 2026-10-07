@@ -1,0 +1,17 @@
+name: 문제를 더 만들어 주세요
+description: 더 연습하고 싶은 단원이나 개념을 알려 주세요.
+title: "[요청] "
+labels: ["요청"]
+body:
+  - type: input
+    id: topic
+    attributes:
+      label: 단원·개념
+      placeholder: 예) 10차시 상속, 정규표현식 그룹
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: 어떤 문제가 필요한가요
+      placeholder: 예) 심화 문제가 부족해요 / 출력 예측 문제를 더 풀고 싶어요

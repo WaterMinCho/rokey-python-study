@@ -1,0 +1,18 @@
+{
+  "title": "평균 이상 점수 세기",
+  "type": "return",
+  "level": 1,
+  "points": 4,
+  "mode": "call",
+  "tags": ["리스트 순회", "sum·len 평균", "조건 세기"],
+  "cases": [
+    {"call": "solution([80, 90, 70])", "expected": "2"},
+    {"call": "solution([50])", "expected": "1"},
+    {"call": "solution([1, 2, 3, 4])", "expected": "2"},
+    {"call": "solution([10, 10, 10])", "expected": "3"},
+    {"call": "solution([100, 0, 0, 0])", "expected": "1"},
+    {"call": "solution([3, 4])", "expected": "1"},
+    {"call": "solution([0, 0, 0, 1])", "expected": "1"},
+    {"call": "solution([55, 65, 60, 100, 20])", "expected": "3"}
+  ]
+}

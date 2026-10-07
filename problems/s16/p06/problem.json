@@ -1,0 +1,22 @@
+{
+  "title": "괄호 짝 검사",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["괄호 짝 검사", "스택 LIFO"],
+  "cases": [
+    {"call": "solution(\"()\")", "expected": "True"},
+    {"call": "solution(\"(())\")", "expected": "True"},
+    {"call": "solution(\"(()\")", "expected": "False"},
+    {"call": "solution(\"())\")", "expected": "False"},
+    {"call": "solution(\")(\")", "expected": "False"},
+    {"call": "solution(\"(a+b)*(c-d)\")", "expected": "True"},
+    {"call": "solution(\"\")", "expected": "True"},
+    {"call": "solution(\"abc\")", "expected": "True"},
+    {"call": "solution(\"((a)\")", "expected": "False"},
+    {"call": "solution(\"x)(y\")", "expected": "False"},
+    {"call": "solution(\"(((())))\")", "expected": "True"},
+    {"call": "solution(\"()()(\")", "expected": "False"}
+  ]
+}

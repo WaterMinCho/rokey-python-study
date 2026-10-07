@@ -1,0 +1,11 @@
+{
+  "title": "첫 출력 완성하기",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["print 기초", "대소문자 구분"],
+  "cases": [
+    {"stdout": "Hello ROKEY!\n"}
+  ]
+}

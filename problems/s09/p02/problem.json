@@ -1,0 +1,16 @@
+{
+  "title": "사각형의 넓이와 둘레",
+  "type": "return",
+  "level": 1,
+  "points": 4,
+  "mode": "call",
+  "tags": ["메서드 반환값", "self"],
+  "cases": [
+    {"call": "Rect(3, 4).area()", "expected": "12"},
+    {"call": "Rect(3, 4).perimeter()", "expected": "14"},
+    {"call": "Rect(5, 5).area()", "expected": "25"},
+    {"call": "Rect(1, 10).perimeter()", "expected": "22"},
+    {"call": "Rect(7, 0).area()", "expected": "0"},
+    {"call": "Rect(7, 0).perimeter()", "expected": "14"}
+  ]
+}

@@ -484,7 +484,8 @@ def print_report(s, items, sub_dir):
         print("  ── " + note)
     wrong = [it["id"] for it in items if it["state"] == "wrong"]
     if wrong:
-        print("  틀린 문제는 다시 풀어 본 뒤 해설 확인: python study.py explain %s %s" % (s["id"], wrong[0]))
+        target = wrong[0] if "_" in wrong[0] else "%s %s" % (s["id"], wrong[0])  # 라운드 문항은 s03_Q4 꼴
+        print("  틀린 문제는 다시 풀어 본 뒤 해설 확인: python study.py explain %s" % target)
 
 
 def started_sets(user):
@@ -536,6 +537,14 @@ def current_user(args):
     user = getattr(args, "user", None) or os.environ.get("STUDY_USER")
     if not user and os.path.isfile(USER_FILE):
         user = read_text(USER_FILE).strip()
+    if not user and sys.stdin.isatty():
+        print("처음이시군요. 내 깃허브 ID 를 입력하세요 (영문·숫자·-·_).")
+        user = input("> ").strip()
+        if not USER_RE.fullmatch(user):
+            die("ID 는 영문·숫자·-·_ 만 쓸 수 있습니다.")
+        os.makedirs(os.path.join(SUBMISSIONS_DIR, user), exist_ok=True)
+        write_text(USER_FILE, user + "\n")
+        print("내 풀이 폴더: submissions/%s/\n" % user)
     if not user:
         die("먼저 `python study.py init <내 깃허브 ID>` 로 내 풀이 폴더를 만들어 주세요.")
     if not USER_RE.fullmatch(user):
@@ -625,9 +634,16 @@ def cmd_grade(args):
         print_report(s, grade_set(s, args.dir), args.dir)
         return
     user = current_user(args)
+    import adaptive
+    if args.set and adaptive.ROUND_RE.fullmatch(args.set):
+        grade_round_cmd(user, args.set)
+        return
+    if not args.set and adaptive.load_profile(user)["rounds"]:
+        cmd_go(args)
+        return
     set_ids = [resolve_set(args.set)] if args.set else started_sets(user)
     if not set_ids:
-        die("아직 시작한 세트가 없습니다. `python study.py start 0` 부터 해 보세요.")
+        die("아직 시작한 세트가 없습니다. `python study.py` 로 진단 테스트부터 시작하세요.")
     graded = grade_user(user, set_ids)
     if args.md:
         print(render_markdown(user, graded))
@@ -692,8 +708,12 @@ def cmd_board(args):
 
 
 def cmd_explain(args):
-    s = load_set(resolve_set(args.set))
-    item = args.item
+    set_token, item = args.set, args.item
+    if item is None and "_" in set_token:  # 라운드 문항 ID: s03_Q4
+        set_token, item = set_token.split("_", 1)
+    if item is None:
+        die("문항을 지정하세요. 예) python study.py explain 3 Q4  또는  python study.py explain s03_Q4")
+    s = load_set(resolve_set(set_token))
     for q in s["questions"]:
         if q["id"].lower() == item.lower():
             if q["type"] == "choice":
@@ -725,9 +745,141 @@ def cmd_reset(args):
     die("%s 세트에 '%s' 문제가 없습니다. (예: p01)" % (s["id"], args.item))
 
 
+# ───────────────────────── 적응형 학습 명령 ─────────────────────────
+
+def round_as_set(rnd):
+    """라운드를 print_report 가 받는 세트 모양으로 감싼다."""
+    title = {"diag": "진단 테스트", "deep": "심화 라운드 %s" % rnd["id"]}.get(rnd["kind"], "라운드 %s" % rnd["id"])
+    return {"id": rnd["id"], "meta": {"title": title}}
+
+
+def announce_round(user, rnd, folder):
+    import adaptive
+    title = round_as_set(rnd)["meta"]["title"]
+    print("%s 준비 — %d문항" % (title, len(rnd["items"])))
+    print("  문제지 : %s/README.md" % os.path.relpath(folder, ROOT))
+    print("  답안   : 같은 폴더의 quiz.py 와 .py 파일")
+    if rnd["kind"] == "diag":
+        print("  약 30분. 코드는 실행하지 말고 눈으로 풀어 주세요. 출발점을 정하는 용도라 점수는 중요하지 않습니다.")
+    print("  다 풀면 : python study.py")
+
+
+def grade_round_cmd(user, rid):
+    import adaptive
+    cat = adaptive.catalog()
+    prof = adaptive.load_profile(user)
+    rnd = adaptive.find_round(prof, rid)
+    if not rnd:
+        die("라운드 %s 가 없습니다." % rid)
+    items = adaptive.grade_round(user, rnd, cat)
+    adaptive.record(prof, rnd, items)
+    adaptive.save_profile(prof)
+    print_report(round_as_set(rnd), items, os.path.join(SUBMISSIONS_DIR, user, rid))
+    print(adaptive.guide_text(prof, cat, rnd))
+
+
+def cmd_go(args):
+    """명령 하나로 다음 할 일을 이어 간다: 진단 → 풀기 → 채점·판정 → 다음 라운드 → … → 모의고사."""
+    import adaptive
+    user = current_user(args)
+    cat = adaptive.catalog()
+    prof = adaptive.load_profile(user)
+    if not prof["rounds"]:
+        rnd = adaptive.build_diagnostic(prof, cat)
+        prof["rounds"].append(rnd)
+        adaptive.save_profile(prof)
+        announce_round(user, rnd, adaptive.write_round(user, rnd, cat))
+        return
+    rnd = prof["rounds"][-1]
+    folder = os.path.join(SUBMISSIONS_DIR, user, rnd["id"])
+    items = adaptive.grade_round(user, rnd, cat)
+    if all(it["state"] == "blank" for it in items):
+        print("%s 를 아직 풀지 않았습니다." % round_as_set(rnd)["meta"]["title"])
+        announce_round(user, rnd, folder)
+        return
+    adaptive.record(prof, rnd, items)
+    print_report(round_as_set(rnd), items, folder)
+    if rnd["unanswered"]:
+        adaptive.save_profile(prof)
+        print("\n아직 답하지 않은 문항 %d개가 있습니다. 마저 풀고 다시 python study.py 를 실행하세요." % rnd["unanswered"])
+        return
+    first_completion = not rnd.get("completed_at")
+    if first_completion:
+        rnd["completed_at"] = adaptive.now()
+    print(adaptive.guide_text(prof, cat, rnd))
+    if first_completion:
+        nxt = adaptive.build_round(prof, cat)
+        if nxt:
+            prof["rounds"].append(nxt)
+            print()
+            announce_round(user, nxt, adaptive.write_round(user, nxt, cat))
+    adaptive.save_profile(prof)
+
+
+def cmd_diagnose(args):
+    import adaptive
+    user = current_user(args)
+    cat = adaptive.catalog()
+    prof = adaptive.load_profile(user)
+    rnd = adaptive.build_diagnostic(prof, cat)
+    prof["rounds"].append(rnd)
+    adaptive.save_profile(prof)
+    announce_round(user, rnd, adaptive.write_round(user, rnd, cat))
+
+
+def cmd_next(args):
+    import adaptive
+    user = current_user(args)
+    cat = adaptive.catalog()
+    prof = adaptive.load_profile(user)
+    rnd = adaptive.build_round(prof, cat)
+    if not rnd:
+        print("전 단원을 마쳤습니다. 모의고사: python study.py start m1")
+        return
+    prof["rounds"].append(rnd)
+    adaptive.save_profile(prof)
+    announce_round(user, rnd, adaptive.write_round(user, rnd, cat))
+
+
+def cmd_me(args):
+    import adaptive
+    user = current_user(args)
+    cat = adaptive.catalog()
+    prof = adaptive.load_profile(user)
+    print("%s 님의 학습 현황 — 라운드 %d회, 시도 %d문항" % (user, len(prof["rounds"]), len(adaptive.first_attempts(prof))))
+    print(adaptive.guide_text(prof, cat, show_next=True))
+
+
+def cmd_analyze(args):
+    import adaptive
+    md, shortages = adaptive.team_analysis_markdown(adaptive.catalog())
+    print(md)
+    if shortages:
+        print(adaptive.shortage_request_markdown(shortages, adaptive.catalog()))
+
+
 def build_parser():
-    parser = argparse.ArgumentParser(description="ROKEY 파이썬 스터디 — 문제 받기 · 채점 · 해설")
+    parser = argparse.ArgumentParser(description="ROKEY 파이썬 스터디 — 그냥 `python study.py` 만 치면 다음 할 일을 이어 갑니다")
     sub = parser.add_subparsers(dest="command")
+
+    p = sub.add_parser("go", help="(기본) 다음 할 일 이어 가기: 진단 → 풀기 → 채점 → 다음 라운드")
+    p.add_argument("--user")
+    p.set_defaults(func=cmd_go)
+
+    p = sub.add_parser("diagnose", help="진단 테스트 새로 받기")
+    p.add_argument("--user")
+    p.set_defaults(func=cmd_diagnose)
+
+    p = sub.add_parser("next", help="다음 맞춤 라운드 받기")
+    p.add_argument("--user")
+    p.set_defaults(func=cmd_next)
+
+    p = sub.add_parser("me", help="내 단원별 숙달도·약점·다음 추천")
+    p.add_argument("--user")
+    p.set_defaults(func=cmd_me)
+
+    p = sub.add_parser("analyze", help="스터디원 전체 학습 분석 (스터디장용)")
+    p.set_defaults(func=cmd_analyze)
 
     p = sub.add_parser("init", help="내 풀이 폴더 만들기 (처음 한 번)")
     p.add_argument("id", help="내 깃허브 ID (영문·숫자·-·_)")
@@ -757,8 +909,8 @@ def build_parser():
     p.set_defaults(func=cmd_board)
 
     p = sub.add_parser("explain", help="해설·정답 보기 (먼저 스스로 다시 풀어 본 뒤에!)")
-    p.add_argument("set")
-    p.add_argument("item", help="문항 ID (예: Q3, p01)")
+    p.add_argument("set", help="세트 또는 라운드 문항 ID (예: 3, s03_Q4)")
+    p.add_argument("item", nargs="?", help="문항 ID (예: Q3, p01)")
     p.set_defaults(func=cmd_explain)
 
     p = sub.add_parser("reset", help="코드 문제를 시작 코드로 되돌리기")
@@ -782,7 +934,7 @@ def main(argv=None):
     parser = build_parser()
     args = parser.parse_args(argv)
     if not getattr(args, "func", None):
-        parser.print_help()
+        cmd_go(args)
         return
     args.func(args)
 

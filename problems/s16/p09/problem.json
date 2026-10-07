@@ -1,0 +1,21 @@
+{
+  "title": "카드 게임",
+  "type": "return",
+  "level": 3,
+  "points": 8,
+  "mode": "call",
+  "tags": ["회전 큐", "큐 FIFO"],
+  "cases": [
+    {"call": "solution(1)", "expected": "1"},
+    {"call": "solution(2)", "expected": "2"},
+    {"call": "solution(3)", "expected": "2"},
+    {"call": "solution(4)", "expected": "4"},
+    {"call": "solution(5)", "expected": "2"},
+    {"call": "solution(6)", "expected": "4"},
+    {"call": "solution(7)", "expected": "6"},
+    {"call": "solution(8)", "expected": "8"},
+    {"call": "solution(10)", "expected": "4"},
+    {"call": "solution(13)", "expected": "10"},
+    {"call": "solution(100)", "expected": "72"}
+  ]
+}

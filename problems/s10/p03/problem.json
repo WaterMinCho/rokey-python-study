@@ -1,0 +1,25 @@
+{
+  "title": "청소 로봇",
+  "type": "print",
+  "level": 1,
+  "points": 4,
+  "mode": "exec",
+  "tags": [
+    "오버라이딩",
+    "상속 문법"
+  ],
+  "cases": [
+    {
+      "code": "c = CleanBot()\nc.greet()\nc.work()",
+      "stdout": "안녕하세요\n청소 중\n"
+    },
+    {
+      "code": "r = Robot()\nr.work()\nc = CleanBot()\nc.work()",
+      "stdout": "작업 중\n청소 중\n"
+    },
+    {
+      "code": "c = CleanBot()\nc.work()\nc.greet()\nc.work()\nRobot().greet()",
+      "stdout": "청소 중\n안녕하세요\n청소 중\n안녕하세요\n"
+    }
+  ]
+}

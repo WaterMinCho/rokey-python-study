@@ -1,0 +1,18 @@
+{
+  "title": "산책 가능 여부",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["논리 연산자", "경계값", "반환값과 자료형"],
+  "cases": [
+    {"call": "solution(18, False)", "expected": "True"},
+    {"call": "solution(25, False)", "expected": "True"},
+    {"call": "solution(10, False)", "expected": "True"},
+    {"call": "solution(9, False)", "expected": "False"},
+    {"call": "solution(26, False)", "expected": "False"},
+    {"call": "solution(18, True)", "expected": "False"},
+    {"call": "solution(-5, True)", "expected": "False"},
+    {"call": "solution(40, False)", "expected": "False"}
+  ]
+}

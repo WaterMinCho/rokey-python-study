@@ -1,0 +1,15 @@
+{
+  "title": "할 일 목록 합치기",
+  "type": "print",
+  "level": 3,
+  "points": 8,
+  "mode": "io",
+  "tags": ["읽기 메서드", "줄바꿈 처리", "write 규칙"],
+  "cases": [
+    {"files": {"morning.txt": "스트레칭\n독서\n", "evening.txt": "산책\n"}, "stdout": "1. 스트레칭\n2. 독서\n3. 산책\n", "expect_files": {"all.txt": "1. 스트레칭\n2. 독서\n3. 산책\n"}},
+    {"files": {"morning.txt": "", "evening.txt": "일기\n"}, "stdout": "1. 일기\n", "expect_files": {"all.txt": "1. 일기\n"}},
+    {"files": {"morning.txt": "a\nb\nc\n", "evening.txt": "d\ne\n"}, "stdout": "1. a\n2. b\n3. c\n4. d\n5. e\n", "expect_files": {"all.txt": "1. a\n2. b\n3. c\n4. d\n5. e\n"}},
+    {"files": {"morning.txt": "운동\n", "evening.txt": ""}, "stdout": "1. 운동\n", "expect_files": {"all.txt": "1. 운동\n"}},
+    {"files": {"morning.txt": "청소\n빨래\n장보기\n요리\n", "evening.txt": "설거지\n영화\n"}, "stdout": "1. 청소\n2. 빨래\n3. 장보기\n4. 요리\n5. 설거지\n6. 영화\n", "expect_files": {"all.txt": "1. 청소\n2. 빨래\n3. 장보기\n4. 요리\n5. 설거지\n6. 영화\n"}}
+  ]
+}

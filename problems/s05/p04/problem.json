@@ -1,0 +1,14 @@
+{
+  "title": "1부터 n까지의 합",
+  "type": "return",
+  "level": 1,
+  "points": 4,
+  "tags": ["누적 패턴", "range 끝값"],
+  "mode": "call",
+  "cases": [
+    {"call": "solution(10)", "expected": "55"},
+    {"call": "solution(1)", "expected": "1"},
+    {"call": "solution(100)", "expected": "5050"},
+    {"call": "solution(7)", "expected": "28"}
+  ]
+}

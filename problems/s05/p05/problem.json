@@ -1,0 +1,14 @@
+{
+  "title": "홀수·짝수 구분하기",
+  "type": "print",
+  "level": 1,
+  "points": 4,
+  "tags": ["range 끝값"],
+  "mode": "io",
+  "cases": [
+    {"stdin": "3\n7\n", "stdout": "3 : 홀수\n4 : 짝수\n5 : 홀수\n6 : 짝수\n7 : 홀수\n"},
+    {"stdin": "1\n1\n", "stdout": "1 : 홀수\n"},
+    {"stdin": "10\n12\n", "stdout": "10 : 짝수\n11 : 홀수\n12 : 짝수\n"},
+    {"stdin": "98\n100\n", "stdout": "98 : 짝수\n99 : 홀수\n100 : 짝수\n"}
+  ]
+}

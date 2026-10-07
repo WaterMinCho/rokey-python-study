@@ -1,0 +1,18 @@
+{
+  "title": "단골 고객",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["딕셔너리 누적", "dict.get", "삽입 순서"],
+  "cases": [
+    {"call": "solution([\"kim 300\", \"lee 500\", \"kim 250\", \"park 100\"], 500)", "expected": "['kim', 'lee']"},
+    {"call": "solution([\"kim 100\", \"lee 200\"], 1000)", "expected": "[]"},
+    {"call": "solution([\"kim 100\", \"lee 200\"], 100)", "expected": "['kim', 'lee']"},
+    {"call": "solution([\"a 1\", \"b 1\", \"a 1\", \"c 3\", \"b 1\", \"a 1\"], 3)", "expected": "['a', 'c']"},
+    {"call": "solution([\"solo 10\", \"solo 10\", \"solo 10\"], 30)", "expected": "['solo']"},
+    {"call": "solution([], 1)", "expected": "[]"},
+    {"call": "solution([\"x 2\", \"y 5\", \"x 2\", \"z 1\", \"x 2\"], 6)", "expected": "['x']"},
+    {"call": "solution([\"u\" + str(i % 1000) + \" 1\" for i in range(99999)] + [\"kim 1000\"], 101)", "expected": "['kim']"}
+  ]
+}

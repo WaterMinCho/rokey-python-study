@@ -1,0 +1,46 @@
+{
+  "title": "관리자 급여",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": [
+    "super()",
+    "오버라이딩",
+    "자식 __init__"
+  ],
+  "cases": [
+    {
+      "call": "Manager(\"Kim\", 3000, 500).pay()",
+      "expected": "3500"
+    },
+    {
+      "call": "Manager(\"Kim\", 3000, 500).tag()",
+      "expected": "'Kim(관리자)'"
+    },
+    {
+      "call": "Manager(\"Kim\", 3000, 500).name",
+      "expected": "'Kim'"
+    },
+    {
+      "call": "Manager(\"Park\", 2500, 0).pay()",
+      "expected": "2500"
+    },
+    {
+      "call": "Manager(\"Choi\", 4000, 1000).salary",
+      "expected": "4000"
+    },
+    {
+      "call": "Manager(\"Choi\", 4000, 1000).bonus",
+      "expected": "1000"
+    },
+    {
+      "call": "Employee(\"Lee\", 2000).pay()",
+      "expected": "2000"
+    },
+    {
+      "call": "Employee(\"Lee\", 2000).tag()",
+      "expected": "'Lee(사원)'"
+    }
+  ]
+}

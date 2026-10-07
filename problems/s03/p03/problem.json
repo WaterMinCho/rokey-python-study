@@ -1,0 +1,16 @@
+{
+  "title": "과속 판정",
+  "type": "return",
+  "level": 1,
+  "points": 4,
+  "mode": "call",
+  "tags": ["경계값", "반환값과 자료형"],
+  "cases": [
+    {"call": "solution(80, 60)", "expected": "'과속'"},
+    {"call": "solution(60, 60)", "expected": "'정상'"},
+    {"call": "solution(45, 50)", "expected": "'정상'"},
+    {"call": "solution(61, 60)", "expected": "'과속'"},
+    {"call": "solution(0, 30)", "expected": "'정상'"},
+    {"call": "solution(101, 100)", "expected": "'과속'"}
+  ]
+}

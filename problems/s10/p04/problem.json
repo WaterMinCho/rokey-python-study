@@ -1,0 +1,25 @@
+{
+  "title": "노트북은 기기다",
+  "type": "fill",
+  "level": 2,
+  "points": 6,
+  "mode": "exec",
+  "tags": [
+    "super()",
+    "자식 __init__"
+  ],
+  "cases": [
+    {
+      "code": "l = Laptop(\"그램\", 1500000, 16)\nl.info()\nprint(l.ram)",
+      "stdout": "제품: 그램\n가격: 1500000\n16\n"
+    },
+    {
+      "code": "l = Laptop(\"맥북\", 2000000, 8)\nprint(l.name, l.price, l.ram)",
+      "stdout": "맥북 2000000 8\n"
+    },
+    {
+      "code": "d = Device(\"마우스\", 30000)\nd.info()\nl = Laptop(\"씽크패드\", 1200000, 32)\nprint(l.price + d.price)\nprint(l.ram)",
+      "stdout": "제품: 마우스\n가격: 30000\n1230000\n32\n"
+    }
+  ]
+}

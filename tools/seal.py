@@ -6,7 +6,7 @@
 세트마다 sealed.json 하나로 묶어 커밋한다. 암호화가 아니라 '실수로 스포일러를 보지 않게'
 가려 두는 용도다.
 
-  python tools/seal.py seal [세트...]     평문 → sealed.json (평문 삭제)
+  python tools/seal.py seal [세트...]     평문 → sealed.json (평문 삭제, --keep 이면 평문 유지)
   python tools/seal.py unseal [세트...]   sealed.json → 평문 (수정할 때)
   python tools/seal.py check              봉인 안 된 평문이 남아 있으면 실패
 """
@@ -24,7 +24,7 @@ def target_sets(tokens):
     return [study.resolve_set(t) for t in tokens] if tokens else study.all_set_ids()
 
 
-def seal(sid):
+def seal(sid, keep=False):
     set_dir = os.path.join(study.PROBLEMS_DIR, sid)
     files = study.load_secrets(set_dir)
     pids = set(study.problem_ids(set_dir))
@@ -34,9 +34,10 @@ def seal(sid):
              if (rel == study.SECRET_QUIZ and has_quiz) or rel.split("/")[0] in pids}
     study.write_text(os.path.join(set_dir, "sealed.json"),
                      json.dumps({"note": NOTE, "blob": study.seal_blob(files)}, ensure_ascii=False, indent=1) + "\n")
-    for rel in study.plain_secret_paths(set_dir):
-        os.remove(os.path.join(set_dir, *rel.split("/")))
-    print("봉인: %s (%d개 파일)" % (sid, len(files)))
+    if not keep:
+        for rel in study.plain_secret_paths(set_dir):
+            os.remove(os.path.join(set_dir, *rel.split("/")))
+    print("봉인: %s (%d개 파일%s)" % (sid, len(files), ", 평문 유지" if keep else ""))
 
 
 def unseal(sid):
@@ -67,11 +68,16 @@ def main():
         print(__doc__)
         sys.exit(2)
     command, tokens = sys.argv[1], sys.argv[2:]
+    keep = "--keep" in tokens
+    tokens = [t for t in tokens if t != "--keep"]
     if command == "check":
         check()
         return
     for sid in target_sets(tokens):
-        (seal if command == "seal" else unseal)(sid)
+        if command == "seal":
+            seal(sid, keep)
+        else:
+            unseal(sid)
 
 
 if __name__ == "__main__":

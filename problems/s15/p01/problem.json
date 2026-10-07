@@ -1,0 +1,11 @@
+{
+  "title": "메뉴 이터레이터",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["이터러블과 이터레이터", "이터레이터 일회성"],
+  "cases": [
+    {"stdout": "<class 'list_iterator'>\nfirst: bibimbap\nnext: ramen\nnext: gimbap\nnext: sushi\n"}
+  ]
+}

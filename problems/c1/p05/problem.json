@@ -1,0 +1,19 @@
+{
+  "title": "두 번 이상 나온 글자",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["딕셔너리 개수 세기", "문자열 순회", "values 순회"],
+  "cases": [
+    {"call": "solution(\"programming\")", "expected": "3"},
+    {"call": "solution(\"abc\")", "expected": "0"},
+    {"call": "solution(\"aaa\")", "expected": "1"},
+    {"call": "solution(\"\")", "expected": "0"},
+    {"call": "solution(\"aabbcc\")", "expected": "3"},
+    {"call": "solution(\"robot\")", "expected": "1"},
+    {"call": "solution(\"mississippi\")", "expected": "3"},
+    {"call": "solution(\"a\")", "expected": "0"},
+    {"call": "solution(\"zzzzzzzzzz\")", "expected": "1"}
+  ]
+}

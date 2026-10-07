@@ -1,0 +1,16 @@
+{
+  "title": "날짜 뽑기",
+  "type": "print",
+  "level": 2,
+  "points": 6,
+  "mode": "io",
+  "tags": ["반복 메타 문자", "findall과 finditer"],
+  "cases": [
+    {"stdin": "from 2024-10-16 to 2025-01-02\n", "stdout": "2024-10-16\n2025-01-02\n"},
+    {"stdin": "today is 2024-1-5\n", "stdout": "no date\n"},
+    {"stdin": "born 1996-01-24.\n", "stdout": "1996-01-24\n"},
+    {"stdin": "20241016 and 2024/10/16\n", "stdout": "no date\n"},
+    {"stdin": "2024-10-16\n", "stdout": "2024-10-16\n"},
+    {"stdin": "exam 2025-10-16, retake 2025-11-20, end 2025-12-31\n", "stdout": "2025-10-16\n2025-11-20\n2025-12-31\n"}
+  ]
+}

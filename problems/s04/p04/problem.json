@@ -1,0 +1,16 @@
+{
+  "title": "처음과 끝의 합",
+  "type": "return",
+  "level": 1,
+  "points": 4,
+  "mode": "call",
+  "tags": ["인덱스", "len·sum"],
+  "cases": [
+    {"call": "solution([1, 2, 3])", "expected": "4"},
+    {"call": "solution([10, 20, 30, 40, 50])", "expected": "60"},
+    {"call": "solution([7])", "expected": "14"},
+    {"call": "solution([5, 9])", "expected": "14"},
+    {"call": "solution([-3, 8, 3])", "expected": "0"},
+    {"call": "solution([100, 1, 1, 1, 1, 1, -40])", "expected": "60"}
+  ]
+}

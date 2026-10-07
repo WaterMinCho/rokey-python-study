@@ -1,0 +1,15 @@
+{
+  "title": "정수 두 배 출력",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["try-except 흐름", "예외의 종류"],
+  "cases": [
+    {"stdin": "21\n", "stdout": "42\n"},
+    {"stdin": "abc\n", "stdout": "숫자가 아닙니다\n"},
+    {"stdin": "-5\n", "stdout": "-10\n"},
+    {"stdin": "3.5\n", "stdout": "숫자가 아닙니다\n"},
+    {"stdin": "0\n", "stdout": "0\n"}
+  ]
+}

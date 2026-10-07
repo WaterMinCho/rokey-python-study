@@ -12,6 +12,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import study  # noqa: E402
+import adaptive  # noqa: E402
 
 
 def changed_files(base_ref):
@@ -24,6 +25,7 @@ def changed_files(base_ref):
 
 def main():
     base_ref = os.environ.get("GITHUB_BASE_REF")  # PR 일 때만 값이 있다
+    cat = adaptive.catalog()
     problems = []
     if base_ref:
         files = changed_files(base_ref)
@@ -37,11 +39,18 @@ def main():
         if not users:
             parts.append("이 PR 에는 풀이(submissions/) 변경이 없습니다.\n")
         for user in users:
-            if os.path.isdir(os.path.join(study.SUBMISSIONS_DIR, user)):
+            if not os.path.isdir(os.path.join(study.SUBMISSIONS_DIR, user)):
+                continue
+            if os.path.isfile(adaptive.profile_path(user)):
+                parts.append(adaptive.user_analysis_markdown(user, cat))
+            if study.started_sets(user):
                 parts.append(study.render_markdown(user, study.grade_user(user)))
         report = "\n".join(parts)
     else:
-        report = "### 스터디 현황판\n\n" + study.render_board()
+        analysis, shortages = adaptive.team_analysis_markdown(cat)
+        report = analysis + "\n### 세트 현황판\n\n" + study.render_board()
+        if shortages:  # 출제 요청 이슈 본문 — 워크플로가 이슈를 만들거나 갱신한다
+            study.write_text(os.path.join(study.ROOT, "shortage.md"), adaptive.shortage_request_markdown(shortages, cat))
 
     if problems:
         report = "### PR 규칙 확인\n\n" + "\n".join("- " + p for p in problems) + "\n\n" + report

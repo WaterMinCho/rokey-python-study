@@ -1,0 +1,25 @@
+name: 사용이 불편하거나 오류가 나요
+description: 명령이 안 되거나, 설명이 헷갈리거나, 쓰기 불편한 점을 알려 주세요.
+title: "[불편] "
+labels: ["불편"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: 무엇을 하려고 했나요
+      placeholder: 예) python study.py 를 실행해서 라운드를 받으려고 했어요
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: 실제로 어떻게 됐나요
+      description: 터미널에 나온 내용을 그대로 붙여 주세요.
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: 환경
+      placeholder: 예) Windows 11 / Python 3.12

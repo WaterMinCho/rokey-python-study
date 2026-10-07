@@ -7,8 +7,9 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
+  issues: write
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -49,3 +50,29 @@ jobs:
         run: |
           gh pr comment "$PR" --body-file report.md --edit-last --create-if-none \
             || gh pr comment "$PR" --body-file report.md
+      # main 에 풀이가 올라오면 README 의 학습 현황판과 dashboard.svg 를 갱신해 커밋합니다.
+      - name: 현황판 갱신
+        if: github.event_name == 'push'
+        continue-on-error: true
+        run: |
+          python tools/dashboard.py
+          if git diff --quiet -- README.md dashboard.svg; then echo "변경 없음"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add README.md dashboard.svg
+          git commit -m "학습 현황판 갱신 [skip ci]"
+          git pull --rebase origin main
+          git push
+      # 문제 은행에 모자란 문항이 있으면 "출제 요청" 이슈를 만들거나 갱신합니다(main 푸시 때).
+      - name: 출제 요청 이슈
+        if: github.event_name == 'push' && hashFiles('shortage.md') != ''
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          N=$(gh issue list --label "출제 요청" --state open --json number -q '.[0].number')
+          if [ -n "$N" ]; then
+            gh issue edit "$N" --body-file shortage.md
+          else
+            gh issue create --title "출제 요청: 문제 은행에 모자란 문항" --body-file shortage.md --label "출제 요청"
+          fi

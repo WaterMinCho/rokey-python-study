@@ -1,0 +1,11 @@
+{
+  "title": "로봇 클래스 사용하기",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["클래스 정의 문법", "self", "객체 생성"],
+  "cases": [
+    {"stdout": "RK-11\n삐빅\n"}
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "title": "명단 출력하기",
+  "type": "fill",
+  "level": 2,
+  "points": 6,
+  "mode": "io",
+  "tags": ["읽기 메서드", "줄바꿈 처리"],
+  "cases": [
+    {"files": {"names.txt": "민수\n지영\n현우\n"}, "stdout": "인원: 3\n민수\n지영\n현우\n"},
+    {"files": {"names.txt": "하늘\n"}, "stdout": "인원: 1\n하늘\n"},
+    {"files": {"names.txt": "A\nB\nC\nD\nE\n"}, "stdout": "인원: 5\nA\nB\nC\nD\nE\n"},
+    {"files": {"names.txt": "가\n나"}, "stdout": "인원: 2\n가\n나\n"}
+  ]
+}

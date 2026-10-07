@@ -1,0 +1,11 @@
+{
+  "title": "이름과 글자 구분하기",
+  "type": "fill",
+  "level": 2,
+  "points": 6,
+  "mode": "io",
+  "tags": ["따옴표와 문자열", "대소문자 구분"],
+  "cases": [
+    {"stdout": "print\nHello\n"}
+  ]
+}

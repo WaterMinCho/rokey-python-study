@@ -1,0 +1,29 @@
+{
+  "title": "보너스 계좌",
+  "type": "print",
+  "level": 2,
+  "points": 6,
+  "mode": "exec",
+  "tags": [
+    "super()",
+    "오버라이딩"
+  ],
+  "cases": [
+    {
+      "code": "b = BonusAccount()\nb.deposit(500)\nprint(b.balance)",
+      "stdout": "입금: 500\n보너스: 100\n600\n"
+    },
+    {
+      "code": "a = Account()\na.deposit(500)\nprint(a.balance)",
+      "stdout": "입금: 500\n500\n"
+    },
+    {
+      "code": "b = BonusAccount()\nb.deposit(1000)\nb.deposit(200)\nprint(b.balance)",
+      "stdout": "입금: 1000\n보너스: 100\n입금: 200\n보너스: 100\n1400\n"
+    },
+    {
+      "code": "b = BonusAccount()\nprint(b.balance)\na = Account()\na.deposit(50)\nb.deposit(50)\nprint(a.balance, b.balance)",
+      "stdout": "0\n입금: 50\n입금: 50\n보너스: 100\n50 150\n"
+    }
+  ]
+}

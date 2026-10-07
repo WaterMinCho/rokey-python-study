@@ -1,0 +1,37 @@
+{
+  "title": "다각형의 내각의 합",
+  "type": "return",
+  "level": 1,
+  "points": 4,
+  "mode": "call",
+  "tags": [
+    "자식 __init__",
+    "상속 멤버 접근"
+  ],
+  "cases": [
+    {
+      "call": "Polygon(\"삼각형\", 3).angle_sum()",
+      "expected": "180"
+    },
+    {
+      "call": "Polygon(\"사각형\", 4).angle_sum()",
+      "expected": "360"
+    },
+    {
+      "call": "Polygon(\"오각형\", 5).angle_sum()",
+      "expected": "540"
+    },
+    {
+      "call": "Polygon(\"육각형\", 6).info()",
+      "expected": "'육각형 6'"
+    },
+    {
+      "call": "Polygon(\"팔각형\", 8).angle_sum()",
+      "expected": "1080"
+    },
+    {
+      "call": "Polygon(\"도형\", 20).sides",
+      "expected": "20"
+    }
+  ]
+}

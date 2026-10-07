@@ -1,0 +1,13 @@
+{
+  "title": "첫 손님과 대기 손님",
+  "type": "print",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["이터러블과 이터레이터", "이터레이터 일회성"],
+  "cases": [
+    {"stdin": "민수 지연 하늘\n", "stdout": "first: 민수\nwait: 지연\nwait: 하늘\n"},
+    {"stdin": "Hana\n", "stdout": "first: Hana\n"},
+    {"stdin": "a b c d e\n", "stdout": "first: a\nwait: b\nwait: c\nwait: d\nwait: e\n"}
+  ]
+}

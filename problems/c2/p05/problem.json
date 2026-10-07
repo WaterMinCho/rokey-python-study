@@ -1,0 +1,21 @@
+{
+  "title": "다이얼 자물쇠",
+  "type": "return",
+  "level": 3,
+  "points": 8,
+  "mode": "call",
+  "tags": ["완전탐색", "자릿수 분해", "나머지 연산"],
+  "cases": [
+    {"call": "solution(1, 7)", "expected": "1"},
+    {"call": "solution(1, 0)", "expected": "1"},
+    {"call": "solution(2, 4)", "expected": "4"},
+    {"call": "solution(2, 0)", "expected": "0"},
+    {"call": "solution(2, 9)", "expected": "10"},
+    {"call": "solution(3, 5)", "expected": "15"},
+    {"call": "solution(3, 10)", "expected": "53"},
+    {"call": "solution(3, 27)", "expected": "0"},
+    {"call": "solution(4, 1)", "expected": "0"},
+    {"call": "solution(4, 9)", "expected": "138"},
+    {"call": "solution(4, 18)", "expected": "538"}
+  ]
+}

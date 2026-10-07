@@ -1,0 +1,16 @@
+{
+  "title": "장바구니에 여러 개 담기",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["self", "객체별 상태"],
+  "cases": [
+    {"call": "solution([\"apple\", \"milk\"], [2, 1])", "expected": "['apple', 'apple', 'milk']"},
+    {"call": "solution([\"tea\"], [3])", "expected": "['tea', 'tea', 'tea']"},
+    {"call": "solution([\"a\", \"b\"], [0, 2])", "expected": "['b', 'b']"},
+    {"call": "solution([], [])", "expected": "[]"},
+    {"call": "solution([\"x\", \"y\", \"x\"], [1, 1, 1])", "expected": "['x', 'y', 'x']"},
+    {"call": "solution([\"a\"], [1]) + solution([\"b\"], [2])", "expected": "['a', 'b', 'b']"}
+  ]
+}

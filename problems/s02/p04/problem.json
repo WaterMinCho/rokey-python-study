@@ -1,0 +1,14 @@
+{
+  "title": "볼트 상자 포장",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["몫과 나머지"],
+  "cases": [
+    {"stdin": "47\n6\n", "stdout": "가득 찬 상자: 7\n남는 볼트: 5\n"},
+    {"stdin": "30\n5\n", "stdout": "가득 찬 상자: 6\n남는 볼트: 0\n"},
+    {"stdin": "3\n8\n", "stdout": "가득 찬 상자: 0\n남는 볼트: 3\n"},
+    {"stdin": "100\n7\n", "stdout": "가득 찬 상자: 14\n남는 볼트: 2\n"}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "title": "가산점을 주는 함수",
+  "type": "print",
+  "level": 2,
+  "points": 6,
+  "mode": "exec",
+  "tags": ["딕셔너리 매개변수", "별명"],
+  "cases": [
+    {"code": "score = {\"kim\": 80, \"lee\": 95, \"park\": 62}\nadd_bonus(score, 10)\nprint(score)", "stdout": "kim 90\nlee 100\npark 72\n{'kim': 90, 'lee': 100, 'park': 72}\n"},
+    {"code": "a = {\"math\": 50, \"eng\": 70}\nb = a\nadd_bonus(b, 30)\nadd_bonus(a, 30)\nprint(a)", "stdout": "math 80\neng 100\nmath 100\neng 100\n{'math': 100, 'eng': 100}\n"},
+    {"code": "s = {\"p\": 90, \"q\": 91, \"r\": 89}\nadd_bonus(s, 10)\nprint(s)", "stdout": "p 100\nq 100\nr 99\n{'p': 100, 'q': 100, 'r': 99}\n"},
+    {"code": "s = {\"x\": 100, \"y\": 0}\nadd_bonus(s, 0)\nprint(s)", "stdout": "x 100\ny 0\n{'x': 100, 'y': 0}\n"},
+    {"code": "s = {}\nadd_bonus(s, 5)\nprint(s)", "stdout": "{}\n"}
+  ]
+}

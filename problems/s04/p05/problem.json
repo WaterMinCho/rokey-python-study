@@ -1,0 +1,14 @@
+{
+  "title": "n번째 간식",
+  "type": "print",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["인덱스", "자료형 변환"],
+  "cases": [
+    {"stdin": "1\n", "stdout": "쿠키\n"},
+    {"stdin": "3\n", "stdout": "초콜릿\n"},
+    {"stdin": "5\n", "stdout": "껌\n"},
+    {"stdin": "2\n", "stdout": "젤리\n"}
+  ]
+}

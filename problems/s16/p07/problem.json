@@ -1,0 +1,15 @@
+{
+  "title": "회전 큐",
+  "type": "print",
+  "level": 2,
+  "points": 6,
+  "mode": "io",
+  "tags": ["회전 큐", "덱 메서드", "덱 출력 형식"],
+  "cases": [
+    {"stdin": "5\n1\n2\n3\n4\n5\n2\n", "stdout": "deque([3, 4, 5, 1, 2])\n"},
+    {"stdin": "3\n7\n8\n9\n4\n", "stdout": "deque([8, 9, 7])\n"},
+    {"stdin": "4\n10\n20\n30\n40\n0\n", "stdout": "deque([10, 20, 30, 40])\n"},
+    {"stdin": "1\n42\n3\n", "stdout": "deque([42])\n"},
+    {"stdin": "4\n-1\n0\n1\n2\n5\n", "stdout": "deque([0, 1, 2, -1])\n"}
+  ]
+}

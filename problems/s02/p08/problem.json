@@ -1,0 +1,16 @@
+{
+  "title": "분과 초로 바꾸기",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["몫과 나머지", "문자열 이어 붙이기"],
+  "cases": [
+    {"call": "solution(205)", "expected": "'3분 25초'"},
+    {"call": "solution(59)", "expected": "'0분 59초'"},
+    {"call": "solution(600)", "expected": "'10분 0초'"},
+    {"call": "solution(3600)", "expected": "'60분 0초'"},
+    {"call": "solution(0)", "expected": "'0분 0초'"},
+    {"call": "solution(61)", "expected": "'1분 1초'"}
+  ]
+}

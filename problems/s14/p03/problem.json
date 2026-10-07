@@ -1,0 +1,16 @@
+{
+  "title": "숫자 덩어리 뽑기",
+  "type": "return",
+  "level": 1,
+  "points": 4,
+  "mode": "call",
+  "tags": ["문자 클래스", "findall과 finditer"],
+  "cases": [
+    {"call": "solution(\"room 12, floor 3\")", "expected": "['12', '3']"},
+    {"call": "solution(\"010-1234-5678\")", "expected": "['010', '1234', '5678']"},
+    {"call": "solution(\"no digits\")", "expected": "[]"},
+    {"call": "solution(\"2024y10m16d\")", "expected": "['2024', '10', '16']"},
+    {"call": "solution(\"a7\")", "expected": "['7']"},
+    {"call": "solution(\"007 bond\")", "expected": "['007']"}
+  ]
+}

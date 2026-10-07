@@ -1,0 +1,14 @@
+{
+  "title": "체크박스 흉내",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "exec",
+  "tags": ["라디오 버튼과 체크박스", "클래스와 인스턴스 변수"],
+  "cases": [
+    {"code": "c = CheckBox(\"라떼\")\nprint(c.isChecked())\nc.setChecked(True)\nprint(c.isChecked())\nprint(c.text)", "stdout": "False\nTrue\n라떼\n"},
+    {"code": "a = CheckBox(\"A\")\nb = CheckBox(\"B\")\na.setChecked(True)\nprint(a.isChecked(), b.isChecked())", "stdout": "True False\n"},
+    {"code": "c = CheckBox(\"C\")\nc.setChecked(True)\nc.setChecked(False)\nprint(c.isChecked())\nc.setChecked(True)\nprint(c.isChecked())", "stdout": "False\nTrue\n"},
+    {"code": "boxes = [CheckBox(\"1\"), CheckBox(\"2\"), CheckBox(\"3\")]\nboxes[0].setChecked(True)\nboxes[2].setChecked(True)\ncount = 0\nfor b in boxes:\n    if b.isChecked():\n        count = count + 1\nprint(count)", "stdout": "2\n"}
+  ]
+}

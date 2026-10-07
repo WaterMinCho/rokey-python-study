@@ -12,3 +12,4 @@ __pycache__/
 problems/*/quiz_key.json
 problems/*/*/solution.py
 problems/*/*/explain.md
+shortage.md

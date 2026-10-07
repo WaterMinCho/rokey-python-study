@@ -1,0 +1,17 @@
+{
+  "title": "번호 형식 검사",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["반복 메타 문자", "앵커 ^와 $"],
+  "cases": [
+    {"stdin": "123-4567\n", "stdout": "OK\n"},
+    {"stdin": "12-4567\n", "stdout": "NO\n"},
+    {"stdin": "123-45678\n", "stdout": "NO\n"},
+    {"stdin": "abc-defg\n", "stdout": "NO\n"},
+    {"stdin": "1234567\n", "stdout": "NO\n"},
+    {"stdin": "123-456\n", "stdout": "NO\n"},
+    {"stdin": "000-0000\n", "stdout": "OK\n"}
+  ]
+}

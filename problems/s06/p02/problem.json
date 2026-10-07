@@ -1,0 +1,15 @@
+{
+  "title": "상자 포장",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "call",
+  "tags": ["튜플 반환", "return"],
+  "cases": [
+    {"call": "solution(17, 5)", "expected": "(3, 2)"},
+    {"call": "solution(20, 4)", "expected": "(5, 0)"},
+    {"call": "solution(3, 10)", "expected": "(0, 3)"},
+    {"call": "solution(9, 1)", "expected": "(9, 0)"},
+    {"call": "solution(0, 7)", "expected": "(0, 0)"}
+  ]
+}

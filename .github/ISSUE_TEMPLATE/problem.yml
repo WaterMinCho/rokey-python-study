@@ -1,0 +1,24 @@
+name: 문제나 정답이 이상해요
+description: 문제 설명이 모호하거나 정답·해설이 틀린 것 같을 때 알려 주세요.
+title: "[문제 오류] "
+labels: ["문제 오류"]
+body:
+  - type: input
+    id: item
+    attributes:
+      label: 문항 ID
+      placeholder: 예) s03_Q4, s05/p02
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: 무엇이 이상한가요
+      placeholder: 예) 보기 2번도 맞는 것 같아요 / 출력 형식이 설명과 달라요
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 내 답과 근거
+      description: 직접 실행해 본 결과가 있으면 함께 적어 주세요.

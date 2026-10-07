@@ -1,0 +1,14 @@
+{
+  "title": "큐 클래스 완성",
+  "type": "fill",
+  "level": 2,
+  "points": 6,
+  "mode": "exec",
+  "tags": ["큐 클래스", "빈 자료구조 처리"],
+  "cases": [
+    {"code": "q = Queue()\nq.enqueue(1)\nq.enqueue(2)\nq.enqueue(3)\nprint(q.dequeue())\nprint(q.status_queue())", "stdout": "1\n[2, 3]\n"},
+    {"code": "q = Queue()\nprint(q.dequeue())\nprint(q.is_empty())\nq.enqueue(\"x\")\nprint(q.is_empty())", "stdout": "None\nTrue\nFalse\n"},
+    {"code": "q = Queue()\nq.dequeue()\nq.enqueue(5)\nq.enqueue(6)\nq.dequeue()\nq.enqueue(7)\nprint(q.status_queue())\nprint(q.dequeue(), q.dequeue())\nprint(q.is_empty())", "stdout": "[6, 7]\n6 7\nTrue\n"},
+    {"code": "q = Queue()\nq.enqueue(\"a\")\nq.enqueue(\"b\")\nprint(q.dequeue(), q.dequeue(), q.dequeue())\nprint(q.status_queue())", "stdout": "a b None\n[]\n"}
+  ]
+}

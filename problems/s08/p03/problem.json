@@ -1,0 +1,15 @@
+{
+  "title": "딕셔너리 값의 합",
+  "type": "return",
+  "level": 1,
+  "points": 4,
+  "mode": "call",
+  "tags": ["딕셔너리 매개변수"],
+  "cases": [
+    {"call": "solution({'pen': 1200, 'note': 2500, 'eraser': 800})", "expected": "4500"},
+    {"call": "solution({'apple': 3})", "expected": "3"},
+    {"call": "solution({})", "expected": "0"},
+    {"call": "solution({'x': -5, 'y': 5, 'z': 7})", "expected": "7"},
+    {"call": "solution({1: 100, 2: 200, 'three': 300, 'four': 400})", "expected": "1000"}
+  ]
+}

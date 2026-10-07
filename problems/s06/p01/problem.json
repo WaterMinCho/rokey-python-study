@@ -1,0 +1,13 @@
+{
+  "title": "막대 그리기 함수",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["함수 정의", "매개변수와 인수"],
+  "cases": [
+    {"stdin": "3\n", "stdout": "###\n#####\n"},
+    {"stdin": "1\n", "stdout": "#\n###\n"},
+    {"stdin": "6\n", "stdout": "######\n########\n"}
+  ]
+}

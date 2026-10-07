@@ -1,0 +1,15 @@
+{
+  "title": "배달 로봇",
+  "type": "print",
+  "level": 3,
+  "points": 8,
+  "mode": "exec",
+  "tags": ["디폴트 매개변수", "출력 형식", "경계값"],
+  "cases": [
+    {"code": "r = Robot(\"R1\")\nr.status()", "stdout": "R1 위치 0 배터리 100\n"},
+    {"code": "r = Robot(\"R1\")\nr.move(3)\nr.status()", "stdout": "R1: 3칸 이동\nR1 위치 3 배터리 94\n"},
+    {"code": "r = Robot(\"R2\", 10)\nr.move(6)\nr.move(5)\nr.move(2)\nr.status()", "stdout": "R2: 배터리 부족\nR2: 5칸 이동\nR2: 배터리 부족\nR2 위치 5 배터리 0\n"},
+    {"code": "a = Robot(\"A\", 20)\nb = Robot(\"B\")\na.move(4)\nb.move(50)\na.move(4)\nb.move(1)\na.status()\nb.status()\nprint(a.x + b.x, a.battery, b.battery)", "stdout": "A: 4칸 이동\nB: 50칸 이동\nA: 4칸 이동\nB: 배터리 부족\nA 위치 8 배터리 4\nB 위치 50 배터리 0\n58 4 0\n"},
+    {"code": "z = Robot(\"Zero\", 0)\nz.move(1)\nz.status()", "stdout": "Zero: 배터리 부족\nZero 위치 0 배터리 0\n"}
+  ]
+}

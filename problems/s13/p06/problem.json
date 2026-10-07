@@ -1,0 +1,15 @@
+{
+  "title": "정수가 나올 때까지",
+  "type": "print",
+  "level": 2,
+  "points": 6,
+  "mode": "io",
+  "tags": ["try-except 흐름"],
+  "cases": [
+    {"stdin": "abc\n3.5\n7\n", "stdout": "정수를 입력하세요\n정수를 입력하세요\n49\n"},
+    {"stdin": "-4\n", "stdout": "16\n"},
+    {"stdin": "x\n0\n", "stdout": "정수를 입력하세요\n0\n"},
+    {"stdin": "5\n6\n", "stdout": "25\n"},
+    {"stdin": "one\ntwo\nthree\n12\n99\n", "stdout": "정수를 입력하세요\n정수를 입력하세요\n정수를 입력하세요\n144\n"}
+  ]
+}

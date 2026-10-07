@@ -1,0 +1,11 @@
+{
+  "title": "자기소개 카드 출력",
+  "type": "print",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["print 기초", "실행 순서"],
+  "cases": [
+    {"stdout": "이름: 김로키\n과정: ROKEY 11기\n한마디: Hello, Python!\n"}
+  ]
+}

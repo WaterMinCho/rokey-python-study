@@ -1,0 +1,17 @@
+{
+  "title": "배수 판별",
+  "type": "return",
+  "level": 1,
+  "points": 4,
+  "mode": "call",
+  "tags": ["디폴트 매개변수", "반환값"],
+  "cases": [
+    {"call": "solution(10)", "expected": "'배수'"},
+    {"call": "solution(7)", "expected": "'아님'"},
+    {"call": "solution(9, 3)", "expected": "'배수'"},
+    {"call": "solution(10, 4)", "expected": "'아님'"},
+    {"call": "solution(0)", "expected": "'배수'"},
+    {"call": "solution(-6, 3)", "expected": "'배수'"},
+    {"call": "solution(6, 4)", "expected": "'아님'"}
+  ]
+}

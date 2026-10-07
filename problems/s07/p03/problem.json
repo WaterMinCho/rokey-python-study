@@ -1,0 +1,13 @@
+{
+  "title": "할인가 출력 함수",
+  "type": "print",
+  "level": 1,
+  "points": 4,
+  "mode": "exec",
+  "tags": ["print 출력 형식"],
+  "cases": [
+    {"code": "print_sale_price(20000)", "stdout": "정가: 20000\n할인가: 18000\n"},
+    {"code": "print_sale_price(990)", "stdout": "정가: 990\n할인가: 891\n"},
+    {"code": "print_sale_price(1500)\nprint_sale_price(10)", "stdout": "정가: 1500\n할인가: 1350\n정가: 10\n할인가: 9\n"}
+  ]
+}

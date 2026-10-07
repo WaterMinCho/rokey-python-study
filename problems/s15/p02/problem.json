@@ -1,0 +1,14 @@
+{
+  "title": "순서대로 꺼내는 이터레이터 클래스",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "exec",
+  "tags": ["이터레이터 클래스", "next와 StopIteration"],
+  "cases": [
+    {"code": "for x in Looper([1, 2, 3]):\n    print(x)", "stdout": "1\n2\n3\n"},
+    {"code": "it = Looper(\"ab\")\nprint(next(it))\nprint(next(it))", "stdout": "a\nb\n"},
+    {"code": "it = Looper([5])\nprint(next(it))\ntry:\n    next(it)\nexcept StopIteration:\n    print(\"stop\")", "stdout": "5\nstop\n"},
+    {"code": "print(list(Looper([4, 5, 6, 7])))", "stdout": "[4, 5, 6, 7]\n"}
+  ]
+}

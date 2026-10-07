@@ -62,6 +62,10 @@ def check_quiz(s, errors):
             errors.append(where + "points 는 양의 정수여야 합니다.")
         if not str(q.get("explain", "")).strip():
             errors.append(where + "explain(해설)이 비어 있습니다.")
+        if q.get("level") not in (1, 2, 3):
+            errors.append(where + "level(1·2·3)이 필요합니다.")
+        if not (isinstance(q.get("tags"), list) and q["tags"] and all(isinstance(t, str) and t.strip() for t in q["tags"])):
+            errors.append(where + "tags(개념 1~3개)가 필요합니다.")
         answer = q.get("answer")
         if q["type"] == "choice":
             if not (isinstance(answer, list) and answer and all(isinstance(n, int) and 1 <= n <= 9 for n in answer)):
@@ -108,6 +112,8 @@ def check_problem(s, p, errors):
         return
     if p.get("level") not in (1, 2, 3):
         errors.append(where + "level 은 1·2·3 중 하나여야 합니다.")
+    if not (isinstance(p.get("tags"), list) and p["tags"] and all(isinstance(t, str) and t.strip() for t in p["tags"])):
+        errors.append(where + "tags(개념 1~3개)가 필요합니다.")
     if not (isinstance(p.get("points"), int) and p["points"] > 0):
         errors.append(where + "points 는 양의 정수여야 합니다.")
     cases = p.get("cases")

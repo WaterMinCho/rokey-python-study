@@ -1,0 +1,14 @@
+{
+  "title": "누적 합계",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["global", "반환값"],
+  "cases": [
+    {"call": "solution(5)", "expected": "5"},
+    {"call": "[solution(3), solution(4), solution(5)]", "expected": "[3, 7, 12]"},
+    {"call": "[solution(10), solution(-10), solution(1)]", "expected": "[10, 0, 1]"},
+    {"call": "[solution(2), solution(2), total]", "expected": "[2, 4, 4]"}
+  ]
+}

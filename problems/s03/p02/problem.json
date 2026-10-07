@@ -1,0 +1,16 @@
+{
+  "title": "짝수 홀수 판별",
+  "type": "print",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["if 문법", "input 형변환", "블록 밖 실행"],
+  "cases": [
+    {"stdin": "37\n", "stdout": "37 홀수\n판별 끝\n"},
+    {"stdin": "8\n", "stdout": "8 짝수\n판별 끝\n"},
+    {"stdin": "0\n", "stdout": "0 짝수\n판별 끝\n"},
+    {"stdin": "1\n", "stdout": "1 홀수\n판별 끝\n"},
+    {"stdin": "1000\n", "stdout": "1000 짝수\n판별 끝\n"},
+    {"stdin": "777\n", "stdout": "777 홀수\n판별 끝\n"}
+  ]
+}

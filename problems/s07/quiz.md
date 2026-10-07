@@ -1,0 +1,228 @@
+# 7차시 퀴즈 — 함수(2)
+
+> 코드를 실행하지 말고 눈으로 풀어 보세요. 답은 `submissions/<내 ID>/s07/quiz.py` 에 적습니다.
+
+## Q1 (객관식 · 2점)
+
+전역 변수와 지역 변수에 대한 설명으로 **옳지 않은** 것은?
+
+1. 전역 변수는 함수 바깥에서 만든 변수이며, 프로그램이 끝날 때까지 유지된다.
+2. 함수마다 자신만의 이름공간(namespace)이 있어서, `global` 선언이 없다면 함수 안에서 만든 변수와 함수 밖의 변수는 이름이 같아도 서로 다른 변수이다.
+3. 전역 변수의 값은 `global` 선언 없이도 함수 안에서 읽을(참조할) 수 있다.
+4. 지역 변수는 그 함수를 한 번 호출하고 나면 함수 밖에서도 사용할 수 있다.
+
+## Q2 (객관식 · 2점)
+
+다음 코드는 마지막 줄에서 오류가 발생합니다. 그 이유로 알맞은 것은?
+
+```python
+def make_total(a, b):
+    total = a + b
+
+make_total(3, 4)
+print(total)
+```
+
+1. `total` 은 함수 안에서만 존재하는 지역 변수라서, 함수 밖에서는 사용할 수 없기 때문이다.
+2. 함수에 `return` 이 없어서 `total` 에 `None` 이 들어 있기 때문이다.
+3. 함수를 정의하기 전에 호출했기 때문이다.
+4. 인수의 개수와 매개변수의 개수가 다르기 때문이다.
+
+## Q3 (객관식 · 2점)
+
+다음과 같이 전역 변수 `x` 와 함수 세 개를 정의했습니다. 각 함수를 따로 호출했을 때 **오류가 발생하는** 호출은?
+
+```python
+x = 10
+
+def fa(num):
+    b = x + num
+    print(b)
+
+def fb(num):
+    x = x + num
+    print(x)
+
+def fc(num):
+    global x
+    x = x + num
+    print(x)
+```
+
+1. `fa(5)`
+2. `fb(5)`
+3. `fc(5)`
+4. 셋 다 오류 없이 `15` 를 출력한다
+
+## Q4 (객관식 · 2점)
+
+어떤 함수 안에서 `global a` 를 선언했습니다. 이에 대한 설명으로 **옳은** 것은?
+
+1. 그 함수 안에 `a` 라는 지역 변수가 새로 만들어진다.
+2. 그 함수 안에서 `a` 에 값을 대입하면 전역 변수 `a` 의 값이 바뀐다.
+3. 함수 실행이 끝나면 전역 변수 `a` 도 함께 사라진다.
+4. `global a` 는 함수 바깥(전역 영역)에 적어야만 효과가 있다.
+
+## Q5 (객관식 · 2점)
+
+함수를 다음과 같이 정의했습니다. 이어서 실행했을 때 **오류가 발생하는** 호출은?
+
+```python
+def order(menu, count=1):
+    print(menu, count)
+```
+
+1. `order("라떼")`
+2. `order("라떼", 3)`
+3. `order()`
+4. `order(2)`
+
+## Q6 (객관식 · 2점)
+
+다음 코드를 실행했을 때의 결과로 알맞은 것은?
+
+```python
+def show(width, height):
+    print("A", width, height)
+
+def show():
+    print("B")
+
+show(3, 4)
+```
+
+1. `A 3 4` 가 출력된다
+2. `B` 가 출력된다
+3. `A 3 4` 와 `B` 가 차례로 출력된다
+4. 오류가 발생한다
+
+## Q7 (객관식 · 2점)
+
+다음 코드를 실행했을 때의 결과로 알맞은 것은?
+
+```python
+def area(w: int, h: int) -> int:
+    return w * h
+
+print(area(1.5, 2))
+```
+
+1. `2`
+2. `3`
+3. `3.0`
+4. 오류가 발생한다
+
+## Q8 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요. (여러 줄이면 `"""` 로 감싸서 줄을 나눠 적습니다)
+
+```python
+def swap(pa, pb):
+    temp = pa
+    pa = pb
+    pb = temp
+    print("함수 안:", pa, pb)
+
+na = 3
+nb = 8
+swap(na, nb)
+print("함수 밖:", na, nb)
+na, nb = nb, na
+print("교환 후:", na, nb)
+```
+
+## Q9 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+x = 1
+y = 1
+
+def change():
+    global y
+    x = 50
+    y = 50
+    print(x, y)
+
+change()
+print(x, y)
+```
+
+## Q10 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요. (띄어쓰기까지 정확히)
+
+```python
+def room(width=6, height=2):
+    print("width=", width, "height=", height)
+
+room()
+room(9)
+room(9, 5)
+```
+
+## Q11 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+total = 0
+print("A")
+
+def add(num):
+    global total
+    total = total + num
+    print("B", total)
+
+print("C")
+add(5)
+add(5)
+print("D", total)
+```
+
+## Q12 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+def count_down(n):
+    if n <= 0:
+        print("발사!")
+        return
+    print(n)
+    count_down(n - 2)
+
+count_down(5)
+```
+
+## Q13 (단답 · 3점)
+
+다음 코드를 실행하면 `7` 이 출력됩니다. 빈칸(`____`)에 들어갈 **키워드 하나**를 적으세요.
+
+```python
+score = 2
+
+def bonus():
+    ____ score
+    score = score + 5
+
+bonus()
+print(score)
+```
+
+## Q14 (단답 · 3점)
+
+다음 코드를 실행했을 때 출력되는 **숫자**를 적으세요.
+
+```python
+def plus3(num):
+    return num + 3
+
+def twice(num):
+    return plus3(num) * 2
+
+a = plus3(4)
+b = twice(a)
+print(b)
+```

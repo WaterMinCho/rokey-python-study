@@ -1,0 +1,18 @@
+{
+  "title": "윤년 판별",
+  "type": "fill",
+  "level": 3,
+  "points": 8,
+  "mode": "io",
+  "tags": ["논리 연산자", "연산자 우선순위"],
+  "cases": [
+    {"stdin": "2024\n", "stdout": "2024 윤년\n"},
+    {"stdin": "2023\n", "stdout": "2023 평년\n"},
+    {"stdin": "1900\n", "stdout": "1900 평년\n"},
+    {"stdin": "2000\n", "stdout": "2000 윤년\n"},
+    {"stdin": "2100\n", "stdout": "2100 평년\n"},
+    {"stdin": "2400\n", "stdout": "2400 윤년\n"},
+    {"stdin": "4\n", "stdout": "4 윤년\n"},
+    {"stdin": "2026\n", "stdout": "2026 평년\n"}
+  ]
+}

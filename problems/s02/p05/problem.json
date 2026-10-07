@@ -1,0 +1,15 @@
+{
+  "title": "총 무게 구하기",
+  "type": "return",
+  "level": 1,
+  "points": 4,
+  "mode": "call",
+  "tags": ["자료형 변환", "자료형"],
+  "cases": [
+    {"call": "solution(\"2.5\", 4)", "expected": "10.0"},
+    {"call": "solution(\"0.5\", 3)", "expected": "1.5"},
+    {"call": "solution(\"3\", 3)", "expected": "9.0"},
+    {"call": "solution(\"12.25\", 2)", "expected": "24.5"},
+    {"call": "solution(\"1.5\", 0)", "expected": "0.0"}
+  ]
+}

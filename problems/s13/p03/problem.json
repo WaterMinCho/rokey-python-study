@@ -1,0 +1,16 @@
+{
+  "title": "안전한 나눗셈",
+  "type": "print",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["try-except 흐름", "출력 형식"],
+  "cases": [
+    {"stdin": "10\n4\n", "stdout": "10 / 4 = 2.5\n"},
+    {"stdin": "7\n0\n", "stdout": "0으로 나눌 수 없습니다\n"},
+    {"stdin": "9\n3\n", "stdout": "9 / 3 = 3.0\n"},
+    {"stdin": "-8\n2\n", "stdout": "-8 / 2 = -4.0\n"},
+    {"stdin": "0\n5\n", "stdout": "0 / 5 = 0.0\n"},
+    {"stdin": "0\n0\n", "stdout": "0으로 나눌 수 없습니다\n"}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "title": "긴 단어 길이 사전",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["딕셔너리 컴프리헨션"],
+  "cases": [
+    {"call": "solution([\"ai\", \"robot\", \"dog\", \"go\"])", "expected": "{'robot': 5, 'dog': 3}"},
+    {"call": "solution([])", "expected": "{}"},
+    {"call": "solution([\"aaa\", \"bb\"])", "expected": "{'aaa': 3}"},
+    {"call": "solution([\"a\", \"b\"])", "expected": "{}"},
+    {"call": "solution([\"python\", \"is\", \"fun\"])", "expected": "{'python': 6, 'fun': 3}"}
+  ]
+}

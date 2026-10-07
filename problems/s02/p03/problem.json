@@ -1,0 +1,15 @@
+{
+  "title": "문자열로 적힌 두 수의 합",
+  "type": "return",
+  "level": 1,
+  "points": 4,
+  "mode": "call",
+  "tags": ["자료형 변환", "문자열 이어 붙이기"],
+  "cases": [
+    {"call": "solution(\"12\", \"30\")", "expected": "42"},
+    {"call": "solution(\"7\", \"8\")", "expected": "15"},
+    {"call": "solution(\"-5\", \"5\")", "expected": "0"},
+    {"call": "solution(\"1000\", \"1000\")", "expected": "2000"},
+    {"call": "solution(\"0\", \"-9\")", "expected": "-9"}
+  ]
+}

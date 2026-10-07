@@ -1,0 +1,14 @@
+{
+  "title": "별 상자 출력",
+  "type": "print",
+  "level": 2,
+  "points": 6,
+  "mode": "exec",
+  "tags": ["디폴트 매개변수", "print 출력 형식"],
+  "cases": [
+    {"code": "print_box()", "stdout": "***\n***\n"},
+    {"code": "print_box(5)", "stdout": "*****\n*****\n"},
+    {"code": "print_box(2, 4)", "stdout": "**\n**\n**\n**\n"},
+    {"code": "print_box(1, 1)\nprint_box(4, 3)", "stdout": "*\n****\n****\n****\n"}
+  ]
+}

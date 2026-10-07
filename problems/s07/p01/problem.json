@@ -1,0 +1,14 @@
+{
+  "title": "임시 변수로 맞바꾸기",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["SWAP"],
+  "cases": [
+    {"stdin": "3\n8\n", "stdout": "a 값은 8 b 값은 3\n"},
+    {"stdin": "10\n11\n", "stdout": "a 값은 11 b 값은 10\n"},
+    {"stdin": "7\n0\n", "stdout": "a 값은 0 b 값은 7\n"},
+    {"stdin": "-5\n20\n", "stdout": "a 값은 20 b 값은 -5\n"}
+  ]
+}

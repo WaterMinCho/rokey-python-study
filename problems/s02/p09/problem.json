@@ -1,0 +1,16 @@
+{
+  "title": "두 자리 수 뒤집기",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["몫과 나머지", "산술 연산자"],
+  "cases": [
+    {"call": "solution(47)", "expected": "74"},
+    {"call": "solution(30)", "expected": "3"},
+    {"call": "solution(55)", "expected": "55"},
+    {"call": "solution(19)", "expected": "91"},
+    {"call": "solution(10)", "expected": "1"},
+    {"call": "solution(98)", "expected": "89"}
+  ]
+}

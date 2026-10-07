@@ -1,0 +1,20 @@
+{
+  "title": "배달 로봇",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["시뮬레이션", "경계 검사", "문자열 순회"],
+  "cases": [
+    {"call": "solution(3, 4, 10, \"RRDDL\")", "expected": "[2, 1]"},
+    {"call": "solution(3, 4, 2, \"UUR\")", "expected": "[0, 1]"},
+    {"call": "solution(5, 5, 3, \"DRDRDR\")", "expected": "[2, 1]"},
+    {"call": "solution(2, 2, 100, \"DDDRRR\")", "expected": "[1, 1]"},
+    {"call": "solution(1, 1, 5, \"UDLR\")", "expected": "[0, 0]"},
+    {"call": "solution(4, 4, 0, \"DDRR\")", "expected": "[0, 0]"},
+    {"call": "solution(3, 3, 10, \"\")", "expected": "[0, 0]"},
+    {"call": "solution(2, 3, 4, \"RRRRRDLLLLLU\")", "expected": "[1, 1]"},
+    {"call": "solution(5, 5, 100000, \"RDLU\" * 25000)", "expected": "[0, 0]"},
+    {"call": "solution(1000, 1000, 1500, \"D\" * 1200 + \"R\" * 1200)", "expected": "[999, 501]"}
+  ]
+}

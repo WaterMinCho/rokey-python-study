@@ -1,0 +1,20 @@
+{
+  "title": "볼륨 조절",
+  "type": "print",
+  "level": 2,
+  "points": 6,
+  "mode": "io",
+  "tags": ["elif 사슬", "input 형변환"],
+  "cases": [
+    {"stdin": "50\n20\n", "stdout": "볼륨: 70\n"},
+    {"stdin": "90\n20\n", "stdout": "볼륨: 100\n"},
+    {"stdin": "10\n-30\n", "stdout": "볼륨: 0\n"},
+    {"stdin": "80\n20\n", "stdout": "볼륨: 100\n"},
+    {"stdin": "20\n-20\n", "stdout": "볼륨: 0\n"},
+    {"stdin": "0\n-100\n", "stdout": "볼륨: 0\n"},
+    {"stdin": "100\n100\n", "stdout": "볼륨: 100\n"},
+    {"stdin": "55\n-5\n", "stdout": "볼륨: 50\n"},
+    {"stdin": "99\n0\n", "stdout": "볼륨: 99\n"},
+    {"stdin": "1\n-1\n", "stdout": "볼륨: 0\n"}
+  ]
+}

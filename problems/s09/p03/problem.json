@@ -1,0 +1,13 @@
+{
+  "title": "커피 클래스 만들기",
+  "type": "print",
+  "level": 1,
+  "points": 4,
+  "mode": "exec",
+  "tags": ["클래스 정의 문법", "클래스 변수와 인스턴스 변수"],
+  "cases": [
+    {"code": "latte = Coffee()\nprint(latte.name)\nprint(latte.size)\nlatte.taste()", "stdout": "라떼\n톨\n고소하다\n"},
+    {"code": "print(Coffee.name, Coffee.size)", "stdout": "라떼 톨\n"},
+    {"code": "a = Coffee()\nb = Coffee()\na.taste()\nb.taste()\nprint(a.name == b.name)", "stdout": "고소하다\n고소하다\nTrue\n"}
+  ]
+}

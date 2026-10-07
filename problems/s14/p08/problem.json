@@ -1,0 +1,16 @@
+{
+  "title": "대소문자 무시 세기",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["컴파일 옵션", "findall과 finditer"],
+  "cases": [
+    {"call": "solution(\"Python python PYTHON\", \"python\")", "expected": "3"},
+    {"call": "solution(\"ok OK Okay\", \"ok\")", "expected": "3"},
+    {"call": "solution(\"banana\", \"NA\")", "expected": "2"},
+    {"call": "solution(\"hello\", \"x\")", "expected": "0"},
+    {"call": "solution(\"Rokey rokey ROKEY rOkEy\", \"rokey\")", "expected": "4"},
+    {"call": "solution(\"Dog dog doG\", \"DOG\")", "expected": "3"}
+  ]
+}

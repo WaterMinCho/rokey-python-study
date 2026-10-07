@@ -1,0 +1,13 @@
+{
+  "title": "값을 돌려주는 SWAP 함수",
+  "type": "fill",
+  "level": 2,
+  "points": 6,
+  "mode": "io",
+  "tags": ["SWAP", "반환값", "지역 변수"],
+  "cases": [
+    {"stdin": "3\n8\n", "stdout": "교환 전: 3 8\n교환 후: 8 3\n"},
+    {"stdin": "10\n11\n", "stdout": "교환 전: 10 11\n교환 후: 11 10\n"},
+    {"stdin": "-1\n100\n", "stdout": "교환 전: -1 100\n교환 후: 100 -1\n"}
+  ]
+}

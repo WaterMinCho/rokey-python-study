@@ -1,0 +1,16 @@
+{
+  "title": "단어 수 세기",
+  "type": "return",
+  "level": 1,
+  "points": 4,
+  "mode": "call",
+  "tags": ["split·strip·join"],
+  "cases": [
+    {"call": "solution(\"python is fun\")", "expected": "3"},
+    {"call": "solution(\"  hello   world  \")", "expected": "2"},
+    {"call": "solution(\"rokey\")", "expected": "1"},
+    {"call": "solution(\"\")", "expected": "0"},
+    {"call": "solution(\"a b c d e\")", "expected": "5"},
+    {"call": "solution(\"   \")", "expected": "0"}
+  ]
+}

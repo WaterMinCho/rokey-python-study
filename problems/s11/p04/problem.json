@@ -1,0 +1,17 @@
+{
+  "title": "체크된 메뉴 주문 요약",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["라디오 버튼과 체크박스", "문자열 조합"],
+  "cases": [
+    {"call": "solution([\"치즈\", \"불고기\", \"페퍼로니\"], [3000, 3500, 4000], [True, False, True])", "expected": "'치즈, 페퍼로니 = 7000원'"},
+    {"call": "solution([\"치즈\", \"불고기\", \"페퍼로니\"], [3000, 3500, 4000], [False, True, False])", "expected": "'불고기 = 3500원'"},
+    {"call": "solution([\"치즈\", \"불고기\", \"페퍼로니\"], [3000, 3500, 4000], [False, False, False])", "expected": "'선택된 메뉴가 없습니다.'"},
+    {"call": "solution([\"치즈\", \"불고기\", \"페퍼로니\"], [3000, 3500, 4000], [True, True, True])", "expected": "'치즈, 불고기, 페퍼로니 = 10500원'"},
+    {"call": "solution([\"콜라\"], [1500], [False])", "expected": "'선택된 메뉴가 없습니다.'"},
+    {"call": "solution([\"콜라\"], [1500], [True])", "expected": "'콜라 = 1500원'"},
+    {"call": "solution([\"A\", \"B\", \"C\", \"D\"], [0, 100, 200, 300], [True, False, False, True])", "expected": "'A, D = 300원'"}
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "title": "첫 번째 숫자 찾기",
+  "type": "print",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["match와 search", "match 객체 메서드", "None 처리"],
+  "cases": [
+    {"stdin": "abc 123 def\n", "stdout": "found 123 4\n"},
+    {"stdin": "no number\n", "stdout": "none\n"},
+    {"stdin": "7 dwarfs\n", "stdout": "found 7 0\n"},
+    {"stdin": "x9y88\n", "stdout": "found 9 1\n"},
+    {"stdin": "price: 2500 won, tax 250\n", "stdout": "found 2500 7\n"}
+  ]
+}

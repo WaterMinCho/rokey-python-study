@@ -1,0 +1,19 @@
+{
+  "title": "최고 기록의 위치",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["최댓값 찾기", "인덱스 추적", "초깃값"],
+  "cases": [
+    {"call": "solution([4, 9, 2, 9])", "expected": "1"},
+    {"call": "solution([7])", "expected": "0"},
+    {"call": "solution([3, 3, 3])", "expected": "0"},
+    {"call": "solution([-5, -2, -9])", "expected": "1"},
+    {"call": "solution([1, 2, 3, 4, 5])", "expected": "4"},
+    {"call": "solution([5, 4, 3, 2, 1])", "expected": "0"},
+    {"call": "solution([0, -1, 0])", "expected": "0"},
+    {"call": "solution([-10, -10, -3, -3])", "expected": "2"},
+    {"call": "solution([2, 8, 8, 1, 8])", "expected": "1"}
+  ]
+}

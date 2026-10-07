@@ -11,6 +11,7 @@ import os
 import random
 import re
 import shutil
+import unicodedata
 
 import study
 
@@ -287,12 +288,14 @@ def grade_round(user, rnd, cat):
 def record(prof, rnd, items):
     """답한 문항만 시도로 기록한다(빈 문항은 나중에 답했을 때 첫 시도가 된다)."""
     stamp = now()
+    results = rnd.setdefault("results", {})  # 문항별 마지막 결과 — 같은 결과를 다시 채점해도 중복 기록하지 않는다
     for it in items:
-        if it["state"] == "blank":
+        if it["state"] == "blank" or results.get(it["key"]) == it["state"]:
             continue
         tries = sum(1 for a in prof["attempts"] if a["round"] == rnd["id"] and a["item"] == it["key"])
         prof["attempts"].append({"round": rnd["id"], "item": it["key"], "try": tries + 1,
                                  "ok": it["state"] == "ok", "at": stamp})
+        results[it["key"]] = it["state"]
     rnd["tries"] = rnd.get("tries", 0) + 1
     rnd["last_graded"] = stamp
     earned, total, _ = study.totals(items)
@@ -302,13 +305,19 @@ def record(prof, rnd, items):
 
 # ───────────────────────── 가이드 ─────────────────────────
 
+def pad(text, width):
+    """한글(전각)을 2칸으로 세어 폭을 맞춘다."""
+    w = sum(2 if unicodedata.east_asian_width(ch) in "WF" else 1 for ch in text)
+    return text + " " * max(0, width - w)
+
+
 def mastery_lines(states, cat):
     lines = []
     for st in states:
         acc = "-" if st["accuracy"] is None else "%d%%" % round(st["accuracy"] * 100)
         mark = "✅" if st["mastered"] else ("·" if not st["tested"] else " ")
-        lines.append("  %s %-4s %-22s %-12s 정답률 %s (%d문항)" % (
-            mark, st["unit"], cat_unit_title(cat, st["unit"])[:22], state_label(st), acc, st["attempted"]))
+        lines.append("  %s %s %s %s 정답률 %s (%d문항)" % (
+            mark, st["unit"], pad(cat_unit_title(cat, st["unit"])[:14], 28), pad(state_label(st), 14), acc, st["attempted"]))
     return lines
 
 
@@ -323,7 +332,7 @@ def weak_tags(prof, cat, limit=6):
     return [t for t, _ in sorted(count.items(), key=lambda x: -x[1])[:limit]]
 
 
-def guide_text(prof, cat, rnd=None):
+def guide_text(prof, cat, rnd=None, show_next=False):
     states = all_states(prof, cat)
     lines = ["", "단원별 숙달도 (✅ = 레벨%d 통과)" % MASTER_LEVEL] + mastery_lines(states, cat)
     tags = weak_tags(prof, cat)
@@ -343,19 +352,19 @@ def guide_text(prof, cat, rnd=None):
                 verdict = "정답률 낮음 → 같은 레벨을 다른 문항으로 재도전"
             else:
                 verdict = "레벨%d 유지 → 같은 레벨 문항을 조금 더" % f["level"]
-            lines.append("  %-4s %-22s %s" % (f["unit"], cat_unit_title(cat, f["unit"])[:22], verdict))
+            lines.append("  %s %s %s" % (f["unit"], pad(cat_unit_title(cat, f["unit"])[:14], 28), verdict))
     if rnd and rnd.get("unanswered"):
         lines.append("  아직 답하지 않은 문항 %d개 — 마저 풀고 다시 채점하면 기록됩니다." % rnd["unanswered"])
     lines.append("")
-    untested = [st for st in states if not st["tested"]]
-    if untested and not any(r["kind"] == "diag" for r in prof["rounds"]):
-        lines.append("다음: python study.py diagnose  (진단 테스트로 출발점 정하기)")
+    if not prof["rounds"]:
+        lines.append("아직 진단 전입니다. python study.py 를 실행하면 진단 테스트부터 시작합니다.")
     elif all(st["mastered"] for st in states):
-        lines.append("전 단원 숙달. 다음: python study.py start m1  (모의고사) — 심화 라운드를 원하면 python study.py next")
+        lines.append("전 단원을 숙달했습니다. 모의고사: python study.py start m1  (심화 라운드는 python study.py next)")
     else:
         ranked = [st for st in rank_units(states) if not st["mastered"]][:FOCUS_UNITS]
         lines.append("다음 라운드 집중 단원: " + ", ".join("%s(레벨%d)" % (st["unit"], st["level"]) for st in ranked))
-        lines.append("다음: python study.py next")
+        if show_next:
+            lines.append("이어서 하기: python study.py")
     shortages = (rnd or {}).get("shortages") or []
     if shortages:
         lines.append("부족한 문항: " + ", ".join("%s 레벨%d %d문항" % (x["unit"], x["level"], x["missing"]) for x in shortages)
@@ -420,11 +429,11 @@ def team_analysis_markdown(cat):
                 cells.append("·")
             else:
                 cells.append("L%d%s" % (st["level"], "!" if st["retry"] else ""))
-                weak_count[u] += 1
+                weak_count[u] += (4 - st["level"]) + (2 if st["retry"] else 0)  # 낮은 레벨·재도전일수록 약함
         lines.append("| %s | %d/%d | %s |" % (user, sum(1 for s in states.values() if s["mastered"]), len(unit_ids), " | ".join(cells)))
     weakest = sorted(weak_count.items(), key=lambda x: -x[1])[:5]
     lines += ["", "L1~L3 = 진행 중인 레벨, ! = 재도전, · = 미진단", "",
-              "팀 전체 약한 단원: " + ", ".join("%s(%d명)" % (u, n) for u, n in weakest if n)]
+              "팀 전체 약한 단원(약한 순): " + ", ".join(u for u, n in weakest if n)]
     shortages = collect_shortages(profiles)
     if shortages:
         lines += ["", "부족한 문항: " + ", ".join("%s 레벨%d %d문항" % (u, L, n) for (u, L), n in sorted(shortages.items()))]
