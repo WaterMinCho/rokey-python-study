@@ -40,13 +40,13 @@ def clear_cache():
 
 
 def units():
-    """적응형 학습의 단원 = 차시 세트(연습용 s00 제외)."""
+    """적응형 학습의 단원 = 차시 세트."""
     global _UNITS
     if _UNITS is None:
         out = []
         for sid in study.all_set_ids():
             s = study.load_set(sid)
-            if s["meta"].get("kind", "session") == "session" and sid != "s00":
+            if s["meta"].get("kind", "session") == "session":
                 out.append(s)
         _UNITS = out
     return _UNITS

@@ -600,7 +600,7 @@ def cmd_init(args):
     os.makedirs(os.path.join(SUBMISSIONS_DIR, args.id), exist_ok=True)
     write_text(USER_FILE, args.id + "\n")
     print("내 풀이 폴더: submissions/%s/" % args.id)
-    print("다음 단계: python study.py list  →  python study.py start 0")
+    print("다음 단계: python study.py (화면) 또는 python study.py go (터미널)")
 
 
 def cmd_list(args):
