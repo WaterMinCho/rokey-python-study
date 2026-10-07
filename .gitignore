@@ -6,6 +6,7 @@ shortage.md
 out/
 
 # 파이썬·OS
+.venv/
 __pycache__/
 *.pyc
 .DS_Store

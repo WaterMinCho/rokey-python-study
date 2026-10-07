@@ -51,11 +51,14 @@ def read_text(path):
 
 
 def write_text(path, text):
+    """임시 파일에 쓴 뒤 바꿔치기한다 — 저장 도중 강제 종료돼도 반쯤 쓰인 파일이 남지 않는다."""
     folder = os.path.dirname(path)
     if folder:
         os.makedirs(folder, exist_ok=True)
-    with open(path, "w", encoding="utf-8", newline="\n") as f:
+    tmp = "%s.tmp%d" % (path, os.getpid())
+    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
         f.write(text)
+    os.replace(tmp, path)
 
 
 def read_json(path):
@@ -244,15 +247,17 @@ def check_fill(template, source):
     return None
 
 
-def run_problem(spec, source_path):
-    """제출 파일을 별도 프로세스에서 실행해 모든 테스트를 돌린다. (통과 여부, 통과 수, 실패 설명) 반환."""
+def run_cases(spec, source_path, limit=None):
+    """제출 파일을 별도 프로세스에서 실행해 테스트별 결과를 돌려준다.
+    반환: {"fatal": 문법 오류 등 | None, "cases": [{ok, input, want, got, detail?}], "timed_out": bool, "total": 실행하려던 수, "stderr": str}
+    limit 를 주면 앞의 limit 개만 실행한다(화면의 '코드 실행' = 예시만)."""
     timeout = spec.get("timeout", DEFAULT_TIMEOUT)
-    total = len(spec["cases"])
+    cases = spec["cases"] if limit is None else spec["cases"][:limit]
     with tempfile.TemporaryDirectory(prefix="study_") as tmp:
         job = {
             "source": os.path.abspath(source_path),
             "mode": spec["mode"],
-            "cases": spec["cases"],
+            "cases": cases,
             "workdir": tmp,
             "result": os.path.join(tmp, "result.json"),
         }
@@ -270,22 +275,28 @@ def run_problem(spec, source_path):
         except subprocess.TimeoutExpired:
             timed_out = True
         result = read_json(job["result"]) if os.path.isfile(job["result"]) else {"fatal": None, "cases": []}
+    return {"fatal": result.get("fatal"), "cases": result["cases"], "timed_out": timed_out,
+            "total": len(cases), "stderr": stderr, "timeout": timeout}
 
-    if result.get("fatal"):
-        return False, 0, result["fatal"]
-    cases = result["cases"]
+
+def run_problem(spec, source_path):
+    """모든 테스트를 돌린다. (통과 여부, 통과 수, 실패 설명) 반환."""
+    run = run_cases(spec, source_path)
+    if run["fatal"]:
+        return False, 0, run["fatal"]
+    cases = run["cases"]
     passed = sum(1 for c in cases if c["ok"])
     first_fail = next((c for c in cases if not c["ok"]), None)
     if first_fail:
         return False, passed, first_fail["detail"]
-    if timed_out:
+    if run["timed_out"]:
         return False, passed, (
             "시간 초과 — %d번째 테스트가 %s초 안에 끝나지 않았습니다. 무한 루프가 없는지 확인하세요."
-            % (len(cases) + 1, timeout)
+            % (len(cases) + 1, run["timeout"])
         )
-    if len(cases) < total:
-        return False, passed, "채점기 내부 오류입니다. 스터디장에게 알려 주세요.\n" + clip(stderr.strip())
-    return True, total, ""
+    if len(cases) < run["total"]:
+        return False, passed, "채점기 내부 오류입니다. 스터디장에게 알려 주세요.\n" + clip(run["stderr"].strip())
+    return True, run["total"], ""
 
 
 def grade_problem(spec, path):
@@ -348,6 +359,12 @@ def _case_label(mode, case):
     return case["call"]
 
 
+def _case_want(mode, case):
+    if mode == "call":
+        return repr(ast.literal_eval(case["expected"]))
+    return clip(norm_out(case.get("stdout", ""))) or "(출력 없음)"
+
+
 def _run_case(code, name, mode, case):
     stdin = io.StringIO(case.get("stdin", ""))
 
@@ -375,33 +392,40 @@ def _run_case(code, name, mode, case):
     except SystemExit:
         pass
     except BaseException as error:  # 학생 코드의 어떤 오류든 '오답 + 설명'으로 돌려준다
-        return {"ok": False, "detail": _case_label(mode, case) + "\n실행 중 오류: " + _error_text(error, name)}
+        message = "실행 중 오류: " + _error_text(error, name)
+        return {"ok": False, "detail": _case_label(mode, case) + "\n" + message,
+                "input": _case_label(mode, case), "want": _case_want(mode, case), "got": message}
     finally:
         sys.stdin = real_stdin
 
+    shown = {"input": _case_label(mode, case), "want": _case_want(mode, case)}  # 화면 표시용(판정에는 쓰지 않는다)
     if mode == "call":
         expected = ast.literal_eval(case["expected"])
+        shown["got"] = clip(repr(value))
         if _strict_eq(value, expected):
-            return {"ok": True}
+            return dict(shown, ok=True)
         note = ""
         if type(value) is not type(expected):
             note = "\n  (자료형이 다릅니다: 기대 %s, 실제 %s)" % (type(expected).__name__, type(value).__name__)
-        return {"ok": False, "detail": "%s\n  기대한 반환값: %r\n  실제 반환값: %s%s"
-                % (case["call"], expected, clip(repr(value)), note)}
+        return dict(shown, ok=False, detail="%s\n  기대한 반환값: %r\n  실제 반환값: %s%s"
+                    % (case["call"], expected, clip(repr(value)), note))
 
     got, want = norm_out(out.getvalue()), norm_out(case.get("stdout", ""))
+    shown["got"] = clip(got) or "(출력 없음)"
     if got != want:
-        return {"ok": False, "detail": "%s\n기대한 출력:\n%s\n실제 출력:\n%s" % (
-            _case_label(mode, case), indent(clip(want) or "(출력 없음)"), indent(clip(got) or "(출력 없음)"))}
+        return dict(shown, ok=False, detail="%s\n기대한 출력:\n%s\n실제 출력:\n%s" % (
+            _case_label(mode, case), indent(clip(want) or "(출력 없음)"), indent(clip(got) or "(출력 없음)")))
     for fname, content in (case.get("expect_files") or {}).items():
         if not os.path.isfile(fname):
-            return {"ok": False, "detail": "%s\n파일 '%s' 이(가) 만들어지지 않았습니다." % (_case_label(mode, case), fname)}
+            return dict(shown, ok=False, got="파일 '%s' 없음" % fname,
+                        detail="%s\n파일 '%s' 이(가) 만들어지지 않았습니다." % (_case_label(mode, case), fname))
         actual = norm_out(read_text(fname))
         if actual != norm_out(content):
-            return {"ok": False, "detail": "%s\n파일 '%s' 의 내용이 다릅니다.\n기대한 내용:\n%s\n실제 내용:\n%s" % (
-                _case_label(mode, case), fname, indent(clip(norm_out(content)) or "(빈 파일)"),
-                indent(clip(actual) or "(빈 파일)"))}
-    return {"ok": True}
+            return dict(shown, ok=False, got="파일 '%s' 내용이 다름" % fname,
+                        detail="%s\n파일 '%s' 의 내용이 다릅니다.\n기대한 내용:\n%s\n실제 내용:\n%s" % (
+                            _case_label(mode, case), fname, indent(clip(norm_out(content)) or "(빈 파일)"),
+                            indent(clip(actual) or "(빈 파일)")))
+    return dict(shown, ok=True)
 
 
 def _child_main(job_path):
@@ -767,56 +791,50 @@ def announce_round(user, rnd, folder):
     print("  다 풀면 : python study.py")
 
 
-def grade_round_cmd(user, rid):
+def print_round_result(sess, result):
+    """채점 결과와 가이드를 출력한다(회차 채점 공통)."""
     import adaptive
-    cat = adaptive.catalog()
-    prof = adaptive.load_profile(user)
-    rnd = adaptive.find_round(prof, rid)
-    if not rnd:
-        die("라운드 %s 가 없습니다." % rid)
-    items = adaptive.grade_round(user, rnd, cat)
-    adaptive.record(prof, rnd, items)
-    adaptive.save_profile(prof)
-    print_report(round_as_set(rnd), items, os.path.join(SUBMISSIONS_DIR, user, rid))
-    print(adaptive.guide_text(prof, cat, rnd))
+    rnd = adaptive.find_round(sess.prof, result["round"]["id"])
+    print_report(round_as_set(rnd), result["items"], sess.folder(rnd["id"]))
+    if result["unanswered"]:
+        print("\n아직 답하지 않은 문항 %d개가 있습니다. 마저 풀고 다시 python study.py 를 실행하세요." % result["unanswered"])
+        return
+    print(adaptive.guide_text(sess.prof, sess.cat, rnd))
+    if result["next_round"]:
+        nxt = adaptive.find_round(sess.prof, result["next_round"])
+        print()
+        announce_round(sess.user, nxt, sess.folder(nxt["id"]))
+
+
+def grade_round_cmd(user, rid):
+    import session
+    sess = session.Session(user)
+    try:
+        result = sess.grade(rid)
+    except session.SessionError as error:
+        die(str(error))
+    print_round_result(sess, result)
 
 
 def cmd_go(args):
-    """명령 하나로 다음 할 일을 이어 간다: 진단 → 풀기 → 채점·판정 → 다음 라운드 → … → 모의고사."""
+    """명령 하나로 다음 할 일을 이어 간다: 진단 → 풀기 → 채점·판정 → 다음 회차 → … → 모의고사."""
     import adaptive
+    import session
     user = current_user(args)
-    cat = adaptive.catalog()
-    prof = adaptive.load_profile(user)
-    if not prof["rounds"]:
-        rnd = adaptive.build_diagnostic(prof, cat)
-        prof["rounds"].append(rnd)
-        adaptive.save_profile(prof)
-        announce_round(user, rnd, adaptive.write_round(user, rnd, cat))
+    sess = session.Session(user)
+    rnd, created = sess.ensure_round()
+    if rnd is None:
+        print("전 단원을 심화까지 마쳤습니다. 실전 모의고사: python study.py start m1")
         return
-    rnd = prof["rounds"][-1]
-    folder = os.path.join(SUBMISSIONS_DIR, user, rnd["id"])
-    items = adaptive.grade_round(user, rnd, cat)
-    if all(it["state"] == "blank" for it in items):
-        print("%s 를 아직 풀지 않았습니다." % round_as_set(rnd)["meta"]["title"])
-        announce_round(user, rnd, folder)
+    if created:
+        announce_round(user, rnd, sess.folder(rnd["id"]))
         return
-    adaptive.record(prof, rnd, items)
-    print_report(round_as_set(rnd), items, folder)
-    if rnd["unanswered"]:
-        adaptive.save_profile(prof)
-        print("\n아직 답하지 않은 문항 %d개가 있습니다. 마저 풀고 다시 python study.py 를 실행하세요." % rnd["unanswered"])
+    result = sess.grade(rnd["id"])
+    if result["untouched"]:
+        print("%s 를 아직 풀지 않았습니다." % adaptive.round_title(rnd))
+        announce_round(user, rnd, sess.folder(rnd["id"]))
         return
-    first_completion = not rnd.get("completed_at")
-    if first_completion:
-        rnd["completed_at"] = adaptive.now()
-    print(adaptive.guide_text(prof, cat, rnd))
-    if first_completion:
-        nxt = adaptive.build_round(prof, cat)
-        if nxt:
-            prof["rounds"].append(nxt)
-            print()
-            announce_round(user, nxt, adaptive.write_round(user, nxt, cat))
-    adaptive.save_profile(prof)
+    print_round_result(sess, result)
 
 
 def cmd_diagnose(args):

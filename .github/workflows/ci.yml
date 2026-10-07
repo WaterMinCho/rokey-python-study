@@ -26,6 +26,8 @@ jobs:
           python-version: "3.12"
       # 모든 모범 답안이 테스트를 통과하는지, 정답표가 실제 실행 결과와 맞는지 확인
       - run: python tools/verify_bank.py
+      # 세션 서비스(답 저장·채점·기록) 테스트
+      - run: python -m unittest discover -s tests
 
   grade:
     name: 채점
