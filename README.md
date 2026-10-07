@@ -176,3 +176,8 @@ tools/                   출제자·CI 용 도구
 - main 은 보호되어 있어 PR 로만 바뀝니다(관리자는 직접 push 가능). 문항 부족·규칙 위반은 CI 가 알려 줍니다.
 - 문항이 모자라면 Actions 가 **"출제 요청" 이슈**를 자동으로 만들거나 갱신합니다. 그 표대로 문제를 추가하면 다음 `git pull` 부터 회차에 포함됩니다.
 - 문제 추가·수정: [docs/AUTHORING.md](docs/AUTHORING.md). 커밋 전 `python tools/verify_bank.py`, `python tools/seal.py check`.
+
+## 라이선스
+
+- 프로그램 코드(`study.py`, `adaptive.py`, `session.py`, `gitflow.py`, `bootstrap.py`, `mdlite.py`, `gui/`, `tools/`, `tests/`)는 [GPL-3.0](LICENSE)입니다. 화면에 쓰는 PyQt6 가 GPL-3.0 이라 같은 조건을 따릅니다.
+- `problems/` 의 문제·해설·개념 정리는 이 스터디의 학습 자료이며 GPL 적용 대상이 아닙니다. 다른 곳에 옮겨 쓰려면 스터디장에게 문의해 주세요.
