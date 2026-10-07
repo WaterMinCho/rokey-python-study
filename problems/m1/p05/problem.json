@@ -1,0 +1,42 @@
+{
+  "title": "머리글자 모으기",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": [
+    "split()",
+    "문자열 인덱싱",
+    "문자열 누적"
+  ],
+  "cases": [
+    {
+      "call": "solution(\"read only memory\")",
+      "expected": "'rom'"
+    },
+    {
+      "call": "solution(\"  Python  is fun \")",
+      "expected": "'Pif'"
+    },
+    {
+      "call": "solution(\"rokey\")",
+      "expected": "'r'"
+    },
+    {
+      "call": "solution(\"\")",
+      "expected": "''"
+    },
+    {
+      "call": "solution(\"   \")",
+      "expected": "''"
+    },
+    {
+      "call": "solution(\"a b c d e\")",
+      "expected": "'abcde'"
+    },
+    {
+      "call": "solution(\"as soon as possible\")",
+      "expected": "'asap'"
+    }
+  ]
+}

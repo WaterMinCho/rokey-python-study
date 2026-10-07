@@ -1,0 +1,15 @@
+{
+  "title": "여행 일정",
+  "type": "print",
+  "level": 2,
+  "points": 6,
+  "mode": "exec",
+  "tags": ["__init__", "메서드 반환값", "self"],
+  "cases": [
+    {"code": "t = Trip(\"부산\", 3)\nprint(t.label())\nprint(t.nights)", "stdout": "부산 2박 3일\n2\n"},
+    {"code": "t = Trip(\"부산\", 3)\nt.extend(2)\nprint(t.label())\nprint(t.days, t.nights)", "stdout": "부산 4박 5일\n5 4\n"},
+    {"code": "t = Trip(\"서울\", 1)\nprint(t.label())", "stdout": "서울 0박 1일\n"},
+    {"code": "t = Trip(\"제주\", 2)\nt.label()\nt.extend(1)", "stdout": ""},
+    {"code": "a = Trip(\"대구\", 2)\nb = Trip(\"광주\", 4)\na.extend(3)\nprint(a.label())\nprint(b.label())\nprint(a.nights + b.nights)", "stdout": "대구 4박 5일\n광주 3박 4일\n7\n"}
+  ]
+}

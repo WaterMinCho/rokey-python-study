@@ -1,0 +1,63 @@
+{
+  "title": "가계부 파일 집계",
+  "type": "return",
+  "level": 3,
+  "points": 8,
+  "mode": "call",
+  "tags": [
+    "파일 읽기",
+    "예외 처리",
+    "딕셔너리 누적"
+  ],
+  "cases": [
+    {
+      "files": {
+        "ledger.txt": "식비,8000\n교통,1500\n식비,12000\n"
+      },
+      "call": "solution(\"ledger.txt\")",
+      "expected": "{'식비': 20000, '교통': 1500}"
+    },
+    {
+      "files": {
+        "ledger.txt": "식비,8000\n문화,만원\n문화,15000"
+      },
+      "call": "solution(\"ledger.txt\")",
+      "expected": "{'식비': 8000, '문화': 15000}"
+    },
+    {
+      "files": {
+        "ledger.txt": ""
+      },
+      "call": "solution(\"ledger.txt\")",
+      "expected": "{}"
+    },
+    {
+      "files": {
+        "ledger.txt": "a,오류\nb,x\n"
+      },
+      "call": "solution(\"ledger.txt\")",
+      "expected": "{}"
+    },
+    {
+      "files": {
+        "ledger.txt": "간식,1200\n간식,-200\n간식,3.5\n간식,800\n"
+      },
+      "call": "solution(\"ledger.txt\")",
+      "expected": "{'간식': 1800}"
+    },
+    {
+      "files": {
+        "may.txt": "교통,1250\n식비,7000\n교통,1250\n커피,4500\n식비,3000\n"
+      },
+      "call": "solution(\"may.txt\")",
+      "expected": "{'교통': 2500, '식비': 10000, '커피': 4500}"
+    },
+    {
+      "files": {
+        "ledger.txt": "통신,x\n통신,30000\n"
+      },
+      "call": "solution(\"ledger.txt\")",
+      "expected": "{'통신': 30000}"
+    }
+  ]
+}

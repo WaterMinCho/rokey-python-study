@@ -1,0 +1,38 @@
+{
+  "title": "득표 수 세기",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": [
+    "딕셔너리 누적",
+    "get()",
+    "순서 유지"
+  ],
+  "cases": [
+    {
+      "call": "solution([\"A\", \"B\", \"A\", \"C\", \"A\"])",
+      "expected": "{'A': 3, 'B': 1, 'C': 1}"
+    },
+    {
+      "call": "solution([])",
+      "expected": "{}"
+    },
+    {
+      "call": "solution([\"x\"])",
+      "expected": "{'x': 1}"
+    },
+    {
+      "call": "solution([\"b\", \"a\", \"b\", \"a\"])",
+      "expected": "{'b': 2, 'a': 2}"
+    },
+    {
+      "call": "solution([\"김\", \"이\", \"이\", \"박\", \"박\", \"박\"])",
+      "expected": "{'김': 1, '이': 2, '박': 3}"
+    },
+    {
+      "call": "solution([\"z\", \"z\", \"z\"])",
+      "expected": "{'z': 3}"
+    }
+  ]
+}

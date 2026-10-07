@@ -1,0 +1,21 @@
+{
+  "title": "수량 버튼 클릭 흉내",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["초깃값", "경계값", "누적 패턴"],
+  "cases": [
+    {"call": "solution([\"+\", \"+\", \"-\"])", "expected": "2"},
+    {"call": "solution([])", "expected": "1"},
+    {"call": "solution([\"-\", \"-\", \"+\"])", "expected": "2"},
+    {"call": "solution([\"+\", \"+\", \"+\", \"초기화\", \"+\"])", "expected": "2"},
+    {"call": "solution([\"+\"] * 12)", "expected": "10"},
+    {"call": "solution([\"+\"] * 10 + [\"-\"])", "expected": "9"},
+    {"call": "solution([\"초기화\"])", "expected": "1"},
+    {"call": "solution([\"+\", \"초기화\", \"-\", \"-\"])", "expected": "1"},
+    {"call": "solution([\"-\"])", "expected": "1"},
+    {"call": "solution([\"+\"] * 9)", "expected": "10"},
+    {"call": "solution([\"+\", \"-\", \"+\", \"-\", \"+\"])", "expected": "2"}
+  ]
+}

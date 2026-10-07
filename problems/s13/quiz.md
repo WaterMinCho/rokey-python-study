@@ -177,3 +177,129 @@ print(f"{nums[1]} + {nums[2]} = {add(nums[1], nums[2])}")
 ```python
 chr(ord("A") + 2)
 ```
+
+## Q16 (객관식 · 2점)
+
+다음 함수에 대한 설명으로 옳지 **않은** 것은?
+
+```python
+def read_score(text):
+    try:
+        score = int(text)
+        print("점수:", score)
+    except ValueError:
+        print("잘못된 점수")
+        score = 0
+    print("처리 끝")
+    return score
+```
+
+1. `read_score("90")` 은 `점수: 90`, `처리 끝` 을 차례로 출력하고 `90` 을 반환한다.
+2. `read_score("A")` 는 `잘못된 점수`, `처리 끝` 을 차례로 출력하고 `0` 을 반환한다.
+3. `read_score("A")` 에서 `print("점수:", score)` 는 실행되지 않는다.
+4. `read_score("3.5")` 는 `점수: 3`, `처리 끝` 을 차례로 출력하고 `3` 을 반환한다.
+
+## Q17 (객관식 · 2점)
+
+다음 코드를 실행했을 때 일어나는 일로 옳은 것은?
+
+```python
+def check(n):
+    if n % 2 == 1:
+        raise TypeError("홀수")
+    return n // 2
+
+try:
+    print(check(8))
+    print(check(5))
+    print(check(4))
+except ValueError as e:
+    print("오류:", e)
+finally:
+    print("검사 끝")
+```
+
+1. `4`, `오류: 홀수`, `검사 끝` 이 차례로 출력되고 프로그램이 정상 종료된다.
+2. `4`, `검사 끝` 이 차례로 출력된 뒤 `TypeError` 로 프로그램이 중단된다.
+3. `4`, `2` 가 출력되고 `검사 끝` 은 출력되지 않는다.
+4. `4`, `검사 끝`, `2` 가 차례로 출력된다.
+
+## Q18 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+def withdraw(balance, amount):
+    if amount > balance:
+        raise ValueError("잔액 부족")
+    print("출금 완료")
+    return balance - amount
+
+try:
+    left = withdraw(5000, 3000)
+    print("남은 돈:", left)
+    left = withdraw(left, 4000)
+    print("남은 돈:", left)
+except ValueError as e:
+    print("실패:", e)
+print("끝")
+```
+
+## Q19 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+codes = ["12", "ab", "0", "7"]
+ok = 0
+for c in codes:
+    try:
+        n = 100 // int(c)
+    except (ValueError, ZeroDivisionError):
+        print("건너뜀:", c)
+        continue
+    ok = ok + 1
+    print(n)
+print("성공", ok, "건")
+```
+
+## Q20 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+items = ["7", "seven", "70"]
+
+def pick(i):
+    try:
+        return int(items[i]) // 2
+    except IndexError:
+        return "범위 밖"
+    except ValueError:
+        return "정수 아님"
+
+print(pick(0))
+print(pick(1))
+print(pick(3))
+print(pick(-1))
+```
+
+## Q21 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+def parse(text):
+    try:
+        n = int(text)
+        print("변환:", n)
+        return n
+    finally:
+        print("parse 종료")
+
+try:
+    total = parse("8") + parse("x")
+    print("합계:", total)
+except ValueError:
+    print("정수가 아닙니다")
+```

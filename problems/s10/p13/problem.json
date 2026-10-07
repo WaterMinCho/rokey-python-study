@@ -1,0 +1,42 @@
+{
+  "title": "주차 요금 정산",
+  "type": "print",
+  "level": 3,
+  "points": 8,
+  "mode": "exec",
+  "tags": [
+    "오버라이딩",
+    "super()",
+    "자식 __init__"
+  ],
+  "cases": [
+    {
+      "code": "settle([Car(\"12가3456\", 2)])",
+      "stdout": "12가3456 2000\n합계 2000\n"
+    },
+    {
+      "code": "settle([Car(\"11가1111\", 3), Motorcycle(\"22나2222\", 3), Truck(\"33다3333\", 3, 2)])",
+      "stdout": "11가1111 3000\n22나2222 1500\n33다3333 7000\n합계 11500\n"
+    },
+    {
+      "code": "settle([])",
+      "stdout": "합계 0\n"
+    },
+    {
+      "code": "t = Truck(\"44라4444\", 0, 5)\nprint(t.plate, t.hours, t.tons)\nprint(t.fee())",
+      "stdout": "44라4444 0 5\n10000\n"
+    },
+    {
+      "code": "m = Motorcycle(\"55마5555\", 1)\nprint(m.fee())\nprint(Car(\"55마5555\", 1).fee())\nprint(m.plate, m.hours)",
+      "stdout": "500\n1000\n55마5555 1\n"
+    },
+    {
+      "code": "cars = [Motorcycle(\"A\", 2), Motorcycle(\"B\", 4)]\nsettle(cars)\nsettle(cars)",
+      "stdout": "A 1000\nB 2000\n합계 3000\nA 1000\nB 2000\n합계 3000\n"
+    },
+    {
+      "code": "settle([Truck(\"T1\", 1, 1), Car(\"C1\", 0), Motorcycle(\"M1\", 0)])",
+      "stdout": "T1 3000\nC1 0\nM1 0\n합계 3000\n"
+    }
+  ]
+}

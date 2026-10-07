@@ -1,0 +1,42 @@
+{
+  "title": "합격 판정",
+  "type": "return",
+  "level": 1,
+  "points": 4,
+  "mode": "call",
+  "tags": [
+    "sum 과 len",
+    "경계값",
+    "return 문자열"
+  ],
+  "cases": [
+    {
+      "call": "solution([70, 50, 60])",
+      "expected": "'합격'"
+    },
+    {
+      "call": "solution([59, 60])",
+      "expected": "'불합격'"
+    },
+    {
+      "call": "solution([100])",
+      "expected": "'합격'"
+    },
+    {
+      "call": "solution([0, 0, 0])",
+      "expected": "'불합격'"
+    },
+    {
+      "call": "solution([59, 61])",
+      "expected": "'합격'"
+    },
+    {
+      "call": "solution([30, 40, 50, 60])",
+      "expected": "'불합격'"
+    },
+    {
+      "call": "solution([60])",
+      "expected": "'합격'"
+    }
+  ]
+}

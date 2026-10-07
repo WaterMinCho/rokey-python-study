@@ -1,0 +1,33 @@
+{
+  "title": "재고 있는 상품 고르기",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "call",
+  "tags": [
+    "딕셔너리 keys()",
+    "조건과 누적"
+  ],
+  "cases": [
+    {
+      "call": "in_stock({\"사과\": 3, \"배\": 0, \"감\": 5})",
+      "expected": "['사과', '감']"
+    },
+    {
+      "call": "in_stock({})",
+      "expected": "[]"
+    },
+    {
+      "call": "in_stock({\"a\": 0, \"b\": 0})",
+      "expected": "[]"
+    },
+    {
+      "call": "in_stock({\"x\": 1})",
+      "expected": "['x']"
+    },
+    {
+      "call": "in_stock({\"펜\": 10, \"지우개\": 0, \"자\": 2, \"풀\": 7})",
+      "expected": "['펜', '자', '풀']"
+    }
+  ]
+}

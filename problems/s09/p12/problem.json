@@ -1,0 +1,16 @@
+{
+  "title": "점수판 관리 함수",
+  "type": "print",
+  "level": 3,
+  "points": 8,
+  "mode": "exec",
+  "tags": ["객체별 상태", "메서드 반환값", "경계값"],
+  "cases": [
+    {"code": "a = Player(\"A\")\nb = Player(\"B\")\nprint(a.score, b.score)\na.add(3)\nb.add(5)\nprint(top([a, b]).name)", "stdout": "0 0\nB\n"},
+    {"code": "a = Player(\"A\")\nb = Player(\"B\")\nc = Player(\"C\")\na.add(5)\nb.add(5)\nc.add(2)\nprint(top([a, b, c]).name)\nprint(top([c, b, a]).name)", "stdout": "A\nB\n"},
+    {"code": "a = Player(\"A\")\nb = Player(\"B\")\na.add(-2)\nb.add(-5)\nwinner = top([a, b])\nprint(winner.name, winner.score)", "stdout": "A -2\n"},
+    {"code": "a = Player(\"A\")\na.add(7)\nprint(top([a]).name, top([a]).score)", "stdout": "A 7\n"},
+    {"code": "a = Player(\"A\")\nb = Player(\"B\")\na.add(4)\nb.add(9)\nreset([a, b])\nprint(a.score, b.score)\na.add(2)\nprint(a.score, b.score)\nprint(top([a, b]).name)", "stdout": "0 0\n2 0\nA\n"},
+    {"code": "a = Player(\"A\")\nb = Player(\"B\")\nc = Player(\"C\")\na.add(1)\nb.add(2)\nc.add(3)\nreset([b])\nprint(a.score, b.score, c.score)\nprint(top([a, b, c]).name)", "stdout": "1 0 3\nC\n"}
+  ]
+}

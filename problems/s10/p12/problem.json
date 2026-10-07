@@ -1,0 +1,34 @@
+{
+  "title": "카운터 변형",
+  "type": "print",
+  "level": 2,
+  "points": 6,
+  "mode": "exec",
+  "tags": [
+    "오버라이딩",
+    "super()",
+    "자식 __init__"
+  ],
+  "cases": [
+    {
+      "code": "d = DoubleCounter()\nd.up()\nd.up()\nd.show()",
+      "stdout": "현재 값: 4\n"
+    },
+    {
+      "code": "s = StepCounter(5)\ns.up()\ns.up()\ns.up()\ns.show()",
+      "stdout": "현재 값: 15\n"
+    },
+    {
+      "code": "c = Counter()\nd = DoubleCounter()\ns = StepCounter(10)\nc.up()\nd.up()\ns.up()\nprint(c.value, d.value, s.value)",
+      "stdout": "1 2 10\n"
+    },
+    {
+      "code": "s = StepCounter(3)\ns.show()\nprint(s.step)",
+      "stdout": "현재 값: 0\n3\n"
+    },
+    {
+      "code": "d = DoubleCounter()\nd.show()\nd.up()\nd.show()",
+      "stdout": "현재 값: 0\n현재 값: 2\n"
+    }
+  ]
+}

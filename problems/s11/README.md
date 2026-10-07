@@ -68,6 +68,7 @@ sys.exit(app.exec())              # 이벤트 루프 시작
 
 - 레이아웃 안에 다른 레이아웃을 넣을 때는 `layout.addLayout(서브_레이아웃)` 을 씁니다.
 - 격자 좌표는 `(행, 열)` 순서이고 픽셀이 아닙니다. `move(x, y)` 가 픽셀입니다.
+- 격자에서 `addWidget` 으로 채우지 않은 칸은 비어 있습니다. 같은 열 번호에 행 번호가 1 큰 위젯이 "바로 아래" 위젯입니다.
 
 ## 6. 시그널과 슬롯 — 이벤트 연결
 
@@ -85,6 +86,7 @@ btn.clicked.connect(order)      # 클릭할 때마다 order 실행
 ```
 
 - 함수에 인수를 넘기고 싶으면 익명 함수로 감쌉니다: `btn.clicked.connect(lambda: greet("Python"))`. 강의 자료는 인수를 받지 않는 `lambda:` 형태로 쓰라고 안내합니다.
+- `lambda:` 안쪽은 연결할 때가 아니라 클릭할 때 실행됩니다. `lambda: show(size, count)` 처럼 변수를 쓰면 클릭 시점의 값을 읽으므로, 연결 뒤에 변수가 바뀌면 바뀐 값이 쓰입니다. `lambda: label.setText(entry.text())` 가 클릭 순간의 입력창 글자를 읽는 것과 같은 원리입니다.
 - 메서드도 그대로 연결할 수 있습니다. `entry.textChanged.connect(label.setText)` 로 연결하면 입력창 글자가 바뀔 때마다 바뀐 글자가 `label.setText(글자)` 로 전달되어 라벨이 즉시 갱신됩니다.
 - `connect` 는 연결만 합니다. 실행은 이벤트가 생길 때마다 한 번씩이고, 프로그램 시작 시 바로 실행되지는 않습니다.
 
@@ -107,6 +109,7 @@ btn.clicked.connect(order)      # 클릭할 때마다 order 실행
 | `QCheckBox` 체크박스 | `QCheckBox("텍스트")` | `setChecked(True/False)`, `isChecked()` |
 | `QComboBox` 드롭다운 | `QComboBox()` | `addItems(리스트)`, `addItem("하나")`, `currentText()`, `currentIndex()` |
 
+- `setText(문자열)` 은 바꾸는 메서드, `text()` 는 현재 글자를 문자열로 돌려주는 메서드입니다. 버튼을 눌렀을 때 입력창 글자를 라벨에 옮기려면 `label.setText(entry.text())` 입니다. `entry.text` 처럼 괄호를 빼면 글자가 아니라 메서드 자체가 넘어가 오류가 납니다. `text()` 는 숫자처럼 보여도 항상 문자열이라 계산하려면 `int()` 가 필요합니다.
 - 스타일은 CSS 처럼 문자열로 지정합니다: `label.setStyleSheet("background-color: red; color: white;")`
 - 이미지 전용 위젯은 없습니다. `QPixmap("img.png")` 을 만들어 `QLabel` 에 `setPixmap()` 으로 올립니다. `QPixmap` 은 `PyQt6.QtGui` 에서 가져옵니다.
 
@@ -183,5 +186,7 @@ root.mainloop()
 - 이미지는 `QLabel` + `setPixmap(QPixmap("파일"))` 입니다. `setText` 에 이미지를 넣거나 이미지 전용 위젯을 찾지 마세요.
 - PyQt6 는 설치가 필요하고 tkinter 는 표준 라이브러리입니다. "둘 다 pip 로 설치해야 한다" 는 틀린 설명입니다.
 - `QApplication(sys.argv)` 가 먼저, 그다음 `QWidget()` 입니다. `import sys` 를 빼면 `sys.argv` 에서 NameError 가 납니다.
+- 문장 순서: `QApplication` → `QWidget` → (크기·레이아웃 설정) → `show()` → `app.exec()`. `exec()` 는 이벤트 루프를 돌리느라 그 뒤의 문장으로 넘어가지 않으므로 `show()` 가 `exec()` 뒤에 있으면 창이 나타나지 않습니다.
+- `currentTextChanged`(콤보박스)·`textChanged`(입력창)는 바뀐 문자열을 슬롯에 넘겨주므로 `connect(label.setText)` 처럼 문자열을 받는 메서드와 바로 연결할 수 있습니다. tkinter 는 시그널 대신 `command=함수명` 옵션입니다.
 - 라디오 버튼은 같은 창에 두면 자동으로 묶이므로 별도 그룹 코드가 필요 없습니다. 체크박스는 같은 창에 두어도 서로 영향이 없습니다.
 - 라디오·체크박스 모두 `setChecked(True)` 로 코드에서 선택 상태를 바꿀 수 있습니다. 한쪽에만 있는 메서드가 아닙니다.

@@ -1,0 +1,14 @@
+{
+  "title": "게임 캐릭터 체력",
+  "type": "fill",
+  "level": 2,
+  "points": 6,
+  "mode": "exec",
+  "tags": ["self", "메서드 반환값", "경계값"],
+  "cases": [
+    {"code": "h = Hero(\"기사\", 10)\nh.hit(4)\nprint(h.hp)\nh.heal(3)\nprint(h.hp)\nh.hit(20)\nprint(h.hp, h.alive())\nh.heal(5)\nprint(h.hp)", "stdout": "6\n9\n0 False\n0\n"},
+    {"code": "h = Hero(\"궁수\", 5)\nprint(h.alive())\nh.hit(5)\nprint(h.hp, h.alive())", "stdout": "True\n0 False\n"},
+    {"code": "h = Hero(\"마법사\", 3)\nh.hit(2)\nh.heal(10)\nprint(h.hp, h.alive())", "stdout": "11 True\n"},
+    {"code": "a = Hero(\"A\", 8)\nb = Hero(\"B\", 8)\na.hit(9)\nb.hit(1)\na.heal(4)\nb.heal(4)\nprint(a.hp, b.hp)\nprint(a.name, a.alive(), b.name, b.alive())", "stdout": "0 11\nA False B True\n"}
+  ]
+}

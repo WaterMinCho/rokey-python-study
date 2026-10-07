@@ -1,0 +1,30 @@
+{
+  "title": "계좌 클래스와 잔액 부족",
+  "type": "print",
+  "level": 2,
+  "points": 6,
+  "mode": "exec",
+  "tags": [
+    "raise",
+    "클래스 메서드",
+    "출력 형식"
+  ],
+  "cases": [
+    {
+      "code": "a = Account(\"민수\", 1000)\na.deposit(500)\na.withdraw(300)",
+      "stdout": "입금 500, 잔액 1500\n출금 300, 잔액 1200\n"
+    },
+    {
+      "code": "a = Account(\"민수\", 1000)\ntry:\n    a.withdraw(2000)\nexcept ValueError as e:\n    print(\"오류:\", e)\nprint(a.balance)",
+      "stdout": "오류: 잔액 부족\n1000\n"
+    },
+    {
+      "code": "a = Account(\"지영\")\nprint(a.owner, a.balance)\na.deposit(100)\na.withdraw(100)\ntry:\n    a.withdraw(1)\nexcept ValueError as e:\n    print(e)",
+      "stdout": "지영 0\n입금 100, 잔액 100\n출금 100, 잔액 0\n잔액 부족\n"
+    },
+    {
+      "code": "a = Account(\"A\", 50)\nb = Account(\"B\", 70)\na.withdraw(50)\nb.withdraw(20)\nprint(a.balance + b.balance)",
+      "stdout": "출금 50, 잔액 0\n출금 20, 잔액 50\n50\n"
+    }
+  ]
+}

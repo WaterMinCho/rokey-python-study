@@ -136,3 +136,73 @@ print(p3.findall(data))
 ## Q13 (단답 · 3점)
 
 `\D` 와 같은 뜻을 대괄호 `[ ]` 문자 클래스로 적으세요. (숫자 범위는 `0-9` 로 표현)
+
+## Q14 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+import re
+text = "color colour colr"
+print(re.findall(r"colou?r", text))
+print(re.findall(r"colo*r", text))
+print(re.findall(r"colo+r", text))
+```
+
+## Q15 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요. (`be` 와 `or` 사이의 공백은 2개입니다)
+
+```python
+import re
+text = "to be  or"
+print(len(re.findall(r"\s", text)))
+p = re.compile(r"\S+")
+for m in p.finditer(text):
+    print(m.start(), m.end(), m.group())
+```
+
+## Q16 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+import re
+p = re.compile(r"\d{2}")
+print(p.match("2024").group())
+print(p.findall("2024"))
+print(p.findall("12345"))
+print(p.match("7"))
+print(p.search("a1b22").span())
+```
+
+## Q17 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+import re
+text = "a1\nb2"
+print(re.findall(".", text))
+print(len(re.findall(".", text, re.S)))
+print(re.match("a1.b2", text))
+print(re.match("a1.b2", text, re.S).group())
+```
+
+## Q18 (객관식 · 2점)
+
+`text = "A-1 b_2 C3"` 일 때, 실행 결과가 `['b_2', 'C3']` 인 것은?
+
+1. `re.findall(r"\w+", text)`
+2. `re.findall(r"\w{2,}", text)`
+3. `re.findall(r"[a-z]\w+", text)`
+4. `re.findall(r"\w\d", text)`
+
+## Q19 (객관식 · 2점)
+
+정규식 `[^a-z]+$` 를 `re.match` 로 조사했을 때 매치되는 문자열을 **모두 고르세요**.
+
+1. `ABC`
+2. `A1b`
+3. `12 3`
+4. `x9`

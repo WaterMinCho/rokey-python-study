@@ -1,0 +1,59 @@
+{
+  "title": "점수 파일 정리",
+  "type": "print",
+  "level": 2,
+  "points": 6,
+  "mode": "io",
+  "tags": [
+    "readlines",
+    "split 과 strip",
+    "파일 쓰기"
+  ],
+  "cases": [
+    {
+      "files": {
+        "scores.txt": "민수,90\n지영,85\n"
+      },
+      "stdout": "민수: 90\n지영: 85\n합계: 175\n",
+      "expect_files": {
+        "report.txt": "합계: 175\n"
+      }
+    },
+    {
+      "files": {
+        "scores.txt": "현우,100"
+      },
+      "stdout": "현우: 100\n합계: 100\n",
+      "expect_files": {
+        "report.txt": "합계: 100\n"
+      }
+    },
+    {
+      "files": {
+        "scores.txt": ""
+      },
+      "stdout": "합계: 0\n",
+      "expect_files": {
+        "report.txt": "합계: 0\n"
+      }
+    },
+    {
+      "files": {
+        "scores.txt": "a,1\nb,2\nc,3\nd,4\n"
+      },
+      "stdout": "a: 1\nb: 2\nc: 3\nd: 4\n합계: 10\n",
+      "expect_files": {
+        "report.txt": "합계: 10\n"
+      }
+    },
+    {
+      "files": {
+        "scores.txt": "kim,0\nlee,55\n"
+      },
+      "stdout": "kim: 0\nlee: 55\n합계: 55\n",
+      "expect_files": {
+        "report.txt": "합계: 55\n"
+      }
+    }
+  ]
+}

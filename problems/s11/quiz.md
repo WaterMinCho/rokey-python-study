@@ -307,3 +307,147 @@ print(label.text())
 ## Q21 (단답 · 3점)
 
 `QApplication` 객체에서 이벤트 루프를 시작하는 메서드의 이름을 적으세요. (`sys.exit(app.____())` 의 빈칸, 괄호는 빼도 됩니다)
+
+## Q22 (객관식 · 2점)
+
+다음 코드로 만든 격자에서 `entry` 바로 아래 칸(같은 열의 다음 행)에 놓이는 위젯은?
+
+```python
+label = QLabel("수량")
+entry = QLineEdit()
+btn_ok = QPushButton("확인")
+btn_cancel = QPushButton("취소")
+
+layout = QGridLayout()
+layout.addWidget(label, 0, 0)
+layout.addWidget(entry, 0, 1)
+layout.addWidget(btn_ok, 1, 1)
+layout.addWidget(btn_cancel, 1, 2)
+window.setLayout(layout)
+```
+
+1. `label`
+2. `btn_ok`
+3. `btn_cancel`
+4. 아무것도 없다(그 칸은 비어 있다)
+
+## Q23 (객관식 · 2점)
+
+버튼 `btn` 을 클릭할 때마다 아래 `greet` 함수가 `"Python"` 을 인수로 받아 실행되도록 연결한 문장은?
+
+```python
+def greet(name):
+    print("안녕하세요, " + name)
+```
+
+1. `btn.clicked.connect(greet("Python"))`
+2. `btn.clicked.connect(greet, "Python")`
+3. `btn.clicked.connect(lambda: greet("Python"))`
+4. `btn.clicked.connect(lambda greet: "Python")`
+
+## Q24 (객관식 · 2점)
+
+`확인` 버튼을 누르면 입력창 `entry` 에 적혀 있는 글자가 라벨 `label` 에 표시되게 하려 합니다. 빈칸에 들어갈 것은?
+
+```python
+def show():
+    label.setText(____)
+
+entry = QLineEdit()
+label = QLabel()
+btn = QPushButton("확인")
+btn.clicked.connect(show)
+```
+
+1. `entry.text`
+2. `entry.text()`
+3. `entry.textChanged`
+4. `entry.setText()`
+
+## Q25 (객관식 · 2점)
+
+다음 프로그램을 실행한 뒤 사용자가 `불고기` 와 `페퍼로니` 를 체크하고 `주문` 버튼을 한 번 클릭했습니다. 콘솔에 출력되는 것은?
+
+```python
+def order():
+    if chk_cheese.isChecked():
+        print("치즈")
+    elif chk_bulgogi.isChecked():
+        print("불고기")
+    elif chk_pepperoni.isChecked():
+        print("페퍼로니")
+
+app = QApplication(sys.argv)
+window = QWidget()
+
+chk_cheese = QCheckBox("치즈")
+chk_bulgogi = QCheckBox("불고기")
+chk_pepperoni = QCheckBox("페퍼로니")
+btn = QPushButton("주문")
+btn.clicked.connect(order)
+
+layout = QVBoxLayout()
+layout.addWidget(chk_cheese)
+layout.addWidget(chk_bulgogi)
+layout.addWidget(chk_pepperoni)
+layout.addWidget(btn)
+window.setLayout(layout)
+window.show()
+sys.exit(app.exec())
+```
+
+1. `불고기` 한 줄만 출력된다
+2. `불고기` → `페퍼로니` 두 줄이 출력된다
+3. `페퍼로니` 한 줄만 출력된다
+4. `치즈` → `불고기` → `페퍼로니` 세 줄이 출력된다
+
+## Q26 (객관식 · 2점)
+
+다음 다섯 문장으로 창을 띄우려 합니다. 창이 정상적으로 나타나고, 사용자가 닫을 때까지 유지되는 순서는?
+
+```
+(ㄱ) window.show()
+(ㄴ) app = QApplication(sys.argv)
+(ㄷ) window = QWidget()
+(ㄹ) sys.exit(app.exec())
+(ㅁ) window.resize(300, 200)
+```
+
+1. ㄴ → ㄷ → ㅁ → ㄱ → ㄹ
+2. ㄷ → ㄴ → ㅁ → ㄱ → ㄹ
+3. ㄴ → ㄷ → ㅁ → ㄹ → ㄱ
+4. ㄷ → ㅁ → ㄱ → ㄴ → ㄹ
+
+## Q27 (출력 예측 · 3점)
+
+`btn.clicked.connect(lambda: show(size, count))` 처럼 `lambda` 로 감싼 슬롯이 어느 시점의 값을 읽는지 흉내 낸 코드입니다. 출력 결과를 그대로 적으세요. (여러 줄이면 `"""` 로 감싸서 줄을 나눠 적습니다)
+
+```python
+class Button:
+    def connect(self, func):
+        self.slot = func
+
+    def click(self):
+        self.slot()
+
+def show(size, count):
+    print(size + " " + str(count) + "개")
+
+size = "S"
+count = 1
+btn = Button()
+btn.connect(lambda: show(size, count))
+print("연결 완료")
+btn.click()
+size = "L"
+count = count + 2
+btn.click()
+```
+
+## Q28 (단답 · 3점)
+
+`QComboBox` 의 선택 항목이 바뀔 때마다 바뀐 항목의 문자열이 라벨에 표시되게 하려 합니다. `combo.____.connect(label.setText)` 의 빈칸에 들어갈 시그널의 이름을 적으세요.
+
+## Q29 (단답 · 3점)
+
+tkinter 로 버튼을 만들 때, 클릭하면 실행할 함수를 지정하는 옵션(키워드 인수)의 이름을 적으세요. (`tk.Button(root, text="주문", ____=order)` 의 빈칸)

@@ -296,3 +296,190 @@ print(__name__)
 import random
 dice = random.____(1, 6)
 ```
+
+## Q17 (객관식 · 2점)
+
+다음 코드가 있습니다. (`pass` 는 아무 일도 하지 않는 자리 채움 문장입니다)
+
+```python
+class Pet:
+    def __init__(self, name):
+        self.name = name
+
+
+class Cat(Pet):
+    def __init__(self, name, color):
+        super().__init__(name)
+        self.color = color
+
+
+class Dog(Pet):
+    pass
+```
+
+아래 중 **오류가 발생하는** 것은?
+
+1. `print(Pet("나비").name)`
+2. `print(Cat("나비", "흰색").color)`
+3. `print(Dog("초코").name)`
+4. `print(Dog("초코", "갈색").name)`
+
+## Q18 (객관식 · 2점)
+
+다음 코드에 대한 설명으로 옳은 것은?
+
+```python
+class Vehicle:
+    wheels = 4
+
+    def move(self):
+        print("이동")
+
+
+class Bike(Vehicle):
+    wheels = 2
+
+
+class Truck(Vehicle):
+    def load(self):
+        print("적재")
+```
+
+1. `Bike` 와 `Truck` 은 같은 부모를 두었으므로 `Bike()` 객체도 `load()` 를 호출할 수 있다.
+2. `Truck().wheels` 의 값은 `4` 이다.
+3. `Bike` 가 `wheels` 를 `2` 로 다시 선언했으므로 `Vehicle.wheels` 도 `2` 가 된다.
+4. `Bike` 에는 `move` 가 정의되어 있지 않으므로 `Bike().move()` 는 오류가 난다.
+
+## Q19 (객관식 · 2점)
+
+다음 코드를 실행했을 때의 결과로 옳은 것은?
+
+```python
+class A:
+    def f(self):
+        return "A.f"
+
+    def g(self):
+        return "A.g"
+
+
+class B(A):
+    def f(self):
+        return "B.f"
+
+
+class C(B):
+    def g(self):
+        return "C.g+" + super().g()
+
+
+c = C()
+print(c.f(), c.g())
+```
+
+1. `B.f C.g+A.g`
+2. `A.f C.g+A.g`
+3. `B.f C.g+B.g`
+4. `B` 클래스에 `g` 가 없으므로 `super().g()` 에서 오류가 발생한다
+
+## Q20 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+class Battery:
+    def __init__(self, name, level):
+        self.name = name
+        self.level = level
+
+    def info(self):
+        print(self.name, self.level)
+
+
+class SolarBattery(Battery):
+    def charge(self):
+        self.level = self.level + self.level // 4
+        print("충전 완료")
+
+
+s = SolarBattery("태양광", 40)
+s.charge()
+s.info()
+b = Battery("일반", 40)
+b.info()
+```
+
+## Q21 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+class Staff:
+    def __init__(self, name):
+        self.name = name
+
+    def pay(self):
+        return 100
+
+
+class Driver(Staff):
+    def pay(self):
+        return 150
+
+
+class Intern(Staff):
+    pass
+
+
+team = [Driver("Kim"), Intern("Lee"), Staff("Park")]
+total = 0
+for member in team:
+    print(member.name, member.pay())
+    total = total + member.pay()
+print(total)
+```
+
+## Q22 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+class Lamp:
+    def __init__(self, color):
+        self.color = color
+        self.power = 10
+
+
+class DeskLamp(Lamp):
+    def __init__(self, color):
+        self.power = 5
+        super().__init__(color)
+        self.angle = 45
+
+
+d = DeskLamp("흰색")
+print(d.color, d.power, d.angle)
+```
+
+## Q23 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+class Report:
+    def title(self):
+        return "보고서"
+
+    def show(self):
+        print("[" + self.title() + "]")
+        print("끝")
+
+
+class SalesReport(Report):
+    def title(self):
+        return "매출 " + super().title()
+
+
+Report().show()
+SalesReport().show()
+```

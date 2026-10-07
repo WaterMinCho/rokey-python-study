@@ -1,0 +1,30 @@
+{
+  "title": "카운터 클래스",
+  "type": "fill",
+  "level": 2,
+  "points": 6,
+  "mode": "exec",
+  "tags": [
+    "__init__ 과 self",
+    "디폴트 매개변수",
+    "메서드의 반환값"
+  ],
+  "cases": [
+    {
+      "code": "c = Counter(10)\nc.up()\nc.up(5)\nprint(c.value)",
+      "stdout": "16\n"
+    },
+    {
+      "code": "c = Counter(0)\nprint(c.up(3))\nprint(c.up())",
+      "stdout": "3\n4\n"
+    },
+    {
+      "code": "a = Counter(1)\nb = Counter(100)\na.up(2)\nb.up()\nprint(a.value, b.value)",
+      "stdout": "3 101\n"
+    },
+    {
+      "code": "c = Counter(-5)\nprint(c.up(5))\nprint(c.value)",
+      "stdout": "0\n0\n"
+    }
+  ]
+}

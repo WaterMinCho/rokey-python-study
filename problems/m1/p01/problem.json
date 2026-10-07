@@ -1,0 +1,37 @@
+{
+  "title": "짝수 합계",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": [
+    "range 끝 값",
+    "복합 대입 연산자"
+  ],
+  "cases": [
+    {
+      "stdin": "10\n",
+      "stdout": "짝수 합: 30\n"
+    },
+    {
+      "stdin": "2\n",
+      "stdout": "짝수 합: 2\n"
+    },
+    {
+      "stdin": "1\n",
+      "stdout": "짝수 합: 0\n"
+    },
+    {
+      "stdin": "7\n",
+      "stdout": "짝수 합: 12\n"
+    },
+    {
+      "stdin": "0\n",
+      "stdout": "짝수 합: 0\n"
+    },
+    {
+      "stdin": "100\n",
+      "stdout": "짝수 합: 2550\n"
+    }
+  ]
+}

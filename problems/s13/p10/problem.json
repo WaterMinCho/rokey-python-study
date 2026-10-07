@@ -1,0 +1,16 @@
+{
+  "title": "변환 실패는 기본값으로",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["try-except 흐름"],
+  "cases": [
+    {"call": "solution([\"3\", \"x\", \"10\"])", "expected": "[3, 0, 10]"},
+    {"call": "solution([\"3\", \"x\", \"10\"], -1)", "expected": "[3, -1, 10]"},
+    {"call": "solution([\"1\", \"a\"], \"?\")", "expected": "[1, '?']"},
+    {"call": "solution([\"7\", \"3.5\", \"\", \"-2\"], 0)", "expected": "[7, 0, 0, -2]"},
+    {"call": "solution([])", "expected": "[]"},
+    {"call": "solution([\"05\", \"five\"], 100)", "expected": "[5, 100]"}
+  ]
+}

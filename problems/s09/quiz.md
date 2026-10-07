@@ -254,3 +254,99 @@ first = dots[0]
 last = Dot()
 first.x = 5
 ```
+
+## Q16 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+class Ticket:
+    def __init__(self, seat, price):
+        self.seat = seat
+        self.price = price * 2
+
+    def discount(self, price):
+        self.price = self.price - price
+        print(self.seat, self.price, price)
+
+t = Ticket("A3", 500)
+t.discount(100)
+t.discount(50)
+```
+
+## Q17 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+class Score:
+    def __init__(self, base):
+        self.total = base
+
+    def add(self, n):
+        self.total = self.total + n
+        return self.total
+
+    def add_bonus(self, n):
+        first = self.add(n)
+        second = self.add(n * 2)
+        print(first, second)
+
+s = Score(10)
+s.add_bonus(5)
+print(s.total)
+s.add_bonus(1)
+```
+
+## Q18 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+class Bot:
+    def __init__(self, name):
+        self.name = name
+        self.steps = 0
+
+    def walk(self):
+        self.steps = self.steps + 1
+
+a = Bot("A")
+b = Bot("B")
+c = a
+a.walk()
+c.walk()
+b.walk()
+print(a.steps, b.steps, c.steps)
+c.name = "C"
+print(a.name, b.name)
+```
+
+## Q19 (객관식 · 2점)
+
+다음 코드를 실행한 뒤의 상태에 대한 설명으로 옳은 것은?
+
+```python
+class Timer:
+    def __init__(self):
+        self.sec = 0
+
+    def tick(self):
+        sec = self.sec + 1
+
+    def tock(self):
+        self.sec = self.sec + 1
+
+    def show(self):
+        print(sec)
+
+t = Timer()
+t.tick()
+t.tock()
+t.tick()
+```
+
+1. 이어서 `print(t.sec)` 을 실행하면 `3` 이 출력된다.
+2. 이어서 `print(t.sec)` 을 실행하면 `1` 이 출력된다.
+3. `tick()` 을 호출할 때마다 `t.sec` 이 1 씩 늘어난다.
+4. 이어서 `t.show()` 를 실행하면 `1` 이 출력된다.

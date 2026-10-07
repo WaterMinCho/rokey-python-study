@@ -1,0 +1,29 @@
+{
+  "title": "긴급 안내 방송",
+  "type": "print",
+  "level": 2,
+  "points": 6,
+  "mode": "exec",
+  "tags": [
+    "오버라이딩",
+    "상속 멤버 접근"
+  ],
+  "cases": [
+    {
+      "code": "e = EmergencyAnnouncer(\"3층\")\ne.say(\"대피하세요\")",
+      "stdout": "[긴급] 3층: 대피하세요\n"
+    },
+    {
+      "code": "a = Announcer(\"로비\")\na.say(\"환영합니다\")\ne = EmergencyAnnouncer(\"로비\")\ne.say(\"환영합니다\")",
+      "stdout": "[안내] 로비: 환영합니다\n[긴급] 로비: 환영합니다\n"
+    },
+    {
+      "code": "e = EmergencyAnnouncer(\"1층\")\nprint(e.prefix())\nprint(e.place)\nprint(Announcer(\"1층\").prefix())",
+      "stdout": "[긴급]\n1층\n[안내]\n"
+    },
+    {
+      "code": "e = EmergencyAnnouncer(\"주차장\")\ne.say(\"차량을 이동해 주세요\")\ne.say(\"감사합니다\")",
+      "stdout": "[긴급] 주차장: 차량을 이동해 주세요\n[긴급] 주차장: 감사합니다\n"
+    }
+  ]
+}
