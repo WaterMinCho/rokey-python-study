@@ -898,10 +898,12 @@ def cmd_analyze(args):
 
 
 def build_parser():
-    parser = argparse.ArgumentParser(description="ROKEY 파이썬 스터디 — 그냥 `python study.py` 만 치면 다음 할 일을 이어 갑니다")
+    parser = argparse.ArgumentParser(description="ROKEY 파이썬 스터디 — `python study.py` 만 치면 화면(창)이 열립니다. 터미널 모드는 뒤에 go 를 붙입니다")
     sub = parser.add_subparsers(dest="command")
 
-    p = sub.add_parser("go", help="(기본) 다음 할 일 이어 가기: 진단 → 풀기 → 채점 → 다음 라운드")
+    sub.add_parser("gui", help="(기본) 화면(창)으로 열기: 문제 받기 · 풀기 · 실행 · 채점 · 해설 · 제출")
+
+    p = sub.add_parser("go", help="터미널 모드 — 다음 할 일 이어 가기: 진단 → 풀기 → 채점 → 다음 라운드")
     p.add_argument("--user")
     p.set_defaults(func=cmd_go)
 
@@ -972,9 +974,9 @@ def main(argv=None):
             pass
     parser = build_parser()
     args = parser.parse_args(argv)
-    if not getattr(args, "func", None):
-        cmd_go(args)
-        return
+    if args.command in (None, "gui"):  # 화면으로 연다. 못 열어도 터미널 모드(cmd_go)로 넘어가 채점하지 않는다
+        import bootstrap
+        sys.exit(bootstrap.launch(argv))
     args.func(args)
 
 
