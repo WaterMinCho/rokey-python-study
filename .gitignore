@@ -2,6 +2,8 @@
 .study_user
 .started
 report.md
+shortage.md
+out/
 
 # 파이썬·OS
 __pycache__/

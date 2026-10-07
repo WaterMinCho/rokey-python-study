@@ -749,8 +749,8 @@ def cmd_reset(args):
 
 def round_as_set(rnd):
     """라운드를 print_report 가 받는 세트 모양으로 감싼다."""
-    title = {"diag": "진단 테스트", "deep": "심화 라운드 %s" % rnd["id"]}.get(rnd["kind"], "라운드 %s" % rnd["id"])
-    return {"id": rnd["id"], "meta": {"title": title}}
+    import adaptive
+    return {"id": rnd["id"], "meta": {"title": adaptive.round_title(rnd)}}
 
 
 def announce_round(user, rnd, folder):
@@ -761,6 +761,9 @@ def announce_round(user, rnd, folder):
     print("  답안   : 같은 폴더의 quiz.py 와 .py 파일")
     if rnd["kind"] == "diag":
         print("  약 30분. 코드는 실행하지 말고 눈으로 풀어 주세요. 출발점을 정하는 용도라 점수는 중요하지 않습니다.")
+    else:
+        print("  전 단원이 섞여 있고 약한 단원이 더 많이 나옵니다. 평균 레벨 %.1f." % rnd.get("avg_level", 0))
+        print("  문항 수 기준: %s" % rnd.get("size_reason", "필요에 따라"))
     print("  다 풀면 : python study.py")
 
 
@@ -834,7 +837,7 @@ def cmd_next(args):
     prof = adaptive.load_profile(user)
     rnd = adaptive.build_round(prof, cat)
     if not rnd:
-        print("전 단원을 마쳤습니다. 모의고사: python study.py start m1")
+        print("전 단원을 심화까지 마쳤습니다. 실전 모의고사: python study.py start m1")
         return
     prof["rounds"].append(rnd)
     adaptive.save_profile(prof)

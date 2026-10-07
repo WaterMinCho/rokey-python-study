@@ -15,8 +15,9 @@ import unicodedata
 
 import study
 
-ROUND_SIZE = 9  # 한 라운드 문항 수
-FOCUS_UNITS = 3  # 한 라운드에서 집중하는 단원 수
+ROUND_MIN, ROUND_MAX = 8, 18  # 회차 문항 수 범위 — 실제 수는 그 사람의 필요(보강할 단원 수·직전 성적)로 정한다
+CODE_RATIO = 0.4  # 회차 안의 코드 문제 비율(나머지는 퀴즈) — 실제 평가 비율에 맞춤
+FOCUS_UNITS = 3  # 가이드에서 보여 주는 집중 단원 수
 DIAG_PER_UNIT = 2  # 진단에서 단원당 문항 수
 WINDOW = 4  # 레벨 통과 판정에 보는 최근 시도 수
 MASTER_LEVEL = 2  # 이 레벨까지 통과하면 단원 숙달
@@ -142,24 +143,104 @@ def state_label(st):
 
 # ───────────────────────── 라운드 만들기 ─────────────────────────
 
-def pick_items(prof, cat, unit_id, level, n, rng):
-    """단원·레벨에서 안 풀어 본 문항 우선(코드 문제 1개 이상 포함), 모자라면 틀렸던 문항 재도전, 그래도 모자라면 부족 기록."""
+def completed_rounds(prof):
+    return [r for r in prof["rounds"] if r["kind"] != "diag" and r.get("completed_at")]
+
+
+def last_ratio(prof):
+    """직전에 끝낸 회차의 득점률(없으면 None)."""
+    done = completed_rounds(prof)
+    if not done or not done[-1].get("score"):
+        return None
+    earned, total = done[-1]["score"].split("/")
+    return int(earned) / int(total) if int(total) else None
+
+
+def round_size(prof, states):
+    """필요에 따라 정하는 문항 수.
+    보강할 단원이 많을수록 길게(단원당 1.5~2.5문항), 숙달 단원은 복습 0.25~0.5문항.
+    직전 회차 득점률이 50% 미만이면 짧게 끊어 자주 피드백하고, 90% 이상이면 조금 더 밀어붙인다."""
+    need = 0.0
+    weak = 0
+    for st in states:
+        if st["done"]:
+            need += 0.25
+        elif st["mastered"]:
+            need += 0.5
+        else:
+            weak += 1
+            if st["retry"]:
+                need += 2.5
+            elif not st["tested"] or st["level"] == 1:
+                need += 2.0
+            else:
+                need += 1.5
+    ratio = last_ratio(prof)
+    cap = ROUND_MAX
+    reason = "보강할 단원 %d개" % weak
+    if ratio is not None and ratio < 0.5:  # 힘들어하면 짧게 끊어 자주 피드백
+        need *= 0.75
+        cap = 12
+        reason += " · 직전 득점률이 낮아 짧게"
+    elif ratio is not None and ratio >= 0.9:
+        need += 2
+        reason += " · 직전 득점률이 높아 조금 더"
+    size = int(min(cap, max(ROUND_MIN, round(need))))
+    return size, reason
+
+
+def deep_review(states):
+    """숙달 단원이 절반을 넘으면 숙달 단원 복습을 심화(레벨3)로 올린다."""
+    return sum(1 for st in states if st["mastered"]) * 2 >= len(states)
+
+
+def unit_weight(st):
+    """약한 단원일수록 자주 뽑힌다. 숙달 단원도 복습으로 가끔 나온다."""
+    if not st["tested"]:
+        return 3.0
+    if st["done"]:
+        return 0.3
+    if st["mastered"]:
+        return 0.6
+    w = (4 - st["level"]) + (2 if st["retry"] else 0)
+    if st["accuracy"] is not None:
+        w += 1 - st["accuracy"]
+    return w
+
+
+def target_level(st, deep):
+    if st["done"]:
+        return 3
+    if st["mastered"]:
+        return 3 if deep else MASTER_LEVEL  # 숙달 단원이 늘면 복습도 심화 문항으로
+    return st["level"]
+
+
+def pick_one(prof, cat, unit_id, level, exclude, rng, prefer):
+    """단원·레벨에서 안 풀어 본 문항 하나(가능하면 prefer 유형). 없으면 틀렸던 문항, 그래도 없으면 None."""
     attempted = {a["item"] for a in prof["attempts"]}
     wrong = {a["item"] for a in first_attempts(prof) if not a["ok"]}
-    pool = [k for k, it in cat.items() if it["unit"] == unit_id and it["level"] == level]
+    pool = [k for k, it in cat.items() if it["unit"] == unit_id and it["level"] == level and k not in exclude]
     fresh = [k for k in pool if k not in attempted]
-    rng.shuffle(fresh)
-    code = [k for k in fresh if cat[k]["kind"] == "code"]
-    quiz = [k for k in fresh if cat[k]["kind"] == "quiz"]
-    chosen = code[:1]
-    rest = quiz + code[1:]
-    rng.shuffle(rest)
-    chosen += rest[: max(0, n - len(chosen))]
-    if len(chosen) < n:
-        retry = [k for k in pool if k in wrong and k not in chosen]
-        rng.shuffle(retry)
-        chosen += retry[: n - len(chosen)]
-    return chosen, n - len(chosen)
+    for group in (fresh, [k for k in pool if k in wrong]):
+        preferred = [k for k in group if cat[k]["kind"] == prefer]
+        others = [k for k in group if cat[k]["kind"] != prefer]
+        for cands in (preferred, others):
+            if cands:
+                return rng.choice(cands)
+    return None
+
+
+def weighted_choice(rng, weights):
+    total = sum(weights.values())
+    if total <= 0:
+        return None
+    r = rng.random() * total
+    for key, w in weights.items():
+        r -= w
+        if r <= 0:
+            return key
+    return key
 
 
 def build_diagnostic(prof, cat):
@@ -173,36 +254,60 @@ def build_diagnostic(prof, cat):
         rng.shuffle(pool)
         items += pool[:DIAG_PER_UNIT]
     rid = "d%d" % (1 + sum(1 for r in prof["rounds"] if r["id"].startswith("d")))
-    return {"id": rid, "kind": "diag", "focus": [], "items": items, "shortages": [], "created": now(), "tries": 0}
+    return {"id": rid, "kind": "diag", "focus": [], "items": items, "shortages": [], "created": now(), "tries": 0,
+            "avg_level": round(sum(cat[k]["level"] for k in items) / len(items), 2) if items else 0}
 
 
 def build_round(prof, cat):
-    """약한 단원 FOCUS_UNITS 개에 집중하는 라운드. 전 단원 숙달이면 심화(레벨3), 그것도 끝이면 None."""
-    ranked = rank_units(all_states(prof, cat))
-    focus = [st for st in ranked if not st["mastered"]][:FOCUS_UNITS]
-    kind = "round"
-    if not focus:
-        focus = [st for st in ranked if not st["done"]][:FOCUS_UNITS]
-        kind = "deep"
-    if not focus:
+    """전 단원을 섞은 미니 모의고사. 약한 단원이 더 많이 나오고, 단원별 레벨이 오르며 회차가 갈수록 길고 어려워진다.
+    전 단원이 심화까지 끝나면 None."""
+    states = all_states(prof, cat)
+    if all(st["done"] for st in states):
         return None
+    by_unit = {st["unit"]: st for st in states}
+    deep = deep_review(states)
+    size, reason = round_size(prof, states)
     rng = random.Random(prof["seed"] * 1000 + len(prof["rounds"]))
-    per = ROUND_SIZE // len(focus)
-    items, shortages = [], []
-    for st in focus:
-        chosen, missing = pick_items(prof, cat, st["unit"], st["level"], per, rng)
-        items += chosen
-        if missing:
-            shortages.append({"unit": st["unit"], "level": st["level"], "missing": missing})
-    # 남는 자리는 숙달한 단원 복습 1문항으로
-    mastered = [st for st in ranked if st["mastered"] and st["unit"] not in [f["unit"] for f in focus]]
-    if mastered and len(items) < ROUND_SIZE:
-        st = rng.choice(mastered)
-        extra, _ = pick_items(prof, cat, st["unit"], MASTER_LEVEL, 1, rng)
-        items += extra
+    cap = max(2, size // 4)  # 한 단원이 회차를 독차지하지 않게
+    weights = {st["unit"]: unit_weight(st) for st in states}
+    counts = {u: 0 for u in weights}
+    items, shortages = [], {}
+    code_target = round(size * CODE_RATIO)
+    code_n = 0
+    for _ in range(size * 8):
+        if len(items) >= size:
+            break
+        avail = {u: w for u, w in weights.items() if w > 0 and counts[u] < cap}
+        unit_id = weighted_choice(rng, avail)
+        if unit_id is None:
+            break
+        level = target_level(by_unit[unit_id], deep)
+        prefer = "code" if code_n < code_target else "quiz"
+        key = pick_one(prof, cat, unit_id, level, set(items), rng, prefer)
+        if key is None:  # 이 단원·레벨엔 더 낼 문항이 없다
+            shortages[(unit_id, level)] = shortages.get((unit_id, level), 0) + 1
+            weights[unit_id] = 0
+            continue
+        items.append(key)
+        counts[unit_id] += 1
+        if cat[key]["kind"] == "code":
+            code_n += 1
+    if not items:
+        return None
+    items.sort(key=lambda k: (cat[k]["kind"] != "quiz", study.natural_key(k)))  # 퀴즈 먼저, 단원 순
+    focus = [{"unit": u, "level": target_level(by_unit[u], deep), "count": n} for u, n in counts.items() if n]
+    focus.sort(key=lambda f: -f["count"])
     rid = "r%02d" % (1 + sum(1 for r in prof["rounds"] if r["id"].startswith("r")))
-    return {"id": rid, "kind": kind, "focus": [{"unit": st["unit"], "level": st["level"]} for st in focus],
-            "items": items, "shortages": shortages, "created": now(), "tries": 0}
+    return {"id": rid, "kind": "round", "size_reason": reason, "focus": focus, "items": items,
+            "shortages": [{"unit": u, "level": L, "missing": n} for (u, L), n in sorted(shortages.items())],
+            "created": now(), "tries": 0,
+            "avg_level": round(sum(cat[k]["level"] for k in items) / len(items), 2)}
+
+
+def round_title(rnd):
+    if rnd["kind"] == "diag":
+        return "진단 테스트"
+    return "%d회차 미니 모의고사" % int(rnd["id"][1:])
 
 
 def fname_of(key):
@@ -225,13 +330,13 @@ def write_round(user, rnd, cat):
     """라운드 폴더에 문제지(README.md), 퀴즈 답안지(quiz.py), 코드 문제 시작 파일을 만든다."""
     folder = os.path.join(study.SUBMISSIONS_DIR, user, rnd["id"])
     os.makedirs(folder, exist_ok=True)
-    title = "진단 테스트" if rnd["kind"] == "diag" else ("심화 라운드 %s" if rnd["kind"] == "deep" else "라운드 %s") % rnd["id"]
+    title = round_title(rnd)
     readme = ["# %s" % title, "",
               "> 퀴즈는 코드를 실행하지 말고 눈으로 풀어 `quiz.py` 에 답을 적습니다. 코드 문제는 같은 폴더의 `.py` 파일을 고칩니다.",
               "> 채점: `python study.py grade %s`" % rnd["id"], ""]
     if rnd["focus"]:
-        readme.append("이번 라운드 집중 단원: " + ", ".join(
-            "%s(레벨%d)" % (cat_unit_title(cat, f["unit"]), f["level"]) for f in rnd["focus"]))
+        readme.append("문항 %d개(%s) · 평균 레벨 %.1f · 단원: %s" % (len(rnd["items"]), rnd.get("size_reason", ""), rnd.get("avg_level", 0), ", ".join(
+            "%s %d" % (f["unit"], f["count"]) for f in rnd["focus"])))
         readme.append("")
     quiz_lines = ["# %s — 퀴즈 답안지. 문제는 같은 폴더의 README.md" % title,
                   "# 객관식: 번호(복수 정답은 [1, 3]) / 출력 예측·단답: 문자열(여러 줄은 \"\"\" 사용) / 안 푼 문제는 None", ""]
@@ -340,9 +445,12 @@ def guide_text(prof, cat, rnd=None, show_next=False):
         lines.append("  약한 개념: " + ", ".join(tags))
     if rnd and rnd["focus"]:
         lines.append("")
-        lines.append("이번 라운드 판정")
+        prev = [r for r in prof["rounds"] if r["kind"] != "diag" and r["id"] < rnd["id"] and r.get("avg_level")]
+        trend = " (지난 회차 %.1f)" % prev[-1]["avg_level"] if prev else ""
+        lines.append("이번 회차 난이도: 평균 레벨 %.1f%s · 문항 %d개" % (rnd.get("avg_level", 0), trend, len(rnd["items"])))
+        lines.append("단원별 판정")
         by_unit = {st["unit"]: st for st in states}
-        for f in rnd["focus"]:
+        for f in sorted(rnd["focus"], key=lambda f: study.natural_key(f["unit"])):
             st = by_unit[f["unit"]]
             if st["passed"].get(f["level"]):
                 verdict = "레벨%d 통과 → 다음은 레벨%d" % (f["level"], f["level"] + 1) if f["level"] < 3 else "레벨3 통과 → 단원 완료"
@@ -359,15 +467,17 @@ def guide_text(prof, cat, rnd=None, show_next=False):
     if not prof["rounds"]:
         lines.append("아직 진단 전입니다. python study.py 를 실행하면 진단 테스트부터 시작합니다.")
     elif all(st["mastered"] for st in states):
-        lines.append("전 단원을 숙달했습니다. 모의고사: python study.py start m1  (심화 라운드는 python study.py next)")
+        lines.append("전 단원을 숙달했습니다. 실전 모의고사(120분): python study.py start m1  — 계속하면 심화(레벨3) 회차가 이어집니다.")
     else:
         ranked = [st for st in rank_units(states) if not st["mastered"]][:FOCUS_UNITS]
-        lines.append("다음 라운드 집중 단원: " + ", ".join("%s(레벨%d)" % (st["unit"], st["level"]) for st in ranked))
+        size, reason = round_size(prof, states)
+        lines.append("다음 회차: 문항 %d개(%s) · 많이 나올 단원 %s" % (
+            size, reason, ", ".join("%s(레벨%d)" % (st["unit"], st["level"]) for st in ranked)))
         if show_next:
             lines.append("이어서 하기: python study.py")
     shortages = (rnd or {}).get("shortages") or []
     if shortages:
-        lines.append("부족한 문항: " + ", ".join("%s 레벨%d %d문항" % (x["unit"], x["level"], x["missing"]) for x in shortages)
+        lines.append("문항이 바닥난 단원·레벨: " + ", ".join("%s 레벨%d" % (x["unit"], x["level"]) for x in shortages)
                      + " — PR 로 올리면 스터디장에게 출제 요청이 갑니다.")
     return "\n".join(lines)
 

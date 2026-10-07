@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""학습 현황판 생성 — dashboard.svg 와 README.md 의 현황판 구역을 갱신한다.
+"""학습 현황판 생성 — dashboard.svg 와 DASHBOARD.md 를 만든다.
 
-main 에 풀이(profile.json)가 올라올 때마다 CI 가 실행해 커밋한다. 로컬에서도 실행할 수 있다.
+main 에 풀이(profile.json)가 올라올 때마다 CI 가 실행해 `dashboard` 브랜치에 커밋한다(main 은 PR 로만 바뀌므로).
+README 는 그 브랜치의 이미지를 가리킨다. 로컬에서는 `python tools/dashboard.py` 로 out/ 에 생성해 볼 수 있다.
 """
 import datetime
 import os
@@ -13,9 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import study  # noqa: E402
 import adaptive  # noqa: E402
 
-SVG_PATH = os.path.join(study.ROOT, "dashboard.svg")
-README_PATH = os.path.join(study.ROOT, "README.md")
-START, END = "<!-- dashboard:start -->", "<!-- dashboard:end -->"
+OUT_DIR = os.path.join(study.ROOT, "out")
 COLORS = {"mastered": "#2e7d32", "deep": "#81c784", "L2": "#ffb300", "L1": "#fb8c00", "retry": "#e53935", "none": "#cfd8dc"}
 KST = datetime.timezone(datetime.timedelta(hours=9))
 
@@ -109,7 +108,7 @@ def bar(pct, width=10):
 
 
 def render_markdown(rows, cat, unit_ids):
-    lines = [START, "", "![학습 현황판](dashboard.svg)", ""]
+    lines = ["# 학습 현황판", "", "![학습 현황판](dashboard.svg)", ""]
     if not rows:
         lines.append("아직 진단 테스트를 한 사람이 없습니다. `python study.py` 로 시작하세요.")
     else:
@@ -124,24 +123,18 @@ def render_markdown(rows, cat, unit_ids):
                 ", ".join(r["weak"]) or "-", ", ".join(r["strong"]) or "-", ", ".join(r["tags"]) or "-", r["rounds"], last))
         latest = max((r["last"] for r in rows if r["last"]), default=None)
         lines += ["", "단원 번호 = 차시. 기준: 마지막 풀이 %s. main 에 풀이가 올라올 때마다 Actions 가 갱신합니다." % ((latest or "-")[:16].replace("T", " "))]
-    lines += ["", END]
-    return "\n".join(lines)
+    return "\n".join(lines) + "\n"
 
 
 def main():
+    out_dir = sys.argv[sys.argv.index("--out") + 1] if "--out" in sys.argv else OUT_DIR
     cat = adaptive.catalog()
     unit_ids = [s["id"] for s in adaptive.units()]
     rows = [summarize(u, cat, unit_ids) for u in adaptive.users_with_profile()]
     rows.sort(key=lambda r: (-r["mastered"], -(r["accuracy"] or 0), r["user"]))
-    study.write_text(SVG_PATH, render_svg(rows, cat, unit_ids))
-    block = render_markdown(rows, cat, unit_ids)
-    readme = study.read_text(README_PATH)
-    if START in readme and END in readme:
-        readme = re.sub(re.escape(START) + r".*?" + re.escape(END), lambda _: block, readme, flags=re.S)
-    else:
-        readme = readme.rstrip("\n") + "\n\n## 학습 현황판\n\n" + block + "\n"
-    study.write_text(README_PATH, readme)
-    print("현황판 갱신: %d명" % len(rows))
+    study.write_text(os.path.join(out_dir, "dashboard.svg"), render_svg(rows, cat, unit_ids))
+    study.write_text(os.path.join(out_dir, "DASHBOARD.md"), render_markdown(rows, cat, unit_ids))
+    print("현황판 생성: %d명 → %s" % (len(rows), os.path.relpath(out_dir, study.ROOT)))
 
 
 if __name__ == "__main__":
