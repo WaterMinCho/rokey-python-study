@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "exec",
   "tags": ["딕셔너리 매개변수", "별명"],
+  "examples": 1,
   "cases": [
     {"code": "score = {\"kim\": 80, \"lee\": 95, \"park\": 62}\nadd_bonus(score, 10)\nprint(score)", "stdout": "kim 90\nlee 100\npark 72\n{'kim': 90, 'lee': 100, 'park': 72}\n"},
     {"code": "a = {\"math\": 50, \"eng\": 70}\nb = a\nadd_bonus(b, 30)\nadd_bonus(a, 30)\nprint(a)", "stdout": "math 80\neng 100\nmath 100\neng 100\n{'math': 100, 'eng': 100}\n"},

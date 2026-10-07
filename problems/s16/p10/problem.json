@@ -5,6 +5,7 @@
   "points": 8,
   "mode": "exec",
   "tags": ["스택 클래스", "빈 자료구조 처리"],
+  "examples": 2,
   "cases": [
     {"code": "b = Browser()\nb.visit(\"home\")\nb.visit(\"news\")\nb.back()\nprint(b.current())", "stdout": "방문: home\n방문: news\n뒤로: home\nhome\n"},
     {"code": "b = Browser()\nb.back()\nprint(b.current())\nb.visit(\"a\")\nb.back()\nprint(b.pages)", "stdout": "뒤로 갈 수 없음\nNone\n방문: a\n뒤로 갈 수 없음\n['a']\n"},

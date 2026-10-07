@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "io",
   "tags": ["덮어쓰기와 이어 쓰기", "포맷 문자열", "close와 with"],
+  "examples": 1,
   "cases": [
     {"stdout": "start\n1번 작업 완료\n2번 작업 완료\n3번 작업 완료\n", "expect_files": {"log.txt": "start\n1번 작업 완료\n2번 작업 완료\n3번 작업 완료\n"}}
   ]

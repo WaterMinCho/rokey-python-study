@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "exec",
   "tags": ["클래스 정의 문법", "클래스 변수와 인스턴스 변수"],
+  "examples": 2,
   "cases": [
     {"code": "latte = Coffee()\nprint(latte.name)\nprint(latte.size)\nlatte.taste()", "stdout": "라떼\n톨\n고소하다\n"},
     {"code": "print(Coffee.name, Coffee.size)", "stdout": "라떼 톨\n"},

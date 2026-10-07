@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "exec",
   "tags": ["print 출력 형식"],
+  "examples": 2,
   "cases": [
     {"code": "print_sale_price(20000)", "stdout": "정가: 20000\n할인가: 18000\n"},
     {"code": "print_sale_price(990)", "stdout": "정가: 990\n할인가: 891\n"},

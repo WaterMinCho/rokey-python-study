@@ -5,6 +5,7 @@
   "points": 4,
   "tags": ["while 조건"],
   "mode": "io",
+  "examples": 2,
   "cases": [
     {"stdin": "abc\n1234\npython\n", "stdout": "3 번 만에 성공\n"},
     {"stdin": "python\n", "stdout": "1 번 만에 성공\n"},

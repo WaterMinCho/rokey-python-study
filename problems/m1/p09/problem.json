@@ -9,6 +9,7 @@
     "클래스 메서드",
     "출력 형식"
   ],
+  "examples": 2,
   "cases": [
     {
       "code": "a = Account(\"민수\", 1000)\na.deposit(500)\na.withdraw(300)",

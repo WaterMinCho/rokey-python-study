@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "exec",
   "tags": ["스택 클래스", "빈 자료구조 처리"],
+  "examples": 2,
   "cases": [
     {"code": "s = Stack()\ns.push(1)\ns.push(2)\nprint(s.peak())\nprint(s.pop())\nprint(s.status_stack())", "stdout": "2\n2\n[1]\n"},
     {"code": "s = Stack()\nprint(s.peak())\nprint(s.pop())\nprint(s.is_empty())", "stdout": "None\nNone\nTrue\n"},

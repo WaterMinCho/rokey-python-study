@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["딕셔너리 키", "인덱스"],
+  "examples": 2,
   "cases": [
     {"call": "solution({'name': '지호', 'scores': [80, 90, 100]})", "expected": "90.0"},
     {"call": "solution({'name': '서연', 'scores': [70, 75, 80]})", "expected": "75.0"},

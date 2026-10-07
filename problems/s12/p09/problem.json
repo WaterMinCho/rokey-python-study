@@ -5,6 +5,7 @@
   "points": 8,
   "mode": "io",
   "tags": ["읽기 메서드", "줄바꿈 처리", "write 규칙"],
+  "examples": 1,
   "cases": [
     {"files": {"morning.txt": "스트레칭\n독서\n", "evening.txt": "산책\n"}, "stdout": "1. 스트레칭\n2. 독서\n3. 산책\n", "expect_files": {"all.txt": "1. 스트레칭\n2. 독서\n3. 산책\n"}},
     {"files": {"morning.txt": "", "evening.txt": "일기\n"}, "stdout": "1. 일기\n", "expect_files": {"all.txt": "1. 일기\n"}},

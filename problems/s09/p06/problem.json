@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "exec",
   "tags": ["__init__", "출력 형식", "객체별 상태"],
+  "examples": 3,
   "cases": [
     {"code": "d = Drone(\"매빅\", 249, \"회색\")", "stdout": "드론 생성\n"},
     {"code": "d = Drone(\"매빅\", 249, \"회색\")\nd.info()", "stdout": "드론 생성\n모델: 매빅\n무게: 249\n색상: 회색\n"},

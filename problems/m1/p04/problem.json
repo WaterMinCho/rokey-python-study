@@ -9,6 +9,7 @@
     "디폴트 매개변수",
     "메서드의 반환값"
   ],
+  "examples": 2,
   "cases": [
     {
       "code": "c = Counter(10)\nc.up()\nc.up(5)\nprint(c.value)",

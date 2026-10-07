@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["split·strip·join", "map"],
+  "examples": 3,
   "cases": [
     {"call": "solution(\"2026-10-16\")", "expected": "[2026, 10, 16]"},
     {"call": "solution(\"1996-01-24\")", "expected": "[1996, 1, 24]"},

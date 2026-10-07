@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "call",
   "tags": ["문자 클래스", "findall과 finditer"],
+  "examples": 3,
   "cases": [
     {"call": "solution(\"room 12, floor 3\")", "expected": "['12', '3']"},
     {"call": "solution(\"010-1234-5678\")", "expected": "['010', '1234', '5678']"},

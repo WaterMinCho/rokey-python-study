@@ -8,6 +8,7 @@
     "super()",
     "자식 __init__"
   ],
+  "examples": 2,
   "cases": [
     {
       "code": "l = Laptop(\"그램\", 1500000, 16)\nl.info()\nprint(l.ram)",

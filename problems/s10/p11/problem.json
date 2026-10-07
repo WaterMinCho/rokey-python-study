@@ -9,6 +9,7 @@
     "자식 __init__",
     "클래스 변수 상속"
   ],
+  "examples": 1,
   "cases": [
     {
       "code": "s = Square(4)\ns.info()",

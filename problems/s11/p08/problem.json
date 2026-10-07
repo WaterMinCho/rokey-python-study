@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["초깃값", "경계값", "누적 패턴"],
+  "examples": 3,
   "cases": [
     {"call": "solution([\"+\", \"+\", \"-\"])", "expected": "2"},
     {"call": "solution([])", "expected": "1"},

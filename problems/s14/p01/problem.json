@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "io",
   "tags": ["문자 클래스", "반복 메타 문자", "findall과 finditer"],
+  "examples": 2,
   "cases": [
     {"stdin": "we love regex\n", "stdout": "['we', 'love', 'regex']\n3\n"},
     {"stdin": "Hi there 2024\n", "stdout": "['i', 'there']\n2\n"},

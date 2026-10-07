@@ -5,6 +5,7 @@
   "points": 8,
   "mode": "exec",
   "tags": ["디폴트 매개변수", "출력 형식", "경계값"],
+  "examples": 3,
   "cases": [
     {"code": "r = Robot(\"R1\")\nr.status()", "stdout": "R1 위치 0 배터리 100\n"},
     {"code": "r = Robot(\"R1\")\nr.move(3)\nr.status()", "stdout": "R1: 3칸 이동\nR1 위치 3 배터리 94\n"},

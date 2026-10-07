@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "io",
   "tags": ["튜플", "자료형 변환", "슬라이싱"],
+  "examples": 1,
   "cases": [
     {"stdout": "<class 'tuple'>\n[72, 85, 90, 100]\n[85, 90]\n(72, 85, 90, 64)\n"}
   ]

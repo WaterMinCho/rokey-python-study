@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "io",
   "tags": ["큐 FIFO", "리스트 pop"],
+  "examples": 2,
   "cases": [
     {"stdin": "3\nKim\nLee\nPark\n2\n", "stdout": "처리: Kim\n처리: Lee\n대기: ['Park']\n"},
     {"stdin": "2\nA\nB\n2\n", "stdout": "처리: A\n처리: B\n대기: []\n"},

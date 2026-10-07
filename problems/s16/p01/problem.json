@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "io",
   "tags": ["스택 LIFO", "큐 FIFO", "리스트 pop"],
+  "examples": 1,
   "cases": [
     {"stdin": "1\n2\n3\n", "stdout": "스택에서 꺼냄: 3\n큐에서 꺼냄: 1\n스택: [1, 2]\n큐: [2, 3]\n"},
     {"stdin": "7\n7\n9\n", "stdout": "스택에서 꺼냄: 9\n큐에서 꺼냄: 7\n스택: [7, 7]\n큐: [7, 9]\n"},

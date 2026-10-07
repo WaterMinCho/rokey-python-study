@@ -4,6 +4,7 @@
   "level": 1,
   "points": 4,
   "mode": "io",
+  "examples": 1,
   "cases": [
     {
       "stdout": "***\nROKEY\n"

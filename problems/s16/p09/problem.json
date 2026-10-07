@@ -5,6 +5,7 @@
   "points": 8,
   "mode": "call",
   "tags": ["회전 큐", "큐 FIFO"],
+  "examples": 1,
   "cases": [
     {"call": "solution(1)", "expected": "1"},
     {"call": "solution(2)", "expected": "2"},

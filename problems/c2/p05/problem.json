@@ -5,6 +5,7 @@
   "points": 8,
   "mode": "call",
   "tags": ["완전탐색", "자릿수 분해", "나머지 연산"],
+  "examples": 3,
   "cases": [
     {"call": "solution(1, 7)", "expected": "1"},
     {"call": "solution(1, 0)", "expected": "1"},

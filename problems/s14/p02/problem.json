@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "io",
   "tags": ["반복 메타 문자", "앵커 ^와 $"],
+  "examples": 3,
   "cases": [
     {"stdin": "123-4567\n", "stdout": "OK\n"},
     {"stdin": "12-4567\n", "stdout": "NO\n"},

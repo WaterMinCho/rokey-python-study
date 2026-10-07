@@ -5,6 +5,7 @@
   "points": 8,
   "mode": "call",
   "tags": ["SWAP", "타입 힌트", "반환값"],
+  "examples": 3,
   "cases": [
     {"call": "solution(3, 1, 2)", "expected": "[1, 2, 3]"},
     {"call": "solution(3, 2, 1)", "expected": "[1, 2, 3]"},

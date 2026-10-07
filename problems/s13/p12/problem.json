@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "io",
   "tags": ["finally", "예외의 종류"],
+  "examples": 2,
   "cases": [
     {"stdin": "10\n3\n", "stdout": "나누기 시작\n1인당 3 개\n나누기 끝\n프로그램 종료\n"},
     {"stdin": "7\n0\n", "stdout": "나누기 시작\n사람 수가 0입니다\n나누기 끝\n프로그램 종료\n"},

@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["문자 클래스", "앵커 ^와 $", "반복 메타 문자"],
+  "examples": 1,
   "cases": [
     {"call": "solution(\"192.168.0.1\")", "expected": "True"},
     {"call": "solution(\"10.0.0.255\")", "expected": "True"},

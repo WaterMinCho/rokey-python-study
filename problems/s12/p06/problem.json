@@ -5,6 +5,7 @@
   "points": 8,
   "mode": "call",
   "tags": ["딕셔너리 누적", "형 변환"],
+  "examples": 1,
   "cases": [
     {"files": {"score.txt": "민수 90\n지영 85\n"}, "call": "solution(\"score.txt\")", "expected": "{'민수': 90, '지영': 85}"},
     {"files": {"score.txt": "현우 100"}, "call": "solution(\"score.txt\")", "expected": "{'현우': 100}"},

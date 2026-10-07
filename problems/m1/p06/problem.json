@@ -9,6 +9,7 @@
     "split 과 strip",
     "파일 쓰기"
   ],
+  "examples": 1,
   "cases": [
     {
       "files": {

@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "io",
   "tags": ["try-except 흐름", "출력 형식"],
+  "examples": 2,
   "cases": [
     {"stdin": "10\n4\n", "stdout": "10 / 4 = 2.5\n"},
     {"stdin": "7\n0\n", "stdout": "0으로 나눌 수 없습니다\n"},

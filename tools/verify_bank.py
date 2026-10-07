@@ -17,6 +17,7 @@ import sys
 import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import session  # noqa: E402
 import study  # noqa: E402
 
 KINDS = ("session", "codetest", "mock")
@@ -70,6 +71,13 @@ def check_quiz(s, errors):
         if q["type"] == "choice":
             if not (isinstance(answer, list) and answer and all(isinstance(n, int) and 1 <= n <= 9 for n in answer)):
                 errors.append(where + "객관식 answer 는 보기 번호의 리스트여야 합니다. 예) [3]")
+            else:
+                body = sections.get(q["id"], "")
+                count = session.choice_count(body)
+                if count < max(max(answer), 2):
+                    errors.append(where + "보기를 %d개로 읽었는데 정답은 %s 입니다. 보기는 본문 마지막의 번호 목록(1. 2. …)이나 `**1번**` 문단으로 적어 주세요." % (count, answer))
+                if len(answer) > 1 and not re.search(r"모두\**\s*고르", body):
+                    errors.append(where + "복수 정답 문항은 본문에 '모두 고르세요'가 있어야 합니다.")
         elif q["type"] == "short":
             if not (isinstance(answer, list) and answer and all(isinstance(a, str) and a.strip() for a in answer)):
                 errors.append(where + "단답 answer 는 허용 답안 문자열의 리스트여야 합니다. 예) [\"bool\"]")
@@ -117,6 +125,8 @@ def check_problem(s, p, errors):
     if not (isinstance(p.get("points"), int) and p["points"] > 0):
         errors.append(where + "points 는 양의 정수여야 합니다.")
     cases = p.get("cases")
+    if isinstance(cases, list) and not (isinstance(p.get("examples"), int) and 1 <= p["examples"] <= len(cases)):
+        errors.append(where + "examples 가 필요합니다: 문제 본문에 예시로 보이는 앞쪽 테스트 수(1 이상, 테스트 수 이하). 화면의 '코드 실행'이 이만큼만 돌립니다.")
     if not (isinstance(cases, list) and len(cases) >= MIN_CASES[p["mode"]]):
         errors.append(where + "테스트(cases)는 %d개 이상이어야 합니다." % MIN_CASES[p["mode"]])
         return

@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "io",
   "tags": ["match와 search", "match 객체 메서드", "None 처리"],
+  "examples": 2,
   "cases": [
     {"stdin": "abc 123 def\n", "stdout": "found 123 4\n"},
     {"stdin": "no number\n", "stdout": "none\n"},

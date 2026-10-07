@@ -18,6 +18,8 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import traceback
 import zlib
 
@@ -34,6 +36,8 @@ KIND_ORDER = {"session": 0, "codetest": 1, "mock": 2}
 TYPE_LABEL = {"fill": "빈칸 채우기", "return": "반환값", "print": "출력"}
 QTYPE_LABEL = {"choice": "객관식", "output": "출력 예측", "short": "단답"}
 MARK = {"ok": "✅", "wrong": "❌", "blank": "⬜"}
+NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)  # Windows 에서 자식 프로세스의 콘솔 창을 숨긴다
+TMP_OPTIONS = {"ignore_cleanup_errors": True} if sys.version_info >= (3, 10) else {}
 SECRET_QUIZ = "quiz_key.json"
 SECRET_PROBLEM_FILES = ("solution.py", "explain.md")
 
@@ -55,10 +59,21 @@ def write_text(path, text):
     folder = os.path.dirname(path)
     if folder:
         os.makedirs(folder, exist_ok=True)
-    tmp = "%s.tmp%d" % (path, os.getpid())
-    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
-        f.write(text)
-    os.replace(tmp, path)
+    tmp = "%s.tmp%d_%d" % (path, os.getpid(), threading.get_ident())
+    try:
+        with open(tmp, "w", encoding="utf-8", newline="\n") as f:
+            f.write(text)
+        for attempt in range(5):
+            try:
+                os.replace(tmp, path)
+                break
+            except PermissionError:  # Windows: 다른 프로그램이 대상 파일을 잠깐 잡고 있을 때
+                if attempt == 4:
+                    raise
+                time.sleep(0.05)
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
 
 
 def read_json(path):
@@ -253,7 +268,7 @@ def run_cases(spec, source_path, limit=None):
     limit 를 주면 앞의 limit 개만 실행한다(화면의 '코드 실행' = 예시만)."""
     timeout = spec.get("timeout", DEFAULT_TIMEOUT)
     cases = spec["cases"] if limit is None else spec["cases"][:limit]
-    with tempfile.TemporaryDirectory(prefix="study_") as tmp:
+    with tempfile.TemporaryDirectory(prefix="study_", **TMP_OPTIONS) as tmp:
         job = {
             "source": os.path.abspath(source_path),
             "mode": spec["mode"],
@@ -270,6 +285,7 @@ def run_cases(spec, source_path, limit=None):
                 [sys.executable, os.path.abspath(__file__), "_run", job_path],
                 cwd=tmp, env=env, timeout=timeout,
                 stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+                creationflags=NO_WINDOW,
             )
             stderr = proc.stderr.decode("utf-8", "replace")
         except subprocess.TimeoutExpired:
@@ -394,7 +410,8 @@ def _run_case(code, name, mode, case):
     except BaseException as error:  # 학생 코드의 어떤 오류든 '오답 + 설명'으로 돌려준다
         message = "실행 중 오류: " + _error_text(error, name)
         return {"ok": False, "detail": _case_label(mode, case) + "\n" + message,
-                "input": _case_label(mode, case), "want": _case_want(mode, case), "got": message}
+                "input": _case_label(mode, case), "want": _case_want(mode, case), "got": message,
+                "printed": clip(norm_out(out.getvalue())) if mode == "call" else ""}
     finally:
         sys.stdin = real_stdin
 
@@ -402,6 +419,7 @@ def _run_case(code, name, mode, case):
     if mode == "call":
         expected = ast.literal_eval(case["expected"])
         shown["got"] = clip(repr(value))
+        shown["printed"] = clip(norm_out(out.getvalue()))  # 함수 안에서 print 한 것(판정에는 쓰지 않는다)
         if _strict_eq(value, expected):
             return dict(shown, ok=True)
         note = ""
@@ -961,4 +979,5 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    main()
+    import study  # __main__ 과 study 두 벌로 로드되지 않게 모듈 쪽으로 넘긴다
+    study.main()

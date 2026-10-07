@@ -5,6 +5,7 @@
   "points": 8,
   "mode": "call",
   "tags": ["선택 정렬", "인덱스와 값"],
+  "examples": 3,
   "cases": [
     {"call": "solution([26, 54, 17, 93, 31], 1)", "expected": "[17, 54, 26, 93, 31]"},
     {"call": "solution([26, 54, 17, 93, 31], 3)", "expected": "[17, 26, 31, 93, 54]"},

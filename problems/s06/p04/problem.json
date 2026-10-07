@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "io",
   "tags": ["함수 정의", "함수 호출"],
+  "examples": 2,
   "cases": [
     {"stdin": "3\n", "stdout": "ROKEY 화이팅!\nROKEY 화이팅!\nROKEY 화이팅!\n"},
     {"stdin": "1\n", "stdout": "ROKEY 화이팅!\n"},

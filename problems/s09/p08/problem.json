@@ -5,6 +5,7 @@
   "points": 8,
   "mode": "call",
   "tags": ["메서드 반환값", "디폴트 매개변수", "경계값"],
+  "examples": 3,
   "cases": [
     {"call": "solution(1000, [500, -300])", "expected": "[1200, 0]"},
     {"call": "solution(0, [-100])", "expected": "[0, 1]"},

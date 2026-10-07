@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "exec",
   "tags": ["self", "메서드 반환값", "경계값"],
+  "examples": 2,
   "cases": [
     {"code": "h = Hero(\"기사\", 10)\nh.hit(4)\nprint(h.hp)\nh.heal(3)\nprint(h.hp)\nh.hit(20)\nprint(h.hp, h.alive())\nh.heal(5)\nprint(h.hp)", "stdout": "6\n9\n0 False\n0\n"},
     {"code": "h = Hero(\"궁수\", 5)\nprint(h.alive())\nh.hit(5)\nprint(h.hp, h.alive())", "stdout": "True\n0 False\n"},

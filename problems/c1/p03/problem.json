@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "call",
   "tags": ["if-elif 분기", "경계값"],
+  "examples": 2,
   "cases": [
     {"call": "solution(30)", "expected": "12000"},
     {"call": "solution(7)", "expected": "0"},

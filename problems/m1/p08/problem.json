@@ -9,6 +9,7 @@
     "get()",
     "순서 유지"
   ],
+  "examples": 2,
   "cases": [
     {
       "call": "solution([\"A\", \"B\", \"A\", \"C\", \"A\"])",

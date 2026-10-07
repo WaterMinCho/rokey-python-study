@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "io",
   "tags": ["열기 모드", "읽기 메서드"],
+  "examples": 2,
   "cases": [
     {"stdout": "김밥\n라면\n", "expect_files": {"menu.txt": "김밥\n라면\n"}},
     {"files": {"menu.txt": "비빔밥\n돈가스\n"}, "stdout": "김밥\n라면\n", "expect_files": {"menu.txt": "김밥\n라면\n"}}

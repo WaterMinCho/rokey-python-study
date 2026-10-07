@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "call",
   "tags": ["콤보박스", "인덱스 범위"],
+  "examples": 2,
   "cases": [
     {"call": "solution([\"소\", \"중\", \"대\"], 1)", "expected": "'중'"},
     {"call": "solution([\"소\", \"중\", \"대\"], 0)", "expected": "'소'"},

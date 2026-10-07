@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "io",
   "tags": ["덮어쓰기와 이어 쓰기", "포맷 문자열", "형 변환"],
+  "examples": 1,
   "cases": [
     {"files": {"order.txt": "주문 내역:\n- 김밥 (3000원) x 2 6000원\n"}, "stdin": "라면\n4000\n1\n", "stdout": "주문 내역:\n- 김밥 (3000원) x 2 6000원\n- 라면 (4000원) x 1 4000원\n", "expect_files": {"order.txt": "주문 내역:\n- 김밥 (3000원) x 2 6000원\n- 라면 (4000원) x 1 4000원\n"}},
     {"files": {"order.txt": "주문 내역:\n"}, "stdin": "콜라\n1500\n3\n", "stdout": "주문 내역:\n- 콜라 (1500원) x 3 4500원\n", "expect_files": {"order.txt": "주문 내역:\n- 콜라 (1500원) x 3 4500원\n"}},

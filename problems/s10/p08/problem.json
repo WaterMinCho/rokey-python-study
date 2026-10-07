@@ -8,6 +8,7 @@
     "오버라이딩",
     "자식 __init__"
   ],
+  "examples": 3,
   "cases": [
     {
       "call": "solution([[\"일반\", 10000]])",

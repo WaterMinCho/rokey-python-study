@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "io",
   "tags": ["map", "람다"],
+  "examples": 3,
   "cases": [
     {"stdin": "1 2 3\n", "stdout": "[1, 2, 3]\n[1, 4, 9]\n"},
     {"stdin": "10 -2 5\n", "stdout": "[10, -2, 5]\n[100, 4, 25]\n"},

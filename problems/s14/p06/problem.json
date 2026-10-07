@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["match와 search", "match 객체 메서드", "None 처리"],
+  "examples": 3,
   "cases": [
     {"call": "solution(\"abc123def\")", "expected": "(3, 6)"},
     {"call": "solution(\"7up\")", "expected": "(0, 1)"},

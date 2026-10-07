@@ -1,5 +1,9 @@
 # 내 로컬 설정
 .study_user
+.study.lock
+.study_logs/
+*.tmp[0-9]*
+*.bak
 .started
 report.md
 shortage.md

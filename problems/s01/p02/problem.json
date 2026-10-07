@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "io",
   "tags": ["print 기초", "따옴표와 문자열"],
+  "examples": 1,
   "cases": [
     {"stdout": "7 + 8\nHello, Python!\n"}
   ]

@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "call",
   "tags": ["디폴트 매개변수", "반환값"],
+  "examples": 3,
   "cases": [
     {"call": "solution(10)", "expected": "'배수'"},
     {"call": "solution(7)", "expected": "'아님'"},

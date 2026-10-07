@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "io",
   "tags": ["반복 메타 문자", "findall과 finditer"],
+  "examples": 2,
   "cases": [
     {"stdin": "from 2024-10-16 to 2025-01-02\n", "stdout": "2024-10-16\n2025-01-02\n"},
     {"stdin": "today is 2024-1-5\n", "stdout": "no date\n"},

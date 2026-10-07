@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "exec",
   "tags": ["라디오 버튼과 체크박스", "클래스와 인스턴스 변수"],
+  "examples": 2,
   "cases": [
     {"code": "c = CheckBox(\"라떼\")\nprint(c.isChecked())\nc.setChecked(True)\nprint(c.isChecked())\nprint(c.text)", "stdout": "False\nTrue\n라떼\n"},
     {"code": "a = CheckBox(\"A\")\nb = CheckBox(\"B\")\na.setChecked(True)\nprint(a.isChecked(), b.isChecked())", "stdout": "True False\n"},

@@ -149,7 +149,8 @@ class SessionTest(unittest.TestCase):
             self.sess.set_answer(rid, code["id"], right_answer(self.sess, code))
             run = self.sess.try_run(rid, code["id"])
             self.assertEqual(run["message"], "", code["id"])
-            self.assertTrue(1 <= run["ran"] <= session.EXAMPLE_CASES)
+            self.assertEqual(run["ran"], run["examples"])
+            self.assertEqual(run["examples"], self.sess.cat[code["key"]]["spec"]["examples"])
             self.assertTrue(all(c["ok"] and c["want"] and c["input"] for c in run["cases"]), (code["id"], run))
             self.sess.set_answer(rid, code["id"], "def solution(*a):\n    return None\n" if code["type"] == "return" else "print('x')\n")
             bad = self.sess.try_run(rid, code["id"])
@@ -242,15 +243,21 @@ class SessionTest(unittest.TestCase):
         first = self.sess.open_round("d1")["items"][0]
         with self.assertRaises(session.SessionError):
             self.sess.explain("d1", first["id"])
+        self.answer_all("d1", only={1})
+        self.sess.grade("d1")  # 일부만 채점한 상태에서는 그 문항 해설도 잠겨 있다
+        with self.assertRaises(session.SessionError):
+            self.sess.explain("d1", first["id"])
         self.sess.grade("d1", finalize=True)
         info = self.sess.explain("d1", first["id"])
-        self.assertTrue(info["answer"] and info["explain_md"])
+        self.assertTrue(info["answer"] and info["explain"])
+        self.assertFalse(info["markdown"])
         rid = self.sess.latest()["id"]
         code = next(v for v in self.sess.open_round(rid)["items"] if v["kind"] == "code")
         with self.assertRaises(session.SessionError):
             self.sess.explain(rid, code["id"])
         self.sess.grade(rid, finalize=True)
-        self.assertTrue(self.sess.explain(rid, code["id"])["solution"])
+        info = self.sess.explain(rid, code["id"])
+        self.assertTrue(info["solution"] and info["markdown"])
 
     # ── 현황 ──
 
@@ -266,6 +273,115 @@ class SessionTest(unittest.TestCase):
         self.assertEqual(len(after["units"]), len(adaptive.units()))
         self.assertTrue(all(u["tested"] for u in after["units"]))
         self.assertEqual([r["id"] for r in after["rounds"]], ["d1", "r01"])
+
+    # ── 기록을 망가뜨리던 경로들 ──
+
+    def test_broken_answer_sheet_is_never_treated_as_empty(self):
+        self.sess.ensure_round()
+        views = self.sess.open_round("d1")["items"]
+        for view in [v for v in views if v["type"] == "choice"][:4]:
+            self.sess.set_answer("d1", view["id"], 1)
+        path = os.path.join(self.sess.folder("d1"), "quiz.py")
+        good = study.read_text(path)
+        one_bad_line = good.replace(" = 1 ", " = 1번 ", 1)
+        for broken in (one_bad_line, "<<<<<<< HEAD\n" + good + "=======\n>>>>>>> main\n", good + 'x = """끝나지 않은 문자열\n'):
+            study.write_text(path, broken)
+            self.assertTrue(self.sess.quiz_problem("d1"))
+            for call in (lambda: self.sess.open_round("d1"), lambda: self.sess.set_answer("d1", views[5]["id"], 1),
+                         lambda: self.sess.grade("d1"), lambda: self.sess.grade("d1", finalize=True)):
+                with self.assertRaises(session.SessionError):
+                    call()
+            self.assertEqual(study.read_text(path), broken)  # 손대지 않는다
+            self.assertEqual(self.sess.prof["attempts"], [])  # 아무것도 기록하지 않는다
+        study.write_text(path, one_bad_line)
+        kept = self.sess.repair_quiz("d1")
+        self.assertEqual(kept, 3)  # 깨진 한 줄만 잃는다
+        self.assertTrue(os.path.isfile(path + ".bak"))
+        self.assertIsNone(self.sess.quiz_problem("d1"))
+        self.assertEqual(sum(1 for v in self.sess.open_round("d1")["items"] if v["answered"]), 3)
+
+    def test_unsafe_characters_never_reach_the_files(self):
+        rid = self.first_real_round()
+        views = self.sess.open_round(rid)["items"]
+        text_item = next(v for v in views if v["type"] in ("output", "short"))
+        code = next(v for v in views if v["kind"] == "code")
+        self.sess.set_answer(rid, text_item["id"], "a\x00b\ud83dc\r\nd")
+        self.sess.set_answer(rid, code["id"], "x = 1\x00\ud800\n")
+        reopened = {v["id"]: v for v in self.sess.open_round(rid)["items"]}
+        self.assertEqual(reopened[text_item["id"]]["answer"].replace("\n", " "), "abc d")
+        self.assertEqual(reopened[code["id"]]["answer"], "x = 1\n")
+
+    def test_regrading_does_not_change_the_score_used_for_next_round_size(self):
+        rid = self.first_real_round()
+        self.answer_all(rid, correct=False)
+        self.sess.grade(rid, finalize=True)
+        rnd = adaptive.find_round(self.sess.prof, rid)
+        first, ratio = rnd["first_score"], adaptive.last_ratio(self.sess.prof)
+        self.assertEqual(ratio, 0.0)
+        self.answer_all(rid, correct=True)
+        result = self.sess.grade(rid)
+        self.assertEqual(result["earned"], result["total"])
+        rnd = adaptive.find_round(self.sess.prof, rid)
+        self.assertEqual(rnd["first_score"], first)
+        self.assertNotEqual(rnd["score"], first)
+        ordered = [r for r in self.sess.prof["rounds"] if r.get("completed_at")]
+        self.assertEqual(ordered[-1]["id"], rid)
+        self.assertEqual(adaptive.last_ratio(self.sess.prof), 0.0)
+
+    def test_two_sessions_do_not_overwrite_each_others_first_attempts(self):
+        self.sess.ensure_round()
+        other = session.Session("tester")  # 다른 창(또는 터미널)
+        first = self.sess.open_round("d1")["items"][0]
+        other.set_answer("d1", first["id"], wrong_answer(first))
+        other.grade("d1")  # 오답이 첫 시도로 기록됨
+        self.sess.set_answer("d1", first["id"], right_answer(self.sess, first))
+        self.sess.grade("d1")  # 먼저 열려 있던 세션이 고쳐서 채점
+        attempts = [a for a in session.Session("tester").prof["attempts"] if a["item"] == first["key"]]
+        self.assertEqual([(a["try"], a["ok"]) for a in attempts], [(1, False), (2, True)])
+
+    def test_corrupt_profile_raises_readable_error(self):
+        self.sess.ensure_round()
+        study.write_text(adaptive.profile_path("tester"), '{"user": "tester", "rounds": [<<<<<<<')
+        with self.assertRaises(session.SessionError):
+            session.Session("tester")
+        with self.assertRaises(session.SessionError):
+            self.sess.grade("d1", finalize=True)
+
+    def test_choice_buttons_match_the_real_options_for_every_question(self):
+        for key, it in self.sess.cat.items():
+            if it["kind"] == "quiz" and it["type"] == "choice":
+                count = session.choice_count(adaptive.quiz_section(it["set"], it["q"]["id"]))
+                self.assertGreaterEqual(count, max(it["q"]["answer"]), key)
+                self.assertIn(count, (4, 5), key)
+        for key in ("s09/Q3", "s10/Q2", "s04/Q5"):  # 보기가 코드 블록인 문항
+            it = self.sess.cat[key]
+            self.assertEqual(session.choice_count(adaptive.quiz_section(it["set"], it["q"]["id"])), 4, key)
+
+    def test_try_run_shows_prints_made_inside_a_function(self):
+        spec = next(it["spec"] for it in self.sess.cat.values() if it["kind"] == "code" and it["spec"]["mode"] == "call")
+        path = os.path.join(self.tmp, "sol.py")
+        study.write_text(path, "def solution(*args, **kw):\n    print('디버그', len(args))\n    return None\n")
+        run = study.run_cases(spec, path, limit=1)
+        self.assertIn("디버그", run["cases"][0]["printed"])
+        self.assertFalse(run["cases"][0]["ok"])
+
+    def test_write_text_cleans_up_when_replace_fails(self):
+        target = os.path.join(self.tmp, "locked.txt")
+        study.write_text(target, "원래 내용")
+        real = os.replace
+
+        def always_locked(src, dst):
+            raise PermissionError("잠김")
+
+        os.replace = always_locked
+        try:
+            with self.assertRaises(PermissionError):
+                study.write_text(target, "새 내용")
+        finally:
+            os.replace = real
+        self.assertEqual(study.read_text(target), "원래 내용")
+        self.assertEqual(os.listdir(self.tmp).count("locked.txt"), 1)
+        self.assertEqual([f for f in os.listdir(self.tmp) if ".tmp" in f], [])
 
     def test_unknown_round_or_item_raises_readable_error(self):
         self.sess.ensure_round()

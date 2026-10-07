@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "io",
   "tags": ["if 문법", "input 형변환", "블록 밖 실행"],
+  "examples": 2,
   "cases": [
     {"stdin": "37\n", "stdout": "37 홀수\n판별 끝\n"},
     {"stdin": "8\n", "stdout": "8 짝수\n판별 끝\n"},

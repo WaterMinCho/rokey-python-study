@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "io",
   "tags": ["몫과 나머지"],
+  "examples": 1,
   "cases": [
     {"stdin": "47\n6\n", "stdout": "가득 찬 상자: 7\n남는 볼트: 5\n"},
     {"stdin": "30\n5\n", "stdout": "가득 찬 상자: 6\n남는 볼트: 0\n"},

@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "call",
   "tags": ["읽기 메서드"],
+  "examples": 1,
   "cases": [
     {"files": {"a.txt": "one\ntwo\nthree\n"}, "call": "solution(\"a.txt\")", "expected": "3"},
     {"files": {"b.txt": "hello"}, "call": "solution(\"b.txt\")", "expected": "1"},

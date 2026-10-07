@@ -5,6 +5,7 @@
   "points": 6,
   "tags": ["누적 패턴", "range 끝값"],
   "mode": "call",
+  "examples": 3,
   "cases": [
     {"call": "solution(1, 10)", "expected": "18"},
     {"call": "solution(3, 9)", "expected": "18"},

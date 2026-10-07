@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["반환값", "지역 변수"],
+  "examples": 3,
   "cases": [
     {"call": "solution([10, 20, 30, 40, 50])", "expected": "3"},
     {"call": "solution([90, 80, 100, 60])", "expected": "2"},

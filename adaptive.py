@@ -31,14 +31,25 @@ def now():
 
 # ───────────────────────── 문항 목록 ─────────────────────────
 
+_UNITS = None  # 문제 은행은 실행 중에 바뀌지 않으므로 한 번만 읽는다(바뀌면 clear_cache)
+
+
+def clear_cache():
+    global _UNITS
+    _UNITS = None
+
+
 def units():
     """적응형 학습의 단원 = 차시 세트(연습용 s00 제외)."""
-    out = []
-    for sid in study.all_set_ids():
-        s = study.load_set(sid)
-        if s["meta"].get("kind", "session") == "session" and sid != "s00":
-            out.append(s)
-    return out
+    global _UNITS
+    if _UNITS is None:
+        out = []
+        for sid in study.all_set_ids():
+            s = study.load_set(sid)
+            if s["meta"].get("kind", "session") == "session" and sid != "s00":
+                out.append(s)
+        _UNITS = out
+    return _UNITS
 
 
 def short_title(s):
@@ -174,9 +185,10 @@ def completed_rounds(prof):
 def last_ratio(prof):
     """직전에 끝낸 회차의 득점률(없으면 None)."""
     done = completed_rounds(prof)
-    if not done or not done[-1].get("score"):
+    score = (done[-1].get("first_score") or done[-1].get("score")) if done else None  # 고쳐서 다시 채점한 점수는 쓰지 않는다
+    if not score:
         return None
-    earned, total = done[-1]["score"].split("/")
+    earned, total = score.split("/")
     return int(earned) / int(total) if int(total) else None
 
 

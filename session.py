@@ -4,18 +4,23 @@
 
 화면에 아무것도 출력하지 않고 dict 로 돌려준다. 저장 형식은 CLI 와 같다
 (submissions/<ID>/profile.json, 회차 폴더의 quiz.py 와 <문항>.py). 그래서 GUI 로 풀든 파일을 직접 고치든
-CI 채점·PR 코멘트·현황판이 똑같이 동작한다.
+PR 리뷰·CI 분석·현황판이 똑같이 동작한다.
+
+오류는 전부 SessionError 로 올린다(문구를 그대로 사용자에게 보여 줄 수 있다).
 """
+import ast
 import os
 import re
+import shutil
 import threading
 
 import adaptive
+import mdlite
 import study
 
-EXAMPLE_CASES = 2  # '코드 실행' 은 앞의 예시 테스트만 돌린다(시험의 '실행하기'처럼). 기록하지 않는다.
-FENCE_RE = re.compile(r"^(`{3,}|~{3,}).*?^\1[ \t]*$", re.S | re.M)
-OPTION_RE = re.compile(r"^(\d+)[.)]\s", re.M)
+UNSAFE_RE = re.compile("[\x00\ud800-\udfff]")  # 파일에 쓸 수 없는 글자(NUL, 짝 없는 서러게이트)
+LABEL_RE = re.compile(r"\*\*(\d+)번\*\*")
+ASSIGN_RE = re.compile(r"^([A-Za-z_]\w*)\s*=\s*(.+?)\s*(?:#.*)?$")
 
 
 class SessionError(Exception):
@@ -47,23 +52,30 @@ def save_user(name):
 
 # ───────────────────────── 도우미 ─────────────────────────
 
-def choice_info(section):
-    """객관식 문제 본문에서 (보기 수, 복수 정답 여부)를 읽는다. 코드 블록 안의 번호는 세지 않는다."""
-    text = FENCE_RE.sub("", section)
-    count = 0
-    for m in OPTION_RE.finditer(text):
-        n = int(m.group(1))
-        if n == 1:
-            count = 1  # 마지막으로 1 부터 다시 시작한 목록이 보기다
-        elif n == count + 1:
-            count = n
-    return (count or 5), ("모두" in text)
+def clean_text(text):
+    return UNSAFE_RE.sub("", str(text)).replace("\r\n", "\n").replace("\r", "\n")
+
+
+def choice_count(body):
+    """객관식 본문의 보기 수: 마지막 번호 목록의 항목 수, 없으면 `**N번**` 문단의 수. 못 세면 0."""
+    last, labeled = 0, 0
+    for block in mdlite.parse(body):
+        if block["t"] == "ol":
+            last = len(block["items"])
+        elif block["t"] == "para" and LABEL_RE.fullmatch(block["text"].strip()):
+            labeled += 1
+    return last or labeled
 
 
 def literal(value):
-    """quiz.py 에 적을 파이썬 리터럴. 여러 줄 문자열은 PR 에서 읽기 좋게 삼중 따옴표로."""
+    """quiz.py 에 적을 파이썬 리터럴. 여러 줄 문자열은 PR 에서 읽기 좋게 삼중 따옴표로(되읽어 같을 때만)."""
     if isinstance(value, str) and "\n" in value and '"""' not in value and "\\" not in value:
-        return '"""\n%s\n"""' % value.strip("\n")
+        text = '"""\n%s\n"""' % value.strip("\n")
+        try:
+            if ast.literal_eval(text).strip("\n") == value.strip("\n"):
+                return text
+        except (ValueError, SyntaxError):
+            pass
     return repr(value)
 
 
@@ -76,7 +88,7 @@ def clean_quiz_value(kind, value):
         if not picked:
             return None
         return picked[0] if len(picked) == 1 else picked
-    text = str(value).replace("\r\n", "\n").replace("\r", "\n")
+    text = clean_text(value)
     if kind == "short":
         text = text.strip()
     return text if text.strip() else None
@@ -90,6 +102,20 @@ def answer_text(q):
     return " 또는 ".join(q["answer"])
 
 
+def salvage_quiz(text):
+    """깨진 quiz.py 에서 한 줄짜리 답을 건질 수 있는 만큼 건진다."""
+    answers = {}
+    for line in text.replace("\r\n", "\n").split("\n"):
+        m = ASSIGN_RE.match(line)
+        if not m:
+            continue
+        try:
+            answers[m.group(1)] = ast.literal_eval(m.group(2))
+        except (ValueError, SyntaxError):
+            pass
+    return answers
+
+
 # ───────────────────────── 세션 ─────────────────────────
 
 class Session:
@@ -97,9 +123,20 @@ class Session:
         if not valid_user(user):
             raise SessionError("ID 가 올바르지 않습니다: %r" % (user,))
         self.user = user
-        self.cat = adaptive.catalog()
-        self.prof = adaptive.load_profile(user)
         self._lock = threading.RLock()  # 화면 스레드와 채점 워커가 프로필을 함께 건드리지 않게
+        adaptive.clear_cache()  # 문제 받기 뒤에 새로 만든 세션은 은행을 다시 읽는다
+        self.cat = adaptive.catalog()
+        self.prof = None
+        self._reload()
+
+    def _reload(self):
+        """프로필을 디스크에서 다시 읽는다 — 다른 창이나 터미널에서 바뀐 기록을 덮어쓰지 않게."""
+        try:
+            prof = adaptive.load_profile(self.user)
+            prof["rounds"], prof["attempts"], prof["seed"]  # 필수 항목 확인
+        except (ValueError, KeyError, TypeError, OSError) as error:
+            raise SessionError("풀이 기록(profile.json)을 읽을 수 없습니다: %s" % error)
+        self.prof = prof
 
     # ── 회차 찾기·만들기 ──
 
@@ -125,6 +162,7 @@ class Session:
         """풀 회차가 없으면 만든다(처음이면 진단). (회차 | None, 새로 만들었는지) 반환.
         None 은 전 단원을 심화까지 끝내 더 낼 문항이 없다는 뜻."""
         with self._lock:
+            self._reload()
             rnd = self.latest()
             if rnd is None:
                 return self._start(adaptive.build_diagnostic(self.prof, self.cat)), True
@@ -140,14 +178,47 @@ class Session:
     def _keys(self, rnd):
         return [k for k in rnd["items"] if k in self.cat]  # 은행에서 사라진 문항은 건너뛴다
 
+    def quiz_problem(self, rid):
+        """답안지(quiz.py)를 읽을 수 없으면 그 이유, 괜찮으면 None."""
+        path = os.path.join(self.folder(rid), "quiz.py")
+        if not os.path.isfile(path):
+            return None
+        try:
+            return study.parse_quiz_answers(path)[1]
+        except (OSError, ValueError) as error:  # 인코딩이 깨진 파일 등
+            return "quiz.py 를 읽을 수 없습니다: %s" % error
+
     def _quiz_answers(self, rid):
+        """답안지의 답. 읽을 수 없으면 빈 답으로 치지 않고 오류를 올린다(빈 답으로 치면 저장할 때 나머지 답이 지워진다)."""
+        problem = self.quiz_problem(rid)
+        if problem:
+            raise SessionError("답안지를 읽을 수 없습니다. %s 답안지 복구를 먼저 해 주세요." % problem)
         path = os.path.join(self.folder(rid), "quiz.py")
         if not os.path.isfile(path):
             return {}
-        answers, error = study.parse_quiz_answers(path)
-        if error:
-            return {}
+        answers, _ = study.parse_quiz_answers(path)
         return {k: (None if v is study.UNPARSED else v) for k, v in answers.items()}
+
+    def repair_quiz(self, rid):
+        """깨진 답안지를 quiz.py.bak 으로 보관하고, 건질 수 있는 답만 남겨 새로 쓴다. 건진 답의 수를 돌려준다."""
+        rnd = self._round(rid)
+        path = os.path.join(self.folder(rnd["id"]), "quiz.py")
+        saved = {}
+        if os.path.isfile(path):
+            shutil.copyfile(path, path + ".bak")
+            with open(path, encoding="utf-8", errors="replace") as f:
+                saved = salvage_quiz(f.read())
+        names = {adaptive.fname_of(k): self.cat[k] for k in self._keys(rnd) if self.cat[k]["kind"] == "quiz"}
+        answers = {}
+        for name, value in saved.items():
+            if name in names:
+                try:
+                    answers[name] = clean_quiz_value(names[name]["type"], value)
+                except (TypeError, ValueError):
+                    pass
+        with self._lock:
+            self._write_quiz(rnd, answers)
+        return sum(1 for v in answers.values() if v is not None)
 
     def _code_path(self, rid, name):
         return os.path.join(self.folder(rid), name + ".py")
@@ -164,12 +235,13 @@ class Session:
         if it["kind"] == "quiz":
             body = adaptive.quiz_section(it["set"], it["q"]["id"])
             value = quiz_answers.get(name)
-            if it["type"] == "output" and isinstance(value, str):
-                value = value.strip("\n")
+            if isinstance(value, str):
+                value = value.strip("\n")  # 삼중 따옴표로 적힌 답의 앞뒤 줄바꿈
             view.update(type_label=study.QTYPE_LABEL[it["type"]], title=study.QTYPE_LABEL[it["type"]],
                         body_md=body, answer=value, answered=value not in (None, "", []))
             if it["type"] == "choice":
-                view["choices"], view["multi"] = choice_info(body)
+                view["choices"] = choice_count(body)  # 0 이면 화면은 번호 입력칸을 보여 준다
+                view["multi"] = len(it["q"]["answer"]) > 1  # 복수 정답 문항은 본문에도 '모두 고르세요'가 있다(은행 검증)
         else:
             spec = it["spec"]
             starter = study.read_text(os.path.join(spec["dir"], "starter.py"))
@@ -178,19 +250,20 @@ class Session:
             view.update(type_label=study.TYPE_LABEL[it["type"]], title=spec["title"],
                         body_md=adaptive.problem_body(spec), starter=starter, answer=source,
                         answered=study.norm_out(source) != study.norm_out(starter),
-                        examples=min(EXAMPLE_CASES, len(spec["cases"])))
+                        examples=self._examples(spec))
         return view
 
     def _round_summary(self, rnd):
         return {
             "id": rnd["id"], "title": adaptive.round_title(rnd), "kind": rnd["kind"],
-            "size": len(self._keys(rnd)), "score": rnd.get("score"), "completed": bool(rnd.get("completed_at")),
-            "avg_level": rnd.get("avg_level"), "size_reason": rnd.get("size_reason", ""),
-            "unanswered": rnd.get("unanswered"), "graded": bool(rnd.get("results")),
+            "size": len(self._keys(rnd)), "score": rnd.get("score"), "first_score": rnd.get("first_score"),
+            "completed": bool(rnd.get("completed_at")), "avg_level": rnd.get("avg_level"),
+            "size_reason": rnd.get("size_reason", ""), "unanswered": rnd.get("unanswered"),
+            "graded": bool(rnd.get("results")),
         }
 
     def open_round(self, rid=None):
-        """회차 하나를 화면용으로. items 는 문제지 순서."""
+        """회차 하나를 화면용으로. items 는 문제지 순서. 답안지가 깨졌으면 SessionError."""
         rnd = self._round(rid)
         answers = self._quiz_answers(rnd["id"])
         view = self._round_summary(rnd)
@@ -215,13 +288,16 @@ class Session:
         rnd, key, it = self._find(rid, item_id)
         with self._lock:
             if it["kind"] == "code":
-                text = (value or "").replace("\r\n", "\n").replace("\r", "\n")
+                text = clean_text(value or "")
                 if text and not text.endswith("\n"):
                     text += "\n"
                 study.write_text(self._code_path(rnd["id"], item_id), text)
                 return
             answers = self._quiz_answers(rnd["id"])
-            answers[item_id] = clean_quiz_value(it["type"], value)
+            try:
+                answers[item_id] = clean_quiz_value(it["type"], value)
+            except (TypeError, ValueError):
+                raise SessionError("답 형식이 올바르지 않습니다: %r" % (value,))
             self._write_quiz(rnd, answers)
 
     def _write_quiz(self, rnd, answers):
@@ -242,13 +318,19 @@ class Session:
         if it["kind"] != "code":
             raise SessionError("코드 문제만 되돌릴 수 있습니다.")
         starter = study.read_text(os.path.join(it["spec"]["dir"], "starter.py"))
-        study.write_text(self._code_path(rnd["id"], item_id), starter)
+        with self._lock:
+            study.write_text(self._code_path(rnd["id"], item_id), starter)
         return starter
 
     # ── 코드 실행 (예시만, 기록 없음) ──
 
+    @staticmethod
+    def _examples(spec):
+        """'코드 실행'이 돌릴 테스트 수 = 문제 본문에 예시로 보이는 앞쪽 테스트(problem.json 의 examples)."""
+        return max(1, min(int(spec.get("examples", 1)), len(spec["cases"])))
+
     def try_run(self, rid, item_id):
-        """저장된 코드를 예시 테스트로만 돌려 본다. 숙달 판정에는 영향이 없다."""
+        """저장된 코드를 예시 테스트로만 돌려 본다(시험의 '실행하기'). 숙달 판정에는 영향이 없다."""
         rnd, key, it = self._find(rid, item_id)
         if it["kind"] != "code":
             raise SessionError("코드 문제만 실행할 수 있습니다.")
@@ -259,22 +341,31 @@ class Session:
         if spec["type"] == "fill":
             problem = study.check_fill(study.read_text(os.path.join(spec["dir"], "starter.py")), study.read_text(path))
             if problem:
-                return {"message": problem, "cases": [], "ran": 0, "total": len(spec["cases"])}
-        run = study.run_cases(spec, path, limit=EXAMPLE_CASES)
+                return {"message": problem, "cases": [], "ran": 0, "examples": self._examples(spec)}
+        run = study.run_cases(spec, path, limit=self._examples(spec))
         message = run["fatal"] or ""
         if not message and run["timed_out"]:
             message = "시간 초과 — %s초 안에 끝나지 않았습니다. 무한 루프가 없는지 확인하세요." % run["timeout"]
-        cases = [{"ok": c["ok"], "input": c.get("input", ""), "want": c.get("want", ""), "got": c.get("got", "")}
-                 for c in run["cases"]]
-        return {"message": message, "cases": cases, "ran": len(cases), "total": len(spec["cases"])}
+        cases = [{"ok": c["ok"], "input": c.get("input", ""), "want": c.get("want", ""), "got": c.get("got", ""),
+                  "printed": c.get("printed", "")} for c in run["cases"]]
+        return {"message": message, "cases": cases, "ran": len(cases), "examples": self._examples(spec)}
 
     # ── 채점 · 기록 · 다음 회차 ──
 
+    def pending(self, rid=None):
+        """제출 확인 대화상자용: 아직 안 푼 문항 번호와 전체 문항 수."""
+        view = self.open_round(rid)
+        return {"total": len(view["items"]), "blank": [it["no"] for it in view["items"] if not it["answered"]]}
+
     def grade(self, rid=None, finalize=False):
         """회차를 채점하고 첫 시도를 기록한다. 다 풀었으면 회차를 끝내고 다음 회차를 만든다.
-        finalize=True 면 시험처럼 미응답을 오답으로 확정한다.
-        아무것도 풀지 않았으면 기록하지 않고 untouched=True 로 돌려준다."""
+        finalize=True 면 시험처럼 미응답을 오답으로 확정한다(화면의 '회차 제출').
+        아무것도 풀지 않았으면 기록하지 않고 untouched=True 로 돌려준다.
+        답안지가 깨져 있으면 아무것도 기록하지 않고 SessionError."""
+        with self._lock:
+            self._reload()
         rnd = self._round(rid)
+        self._quiz_answers(rnd["id"])  # 깨진 답안지를 '전부 오답'으로 기록하지 않는다
         items = adaptive.grade_round(self.user, rnd, self.cat)  # 오래 걸리는 부분(코드 실행)은 잠금 밖에서
         untouched = all(it["state"] == "blank" for it in items) and not rnd.get("results")
         if untouched and not finalize:
@@ -284,6 +375,7 @@ class Session:
             completed_now, next_id = False, None
             if not rnd.get("completed_at") and rnd["unanswered"] == 0:
                 rnd["completed_at"] = adaptive.now()
+                rnd["first_score"] = rnd["score"]  # 다음 회차 크기는 이 점수로 정한다(나중에 고쳐 다시 채점해도 그대로)
                 completed_now = True
                 if rnd is self.latest():
                     nxt = adaptive.build_round(self.prof, self.cat)
@@ -308,15 +400,16 @@ class Session:
     # ── 해설 ──
 
     def explain(self, rid, item_id):
-        """정답·해설. 그 문항을 한 번이라도 채점한 뒤에만 볼 수 있다."""
+        """정답·해설. 회차를 제출한 뒤에만 볼 수 있다(같은 단원의 남은 문항 첫 시도를 보호).
+        explain 은 퀴즈면 한 문단의 글(인라인 코드만), 코드 문제면 마크다운 문서다(markdown=True)."""
         rnd, key, it = self._find(rid, item_id)
-        if key not in (rnd.get("results") or {}):
-            raise SessionError("채점한 뒤에 해설을 볼 수 있습니다.")
+        if not rnd.get("completed_at"):
+            raise SessionError("회차를 제출한 뒤에 해설을 볼 수 있습니다.")
         if it["kind"] == "quiz":
             q = it["q"]
-            return {"kind": "quiz", "answer": answer_text(q), "explain_md": q.get("explain", ""), "solution": ""}
+            return {"kind": "quiz", "answer": answer_text(q), "explain": q.get("explain", ""), "markdown": False, "solution": ""}
         secrets, pid = it["set"]["secrets"], it["spec"]["id"]
-        return {"kind": "code", "answer": "", "explain_md": secrets.get(pid + "/explain.md", "").strip(),
+        return {"kind": "code", "answer": "", "explain": secrets.get(pid + "/explain.md", "").strip(), "markdown": True,
                 "solution": secrets.get(pid + "/solution.py", "").rstrip("\n")}
 
     # ── 현황 ──

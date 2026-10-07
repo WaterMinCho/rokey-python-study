@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["global", "반환값"],
+  "examples": 2,
   "cases": [
     {"call": "solution(5)", "expected": "5"},
     {"call": "[solution(3), solution(4), solution(5)]", "expected": "[3, 7, 12]"},

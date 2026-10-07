@@ -9,6 +9,7 @@
     "오버라이딩",
     "자식 __init__"
   ],
+  "examples": 3,
   "cases": [
     {
       "call": "Manager(\"Kim\", 3000, 500).pay()",

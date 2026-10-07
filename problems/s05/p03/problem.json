@@ -5,6 +5,7 @@
   "points": 4,
   "tags": ["for 시퀀스", "들여쓰기 범위"],
   "mode": "io",
+  "examples": 3,
   "cases": [
     {"stdin": "우유\n", "stdout": "콜라\n사이다\n우유\n찾았습니다!\n커피\n주스\n끝\n"},
     {"stdin": "녹차\n", "stdout": "콜라\n사이다\n우유\n커피\n주스\n끝\n"},

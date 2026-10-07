@@ -9,6 +9,7 @@
     "경계값",
     "return 문자열"
   ],
+  "examples": 3,
   "cases": [
     {
       "call": "solution([70, 50, 60])",

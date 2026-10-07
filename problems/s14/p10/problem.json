@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "io",
   "tags": ["문자 클래스", "반복 메타 문자", "findall과 finditer"],
+  "examples": 1,
   "cases": [
     {"stdin": "#python #re_study 2024 #day1\n", "stdout": "3\n#python\n#re_study\n#day1\n"},
     {"stdin": "no tags here\n", "stdout": "0\n"},

@@ -9,6 +9,7 @@
     "오버라이딩",
     "자식 __init__"
   ],
+  "examples": 1,
   "cases": [
     {
       "code": "s = Student(\"Mina\")\ns.add(\"수학\", 90)\ns.add(\"영어\", 80)\ns.report()",

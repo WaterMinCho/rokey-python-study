@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "call",
   "tags": ["딕셔너리 매개변수"],
+  "examples": 3,
   "cases": [
     {"call": "solution({'pen': 1200, 'note': 2500, 'eraser': 800})", "expected": "4500"},
     {"call": "solution({'apple': 3})", "expected": "3"},

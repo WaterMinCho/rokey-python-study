@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["딕셔너리 컴프리헨션"],
+  "examples": 3,
   "cases": [
     {"call": "solution([\"ai\", \"robot\", \"dog\", \"go\"])", "expected": "{'robot': 5, 'dog': 3}"},
     {"call": "solution([])", "expected": "{}"},
