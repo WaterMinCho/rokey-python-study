@@ -14,4 +14,4 @@ body:
     id: why
     attributes:
       label: 어떤 문제가 필요한가요
-      placeholder: 예) 심화 문제가 부족해요 / 출력 예측 문제를 더 풀고 싶어요
+      placeholder: 예) 심화 문제가 부족합니다 / 출력 예측 문제를 더 풀고 싶습니다

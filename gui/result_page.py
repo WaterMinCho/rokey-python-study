@@ -13,7 +13,7 @@ from gui import theme
 
 
 def md_html(text):
-    """마크다운 문서를 다른 HTML 사이에 끼워 넣을 수 있게 body 태그를 벗긴다."""
+    """마크다운 문서를 다른 HTML 사이에 끼워 넣을 수 있게 body 태그를 벗김."""
     return mdlite.to_html(text)[len("<body>"):-len("</body>")]
 
 
@@ -23,7 +23,7 @@ def code_box(text):
 
 
 def band(title, anchor=""):
-    """구역 제목. 문제 본문 안의 제목과 섞이지 않게 띠로 그린다."""
+    """구역 제목. 문제 본문 안의 제목과 섞이지 않게 띠로 만듦."""
     return ('<a name="%s"></a><table width="100%%" cellspacing="0" cellpadding="6" border="0" style="margin-top:14px; margin-bottom:8px;">'
             '<tr><td style="background-color:#eaeef2;"><b>%s</b></td></tr></table>' % (anchor, title))
 
@@ -142,7 +142,7 @@ class ResultPage(QWidget):
         self.next_btn.clicked.connect(win.start_next)
 
     def load(self, rid, result=None):
-        """끝난 회차의 결과를 올린다. result 는 방금 채점한 결과(session.grade)이고, 없으면 기록된 결과를 보여 준다."""
+        """끝난 회차의 결과를 올림. result 는 방금 채점한 결과(session.grade)이고, 없으면 기록된 결과를 보여 줌."""
         session = self.win.session
         view = session.open_round(rid)
         states = {it["id"]: it["state"] for it in result["items"]} if result else {}
@@ -156,7 +156,7 @@ class ResultPage(QWidget):
         self.score.setText("%d / %d점" % (earned, total))
         self.ratio.setText("득점률 %d%%" % (round(100 * earned / total) if total else 0))
         first = view["first_score"]
-        self.note.setText("첫 제출 %s점. 숙달 판정에는 첫 제출만 반영됩니다." % first.replace("/", " / ")
+        self.note.setText("첫 제출은 %s점이었습니다. 숙달 판정에는 첫 제출만 반영됩니다." % first.replace("/", " / ")
                           if first and first != "%d/%d" % (earned, total) else "")
         self.ready.setText("시험 준비도 %d%%" % overview["readiness"])
         self.ready_bar.setValue(overview["readiness"])
@@ -188,7 +188,7 @@ class ResultPage(QWidget):
             self.detail.setHtml(self.summary_html())
         else:
             label = "%s · %s · %d점" % (item["type_label"], item["unit_title"], item["points"])
-            self.item_title.setText("%d. %s" % (item["no"], "%s — %s" % (item["title"], label) if item["kind"] == "code" else label))
+            self.item_title.setText("%d. %s" % (item["no"], "%s · %s" % (item["title"], label) if item["kind"] == "code" else label))
             self.detail.setHtml(self.item_html(item))
         self.explain_btn.setEnabled(item is not None and item["id"] not in self.revealed)
         self.retry_btn.setEnabled(item is not None and item["state"] != "ok")
@@ -228,8 +228,8 @@ class ResultPage(QWidget):
                 parts.append("<p><b>정답: %s</b></p>" % info["answer"] if item["type"] == "choice"
                              else "<p><b>정답</b></p>" + code_box(info["answer"]))
             if info["markdown"]:
-                parts.append(md_html(re.sub(r"^# [^\n]*\n", "", info["explain"], count=1)))  # 문서 첫 줄의 제목은 띠 제목과 겹친다
-            else:  # 퀴즈 해설은 마크다운 문서가 아니라 한 문단의 글이다
+                parts.append(md_html(re.sub(r"^# [^\n]*\n", "", info["explain"], count=1)))  # 문서 첫 줄의 제목은 띠 제목과 겹쳐서 뺌
+            else:  # 퀴즈 해설은 마크다운 문서가 아니라 한 문단짜리 글임
                 parts.append("<p>%s</p>" % mdlite.inline_html(info["explain"]))
             if info["solution"]:
                 parts += [band("모범 답안"), code_box(info["solution"])]

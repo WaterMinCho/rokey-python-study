@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""예상하지 못한 오류: 창을 죽이지 않고 기록한 뒤 대화상자로 알린다."""
+"""예상하지 못한 오류는 창을 죽이지 않고 기록한 뒤 대화상자로 알림."""
 import datetime
 import os
 import sys
@@ -13,13 +13,13 @@ state = {"log_dir": None, "dialog": None}
 
 
 def install(log_dir):
-    """슬롯에서 새는 예외는 PyQt6 에서 곧 프로세스 종료다. 전역 훅으로 받아 창을 살린다."""
+    """PyQt6 는 슬롯에서 예외가 새면 프로세스를 끝내므로 전역 훅으로 받아 창을 살림."""
     state["log_dir"] = log_dir
     sys.excepthook = lambda kind, value, tb: report("".join(traceback.format_exception(kind, value, tb)))
 
 
 def write_log(text):
-    """기록 파일 경로를 돌려준다. 쓰지 못하면 None."""
+    """기록 파일 경로를 돌려줌. 쓰지 못하면 None."""
     stamp = datetime.datetime.now()
     try:
         os.makedirs(state["log_dir"], exist_ok=True)
@@ -33,7 +33,7 @@ def write_log(text):
 
 def report(text):
     path = write_log(text)
-    if sys.stderr:  # pythonw 로 띄우면 stderr 가 없다
+    if sys.stderr:  # pythonw 로 띄우면 stderr 가 없음
         print(text, file=sys.stderr)
     dialog = state["dialog"]
     if dialog is not None and dialog.isVisible():  # 오류가 연달아 나도 대화상자는 하나만

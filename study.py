@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""ROKEY 파이썬 스터디 — 문제 받기 · 채점 · 해설 도구.
+"""ROKEY 파이썬 스터디의 문제 받기 · 채점 · 해설 도구.
 
-표준 라이브러리만 사용합니다(별도 설치 없음).
+표준 라이브러리만 씀.
 사용법: python study.py --help  (자세한 흐름은 README.md)
 """
 import argparse
@@ -36,13 +36,13 @@ KIND_ORDER = {"session": 0, "codetest": 1, "mock": 2}
 TYPE_LABEL = {"fill": "빈칸 채우기", "return": "반환값", "print": "출력"}
 QTYPE_LABEL = {"choice": "객관식", "output": "출력 예측", "short": "단답"}
 MARK = {"ok": "✅", "wrong": "❌", "blank": "⬜"}
-NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)  # Windows 에서 자식 프로세스의 콘솔 창을 숨긴다
+NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)  # Windows 에서 자식 프로세스의 콘솔 창을 숨김
 TMP_OPTIONS = {"ignore_cleanup_errors": True} if sys.version_info >= (3, 10) else {}
 SECRET_QUIZ = "quiz_key.json"
 SECRET_PROBLEM_FILES = ("solution.py", "explain.md")
 
 
-# ───────────────────────── 공통 도우미 ─────────────────────────
+# 공통 도우미
 
 def die(message):
     print("오류: " + message, file=sys.stderr)
@@ -55,7 +55,7 @@ def read_text(path):
 
 
 def write_text(path, text):
-    """임시 파일에 쓴 뒤 바꿔치기한다 — 저장 도중 강제 종료돼도 반쯤 쓰인 파일이 남지 않는다."""
+    """임시 파일에 쓴 뒤 바꿔치기함. 저장 도중 꺼져도 반쯤 쓰인 파일이 남지 않음."""
     folder = os.path.dirname(path)
     if folder:
         os.makedirs(folder, exist_ok=True)
@@ -85,7 +85,7 @@ def natural_key(text):
 
 
 def norm_out(text, strip_leading=False):
-    """비교용 정규화: 줄 끝 공백과 맨 끝 빈 줄은 무시하고, 나머지는 그대로 비교한다."""
+    """비교하기 전에 줄 끝 공백과 맨 끝 빈 줄을 지움."""
     lines = [ln.rstrip() for ln in text.replace("\r\n", "\n").replace("\r", "\n").split("\n")]
     while lines and lines[-1] == "":
         lines.pop()
@@ -107,10 +107,10 @@ def indent(text, prefix="    "):
     return "\n".join(prefix + ln for ln in text.split("\n"))
 
 
-# ───────────────────────── 문제 은행 ─────────────────────────
+# 문제 은행
 
 def all_set_ids():
-    """problems/ 아래에서 meta.json 이 있는 폴더를 세트로 인식한다(폴더만 추가하면 확장됨)."""
+    """problems/ 아래에서 meta.json 이 있는 폴더를 세트로 봄."""
     ids = []
     if os.path.isdir(PROBLEMS_DIR):
         for name in os.listdir(PROBLEMS_DIR):
@@ -125,7 +125,7 @@ def all_set_ids():
 
 
 def resolve_set(token):
-    """'3', 's3', 's03', 'm1' 같은 입력을 세트 ID 로 바꾼다."""
+    """'3', 's3', 's03', 'm1' 같은 입력을 세트 ID 로 바꿈."""
     ids = all_set_ids()
     if token in ids:
         return token
@@ -162,7 +162,7 @@ def plain_secret_paths(set_dir):
 
 
 def load_secrets(set_dir):
-    """정답·해설을 {상대경로: 내용} 으로 반환. sealed.json 위에 평문 파일(출제자 작업본)을 덮어쓴다."""
+    """정답·해설을 {상대경로: 내용} 으로 돌려줌. 평문 파일(출제자 작업본)이 있으면 sealed.json 의 내용 대신 씀."""
     files = {}
     sealed = os.path.join(set_dir, "sealed.json")
     if os.path.isfile(sealed):
@@ -199,13 +199,13 @@ def set_title(s):
     return "%d차시 · %s" % (int(m.group(1)), title) if m else title
 
 
-# ───────────────────────── 퀴즈 채점 ─────────────────────────
+# 퀴즈 채점
 
 UNPARSED = object()
 
 
 def parse_quiz_answers(path):
-    """quiz.py 의 `Q1 = 값` 대입문을 읽는다. 코드를 실행하지 않고 리터럴만 해석한다."""
+    """quiz.py 의 `Q1 = 값` 대입문을 읽음. 코드를 실행하지 않고 리터럴만 해석함."""
     try:
         tree = ast.parse(read_text(path))
     except SyntaxError as e:
@@ -221,7 +221,7 @@ def parse_quiz_answers(path):
 
 
 def check_quiz_answer(q, value):
-    """'ok' | 'wrong' | 'blank' 를 반환한다. 부분 점수는 없다."""
+    """'ok' | 'wrong' | 'blank' 를 돌려줌. 부분 점수는 없음."""
     if value is None or value == "" or value == []:
         return "blank"
     if value is UNPARSED:
@@ -245,10 +245,10 @@ def check_quiz_answer(q, value):
     return "ok" if canon(value) in {canon(a) for a in q["answer"]} else "wrong"
 
 
-# ───────────────────────── 코드 문제 채점 ─────────────────────────
+# 코드 문제 채점
 
 def check_fill(template, source):
-    """빈칸 채우기: 빈칸 이외의 부분을 건드리지 않았는지 확인한다. 문제가 있으면 안내 문구를 반환."""
+    """빈칸을 다 채웠는지, 빈칸 밖을 고쳤는지 확인함. 걸리는 데가 있으면 안내 문구를 돌려줌."""
     t_lines = norm_out(template).split("\n")
     s_lines = norm_out(source).split("\n")
     if BLANK_RE.search("\n".join(s_lines)):
@@ -263,9 +263,8 @@ def check_fill(template, source):
 
 
 def run_cases(spec, source_path, limit=None):
-    """제출 파일을 별도 프로세스에서 실행해 테스트별 결과를 돌려준다.
-    반환: {"fatal": 문법 오류 등 | None, "cases": [{ok, input, want, got, detail?}], "timed_out": bool, "total": 실행하려던 수, "stderr": str}
-    limit 를 주면 앞의 limit 개만 실행한다(화면의 '코드 실행' = 예시만)."""
+    """제출 파일을 별도 프로세스에서 실행해 테스트별 결과를 돌려줌.
+    limit 를 주면 앞의 limit 개만 실행함. 화면의 '코드 실행'이 예시만 돌릴 때 씀."""
     timeout = spec.get("timeout", DEFAULT_TIMEOUT)
     cases = spec["cases"] if limit is None else spec["cases"][:limit]
     with tempfile.TemporaryDirectory(prefix="study_", **TMP_OPTIONS) as tmp:
@@ -296,7 +295,7 @@ def run_cases(spec, source_path, limit=None):
 
 
 def run_problem(spec, source_path):
-    """모든 테스트를 돌린다. (통과 여부, 통과 수, 실패 설명) 반환."""
+    """모든 테스트를 돌리고 (통과 여부, 통과 수, 실패 설명) 을 돌려줌."""
     run = run_cases(spec, source_path)
     if run["fatal"]:
         return False, 0, run["fatal"]
@@ -307,7 +306,7 @@ def run_problem(spec, source_path):
         return False, passed, first_fail["detail"]
     if run["timed_out"]:
         return False, passed, (
-            "시간 초과 — %d번째 테스트가 %s초 안에 끝나지 않았습니다. 무한 루프가 없는지 확인하세요."
+            "시간 초과: %d번째 테스트가 %s초 안에 끝나지 않았습니다. 무한 루프가 없는지 확인하세요."
             % (len(cases) + 1, run["timeout"])
         )
     if len(cases) < run["total"]:
@@ -316,7 +315,7 @@ def run_problem(spec, source_path):
 
 
 def grade_problem(spec, path):
-    """('ok' | 'wrong' | 'blank', 설명) 반환. 시작 코드 그대로면 미제출(blank)로 본다."""
+    """('ok' | 'wrong' | 'blank', 설명) 을 돌려줌. 시작 코드에서 고친 데가 없으면 미제출(blank)로 봄."""
     if not os.path.isfile(path):
         return "blank", ""
     source = read_text(path)
@@ -333,7 +332,7 @@ def grade_problem(spec, path):
     return "wrong", "테스트 %d/%d 통과\n%s" % (passed, len(spec["cases"]), detail)
 
 
-# ── 여기부터는 별도 프로세스(_run)에서만 실행되는 채점 러너 ──
+# 채점 러너. 별도 프로세스(_run)에서만 실행됨
 
 class _Capture(io.StringIO):
     LIMIT = 1000000
@@ -345,7 +344,7 @@ class _Capture(io.StringIO):
 
 
 def _strict_eq(a, b):
-    """자료형까지 같아야 정답(예: 3 과 3.0, True 와 1 은 다르다). 실수는 미세 오차 허용."""
+    """자료형까지 같아야 같은 값으로 봄. 3 과 3.0, True 와 1 은 같지 않고, 실수끼리는 미세한 오차를 허용함."""
     if type(a) is not type(b):
         return False
     if isinstance(a, (list, tuple)):
@@ -384,7 +383,7 @@ def _case_want(mode, case):
 def _run_case(code, name, mode, case):
     stdin = io.StringIO(case.get("stdin", ""))
 
-    def fake_input(prompt=""):  # 안내 문구(prompt)는 출력에 포함하지 않는다
+    def fake_input(prompt=""):  # prompt 는 출력에 넣지 않음
         line = stdin.readline()
         if line == "":
             raise EOFError("input() 을 호출했지만 더 읽을 입력이 없습니다")
@@ -398,7 +397,7 @@ def _run_case(code, name, mode, case):
     try:
         with contextlib.redirect_stdout(out):
             exec(code, ns)
-            if mode != "io":  # 함수·클래스 정의 단계의 출력은 버린다
+            if mode != "io":  # 함수·클래스를 정의하면서 나온 출력은 버림
                 out.seek(0)
                 out.truncate()
             if mode == "call":
@@ -407,7 +406,7 @@ def _run_case(code, name, mode, case):
                 exec(compile(case["code"], "<테스트 코드>", "exec"), ns)
     except SystemExit:
         pass
-    except BaseException as error:  # 학생 코드의 어떤 오류든 '오답 + 설명'으로 돌려준다
+    except BaseException as error:  # 학생 코드에서 어떤 오류가 나도 오답과 설명으로 돌려줌
         message = "실행 중 오류: " + _error_text(error, name)
         return {"ok": False, "detail": _case_label(mode, case) + "\n" + message,
                 "input": _case_label(mode, case), "want": _case_want(mode, case), "got": message,
@@ -415,11 +414,11 @@ def _run_case(code, name, mode, case):
     finally:
         sys.stdin = real_stdin
 
-    shown = {"input": _case_label(mode, case), "want": _case_want(mode, case)}  # 화면 표시용(판정에는 쓰지 않는다)
+    shown = {"input": _case_label(mode, case), "want": _case_want(mode, case)}  # 화면 표시용. 판정에는 쓰지 않음
     if mode == "call":
         expected = ast.literal_eval(case["expected"])
         shown["got"] = clip(repr(value))
-        shown["printed"] = clip(norm_out(out.getvalue()))  # 함수 안에서 print 한 것(판정에는 쓰지 않는다)
+        shown["printed"] = clip(norm_out(out.getvalue()))  # 함수 안에서 print 한 내용
         if _strict_eq(value, expected):
             return dict(shown, ok=True)
         note = ""
@@ -435,11 +434,11 @@ def _run_case(code, name, mode, case):
             _case_label(mode, case), indent(clip(want) or "(출력 없음)"), indent(clip(got) or "(출력 없음)")))
     for fname, content in (case.get("expect_files") or {}).items():
         if not os.path.isfile(fname):
-            return dict(shown, ok=False, got="파일 '%s' 없음" % fname,
+            return dict(shown, ok=False, got="파일 '%s' 이(가) 없습니다." % fname,
                         detail="%s\n파일 '%s' 이(가) 만들어지지 않았습니다." % (_case_label(mode, case), fname))
         actual = norm_out(read_text(fname))
         if actual != norm_out(content):
-            return dict(shown, ok=False, got="파일 '%s' 내용이 다름" % fname,
+            return dict(shown, ok=False, got="파일 '%s' 의 내용이 다릅니다." % fname,
                         detail="%s\n파일 '%s' 의 내용이 다릅니다.\n기대한 내용:\n%s\n실제 내용:\n%s" % (
                             _case_label(mode, case), fname, indent(clip(norm_out(content)) or "(빈 파일)"),
                             indent(clip(actual) or "(빈 파일)")))
@@ -457,7 +456,7 @@ def _child_main(job_path):
     try:
         code = compile(read_text(job["source"]), name, "exec")
     except SyntaxError as error:
-        save("문법 오류(%s) — %s번째 줄: %s" % (type(error).__name__, error.lineno, error.msg))
+        save("문법 오류(%s), %s번째 줄: %s" % (type(error).__name__, error.lineno, error.msg))
         return
     save()
     for index, case in enumerate(job["cases"]):
@@ -470,10 +469,10 @@ def _child_main(job_path):
         save()
 
 
-# ───────────────────────── 세트 채점 · 출력 ─────────────────────────
+# 세트 채점 · 출력
 
 def grade_set(s, sub_dir):
-    """세트 하나를 채점해 항목 목록을 반환한다. 항목: id, label, points, earned, state, detail"""
+    """세트 하나를 채점한 항목 목록을 돌려줌."""
     items = []
 
     def add(item_id, label, points, state, detail=""):
@@ -509,7 +508,7 @@ def elapsed_note(s, sub_dir):
         return ""
     begin = datetime.datetime.fromisoformat(read_text(started).strip())
     minutes = int((datetime.datetime.now() - begin).total_seconds() // 60)
-    return "경과 %d분 / 제한 %d분%s" % (minutes, limit, " — 시간 초과!" if minutes > limit else "")
+    return "경과 %d분 / 제한 %d분%s" % (minutes, limit, " · 시간 초과" if minutes > limit else "")
 
 
 def print_report(s, items, sub_dir):
@@ -536,7 +535,7 @@ def started_sets(user):
 
 
 def grade_user(user, set_ids=None):
-    """[(세트, 항목 목록)] — 시작한 세트만 채점한다."""
+    """시작한 세트만 채점해 [(세트, 항목 목록)] 으로 돌려줌."""
     graded = []
     for sid in (set_ids or started_sets(user)):
         s = load_set(sid)
@@ -566,7 +565,7 @@ def render_markdown(user, graded):
     return "\n".join(lines)
 
 
-# ───────────────────────── 명령 ─────────────────────────
+# 명령
 
 def all_users():
     if not os.path.isdir(SUBMISSIONS_DIR):
@@ -580,7 +579,7 @@ def current_user(args):
     if not user and os.path.isfile(USER_FILE):
         user = read_text(USER_FILE).strip()
     if not user and sys.stdin.isatty():
-        print("처음이시군요. 내 깃허브 ID 를 입력하세요 (영문·숫자·-·_).")
+        print("처음 한 번만 내 깃허브 ID 를 입력하세요 (영문·숫자·-·_).")
         user = input("> ").strip()
         if not USER_RE.fullmatch(user):
             die("ID 는 영문·숫자·-·_ 만 쓸 수 있습니다.")
@@ -588,7 +587,7 @@ def current_user(args):
         write_text(USER_FILE, user + "\n")
         print("내 풀이 폴더: submissions/%s/\n" % user)
     if not user:
-        die("먼저 `python study.py init <내 깃허브 ID>` 로 내 풀이 폴더를 만들어 주세요.")
+        die("`python study.py init <내 깃허브 ID>` 로 내 풀이 폴더를 먼저 만들어 주세요.")
     if not USER_RE.fullmatch(user):
         die("ID 는 영문·숫자·-·_ 만 쓸 수 있습니다: %r" % user)
     return user
@@ -615,14 +614,14 @@ def cmd_list(args):
         if user and os.path.isdir(os.path.join(SUBMISSIONS_DIR, user, sid)):
             mine = " · 진행 중"
         week = s["meta"].get("week")
-        print("  %-4s %s — 퀴즈 %d문항, 코드 %d문제, %d점%s%s" % (
+        print("  %-4s %s: 퀴즈 %d문항, 코드 %d문제, %d점%s%s" % (
             sid, set_title(s), len(s["questions"]), len(s["problems"]), points,
             " (%s주차)" % week if week else "", mine))
 
 
 def quiz_stub(s):
     lines = [
-        "# %s — 퀴즈 답안지" % set_title(s),
+        "# %s 퀴즈 답안지입니다." % set_title(s),
         "# 문제지: problems/%s/quiz.md  (코드를 실행하지 말고 눈으로 풀어 보세요)" % s["id"],
         "#",
         "# 답 적는 법",
@@ -661,10 +660,10 @@ def cmd_start(args):
     if s["questions"]:
         print("  ② 퀴즈      : problems/%s/quiz.md 를 읽고 %s/quiz.py 에 답 적기" % (s["id"], rel))
     for p in s["problems"]:
-        print("  · %s  %s · %s (%d점) — problems/%s/%s/problem.md" % (
+        print("  · %s  %s · %s (%d점): problems/%s/%s/problem.md" % (
             p["id"], TYPE_LABEL[p["type"]], p["title"], p["points"], s["id"], p["id"]))
     if limit:
-        print("  ⏱ 제한 시간 %d분 — 지금부터 재기 시작합니다." % limit)
+        print("  제한 시간은 %d분이고 지금부터 잽니다." % limit)
     print("  채점: python study.py grade %s" % s["id"])
 
 
@@ -701,20 +700,20 @@ def cmd_status(args):
     all_earned = all_total = 0
     for sid in all_set_ids():
         if sid not in graded:
-            print("  ·  %-4s %s — 시작 전" % (sid, set_title(load_set(sid))))
+            print("  ·  %-4s %s: 시작 전" % (sid, set_title(load_set(sid))))
             continue
         s, items = graded[sid]
         earned, total, ratio = totals(items)
         all_earned += earned
         all_total += total
-        print("  %s %-4s %s — %d/%d점 (%d%%)" % (
+        print("  %s %-4s %s: %d/%d점 (%d%%)" % (
             "✅" if ratio >= PASS_RATIO else "·", sid, set_title(s), earned, total, round(ratio * 100)))
     if all_total:
         print("  ── 시작한 세트 합계 %d/%d점 (%d%%)" % (all_earned, all_total, round(all_earned / all_total * 100)))
 
 
 def board_rows():
-    """[(사용자, {세트ID: 득점률}, 총득점, 총점)] — 점수 높은 순."""
+    """[(사용자, {세트ID: 득점률}, 총득점, 총점)] 을 점수 높은 순으로 돌려줌."""
     rows = []
     for user in all_users():
         ratios, earned_sum, total_sum = {}, 0, 0
@@ -787,10 +786,10 @@ def cmd_reset(args):
     die("%s 세트에 '%s' 문제가 없습니다. (예: p01)" % (s["id"], args.item))
 
 
-# ───────────────────────── 적응형 학습 명령 ─────────────────────────
+# 적응형 학습 명령
 
 def round_as_set(rnd):
-    """라운드를 print_report 가 받는 세트 모양으로 감싼다."""
+    """라운드를 print_report 가 받는 세트 모양으로 감쌈."""
     import adaptive
     return {"id": rnd["id"], "meta": {"title": adaptive.round_title(rnd)}}
 
@@ -798,11 +797,11 @@ def round_as_set(rnd):
 def announce_round(user, rnd, folder):
     import adaptive
     title = round_as_set(rnd)["meta"]["title"]
-    print("%s 준비 — %d문항" % (title, len(rnd["items"])))
+    print("%s %d문항이 준비되어 있습니다." % (title, len(rnd["items"])))
     print("  문제지 : %s/README.md" % os.path.relpath(folder, ROOT))
     print("  답안   : 같은 폴더의 quiz.py 와 .py 파일")
     if rnd["kind"] == "diag":
-        print("  약 30분. 코드는 실행하지 말고 눈으로 풀어 주세요. 출발점을 정하는 용도라 점수는 중요하지 않습니다.")
+        print("  약 30분. 코드는 실행하지 말고 눈으로 풀어 주세요. 진단 점수로는 단원별 출발 레벨만 정합니다.")
     else:
         print("  전 단원이 섞여 있고 약한 단원이 더 많이 나옵니다. 평균 레벨 %.1f." % rnd.get("avg_level", 0))
         print("  문항 수 기준: %s" % rnd.get("size_reason", "필요에 따라"))
@@ -810,7 +809,7 @@ def announce_round(user, rnd, folder):
 
 
 def print_round_result(sess, result):
-    """채점 결과와 가이드를 출력한다(회차 채점 공통)."""
+    """회차 채점 결과와 가이드를 출력함."""
     import adaptive
     rnd = adaptive.find_round(sess.prof, result["round"]["id"])
     print_report(round_as_set(rnd), result["items"], sess.folder(rnd["id"]))
@@ -835,7 +834,7 @@ def grade_round_cmd(user, rid):
 
 
 def cmd_go(args):
-    """명령 하나로 다음 할 일을 이어 간다: 진단 → 풀기 → 채점·판정 → 다음 회차 → … → 모의고사."""
+    """다음 할 일을 이어서 함. 순서는 진단 → 풀기 → 채점·판정 → 다음 회차 → … → 모의고사."""
     import adaptive
     import session
     user = current_user(args)
@@ -885,7 +884,7 @@ def cmd_me(args):
     user = current_user(args)
     cat = adaptive.catalog()
     prof = adaptive.load_profile(user)
-    print("%s 님의 학습 현황 — 라운드 %d회, 시도 %d문항" % (user, len(prof["rounds"]), len(adaptive.first_attempts(prof))))
+    print("%s 님의 학습 현황 (라운드 %d회, 시도 %d문항)" % (user, len(prof["rounds"]), len(adaptive.first_attempts(prof))))
     print(adaptive.guide_text(prof, cat, show_next=True))
 
 
@@ -898,12 +897,12 @@ def cmd_analyze(args):
 
 
 def build_parser():
-    parser = argparse.ArgumentParser(description="ROKEY 파이썬 스터디 — `python study.py` 만 치면 화면(창)이 열립니다. 터미널 모드는 뒤에 go 를 붙입니다")
+    parser = argparse.ArgumentParser(description="ROKEY 파이썬 스터디 도구입니다. `python study.py` 만 치면 화면(창)이 열리고, 터미널 모드는 뒤에 go 를 붙입니다.")
     sub = parser.add_subparsers(dest="command")
 
     sub.add_parser("gui", help="(기본) 화면(창)으로 열기: 문제 받기 · 풀기 · 실행 · 채점 · 해설 · 제출")
 
-    p = sub.add_parser("go", help="터미널 모드 — 다음 할 일 이어 가기: 진단 → 풀기 → 채점 → 다음 라운드")
+    p = sub.add_parser("go", help="터미널 모드로 다음 할 일 이어 가기: 진단 → 풀기 → 채점 → 다음 라운드")
     p.add_argument("--user")
     p.set_defaults(func=cmd_go)
 
@@ -949,7 +948,7 @@ def build_parser():
     p = sub.add_parser("board", help="전체 스터디원 현황판")
     p.set_defaults(func=cmd_board)
 
-    p = sub.add_parser("explain", help="해설·정답 보기 (먼저 스스로 다시 풀어 본 뒤에!)")
+    p = sub.add_parser("explain", help="해설·정답 보기 (스스로 다시 풀어 본 뒤에 보세요)")
     p.add_argument("set", help="세트 또는 라운드 문항 ID (예: 3, s03_Q4)")
     p.add_argument("item", nargs="?", help="문항 ID (예: Q3, p01)")
     p.set_defaults(func=cmd_explain)
@@ -974,12 +973,12 @@ def main(argv=None):
             pass
     parser = build_parser()
     args = parser.parse_args(argv)
-    if args.command in (None, "gui"):  # 화면으로 연다. 못 열어도 터미널 모드(cmd_go)로 넘어가 채점하지 않는다
+    if args.command in (None, "gui"):  # 화면을 못 열어도 터미널 모드(cmd_go)로 넘어가 채점하지 않음
         import bootstrap
         sys.exit(bootstrap.launch(argv))
     args.func(args)
 
 
 if __name__ == "__main__":
-    import study  # __main__ 과 study 두 벌로 로드되지 않게 모듈 쪽으로 넘긴다
+    import study  # __main__ 과 study 두 벌로 로드되지 않게 모듈 쪽으로 넘김
     study.main()

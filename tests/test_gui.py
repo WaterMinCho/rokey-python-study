@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""화면 테스트 — 창을 화면에 내보내지 않고(offscreen) 위젯을 직접 눌러 처음 실행부터 다시 채점까지 돌려 본다.
+"""화면 테스트. 창을 화면에 내보내지 않고(offscreen) 위젯을 직접 눌러 처음 실행부터 다시 채점까지 돌려 봄.
 
-실제 문제 은행을 쓰되 풀이 폴더는 임시 폴더로 돌리고, 제출 모듈은 가짜를 끼운다. PyQt6 가 없으면 전부 건너뛴다.
+실제 문제 은행을 쓰되 풀이 폴더는 임시 폴더로 돌리고, 제출 모듈은 가짜를 끼움. PyQt6 가 없으면 전부 건너뜀.
 실행: python -m unittest discover -s tests
 """
 import contextlib
@@ -58,7 +58,7 @@ def click(widget):
 
 
 class FakeGitFlow:
-    """제출 모듈의 계약만 흉내 낸다: 예외 없이 dict 를 돌려준다. replies 에 메서드별 응답을 넣어 상황을 만든다."""
+    """제출 모듈처럼 예외 없이 dict 를 돌려주는 가짜. replies 에 메서드별 응답을 넣어 상황을 만듦."""
 
     def __init__(self):
         self.calls, self.replies, self.delay = [], {}, 0
@@ -88,7 +88,7 @@ def right_answer(sess, view):
 
 
 class GuiTest(unittest.TestCase):
-    user = "tester"  # None 이면 처음 실행(ID 를 묻는다)
+    user = "tester"  # None 이면 처음 실행이라 ID 를 물음
     git_reason = ""  # 채우면 제출 모듈을 불러오지 못한 상황
     expect_error = False  # 오류 대화상자가 뜨는 것이 정상인 테스트
 
@@ -112,7 +112,7 @@ class GuiTest(unittest.TestCase):
         self.win.close()
         self.win.deleteLater()
         pump()
-        crashed = os.path.isdir(self.logs) and not self.expect_error  # 슬롯 안의 예외는 테스트로 올라오지 않고 기록만 남는다
+        crashed = os.path.isdir(self.logs) and not self.expect_error  # 슬롯 안의 예외는 테스트로 올라오지 않고 기록만 남음
         report = "".join(study.read_text(os.path.join(self.logs, name)) for name in os.listdir(self.logs)) if crashed else ""
         if errors.state["dialog"] is not None:
             errors.state["dialog"].close()
@@ -122,7 +122,7 @@ class GuiTest(unittest.TestCase):
         shutil.rmtree(self.tmp, ignore_errors=True)
         self.assertFalse(crashed, report)
 
-    # ── 도우미 ──
+    # 도우미
 
     def idle(self):
         pump()
@@ -137,14 +137,14 @@ class GuiTest(unittest.TestCase):
         return self.win.pages.currentWidget()
 
     def choose(self, key):
-        """떠 있는 대화상자에서 버튼을 누른다."""
+        """떠 있는 대화상자에서 버튼을 누름."""
         dialog = self.win.dialog
         self.assertTrue(dialog.isVisible())
         click(dialog.buttons[key])
         return dialog
 
     def select(self, predicate):
-        """회차 화면에서 조건에 맞는 첫 문항으로 간다."""
+        """회차 화면에서 조건에 맞는 첫 문항으로 감."""
         page = self.win.round_page
         item = next(it for it in page.view["items"] if predicate(it))
         page.listw.setCurrentRow(item["no"] - 1)
@@ -153,7 +153,7 @@ class GuiTest(unittest.TestCase):
         return item
 
     def fill(self, item, value):
-        """지금 보이는 문항에 위젯으로 답을 넣는다."""
+        """지금 보이는 문항에 위젯으로 답을 넣음."""
         page = self.win.round_page
         if item["kind"] == "code":
             page.code_panel.editor.setPlainText(value)
@@ -167,7 +167,7 @@ class GuiTest(unittest.TestCase):
             page.text_panel.single.setText(value)
 
     def answer_round(self, skip=()):
-        """정답을 위젯으로 넣는다. skip 의 번호는 비워 둔다."""
+        """정답을 위젯으로 넣음. skip 의 번호는 비워 둠."""
         page = self.win.round_page
         for item in list(page.view["items"]):
             if item["no"] not in skip:
@@ -175,7 +175,7 @@ class GuiTest(unittest.TestCase):
                 self.fill(item, right_answer(self.win.session, item))
 
     def make_round(self, rid, keys, completed=False):
-        """고른 문항으로 회차를 직접 만든다(진단·회차는 무작위라 유형이 빠질 수 있다)."""
+        """진단·회차는 무작위라 유형이 빠질 수 있어, 고른 문항으로 회차를 직접 만듦."""
         sess = self.win.session
         rnd = {"id": rid, "kind": "round", "focus": [], "items": keys, "retest": [], "shortages": [], "created": adaptive.now(),
                "tries": 0, "avg_level": 1}
@@ -204,7 +204,7 @@ class FirstRunTest(GuiTest):
     def test_from_first_run_to_regrade(self):
         win, home, page, result = self.win, self.win.home, self.win.round_page, self.win.result_page
 
-        # 처음 실행: ID 를 묻고 형식을 검사한 뒤 새 문제부터 받는다
+        # 처음 실행: ID 를 묻고 형식을 검사한 뒤 새 문제부터 받음
         win.boot()
         dialog = win.dialog
         self.assertTrue(dialog.isVisible())
@@ -234,7 +234,7 @@ class FirstRunTest(GuiTest):
         self.assertFalse(page.run_btn.isVisible())
         self.assertFalse(page.banner.isVisible())
 
-        # 객관식: 하나만 선택되고 다시 누르면 풀린다
+        # 객관식: 하나만 선택되고 다시 누르면 풀림
         choice = self.select(lambda it: it["type"] == "choice" and not it["multi"])
         buttons = page.choice_panel.buttons
         self.assertEqual(len(buttons), choice["choices"])
@@ -246,10 +246,10 @@ class FirstRunTest(GuiTest):
         self.assertFalse(any(b.isChecked() for b in buttons))
         self.assertIn("안 풂", page.listw.item(choice["no"] - 1).text())
         click(buttons[1])
-        pump(save_delay())  # 다른 문항으로 가지 않아도 잠시 뒤 저장된다
+        pump(save_delay())  # 다른 문항으로 가지 않아도 잠시 뒤 저장됨
         self.assertEqual(self.saved_quiz("d1")[choice["id"]], 2)
 
-        # 정답으로 채우되 두 문항은 비워 둔다 → 확인 대화상자가 번호를 보여 준다
+        # 정답으로 채우되 두 문항은 비워 둠 → 확인 대화상자가 번호를 보여 줌
         self.answer_round(skip={2, 5})
         self.select(lambda it: it["no"] == 2)
         self.fill(page.current, [] if page.current["type"] == "choice" else "")
@@ -297,7 +297,7 @@ class FirstRunTest(GuiTest):
         before = len(self.attempts())
         self.fill(code, right_answer(win.session, code))
         click(page.run_btn)
-        self.assertFalse(page.stack.isEnabled())  # 실행 중에는 입력을 잠근다
+        self.assertFalse(page.stack.isEnabled())  # 실행 중에는 입력을 잠금
         self.idle()
         self.assertTrue(page.stack.isEnabled())
         self.assertIn("통과", page.code_panel.console.toPlainText())
@@ -370,7 +370,7 @@ class HomeAndGitTest(GuiTest):
     def test_tool_update_at_start_restarts(self):
         self.git.replies["sync"] = {"status": "ok", "message": "프로그램이 새 버전으로 바뀌었습니다. 다시 시작합니다.", "restart": True, "changed": True}
         self.boot()
-        self.assertIsNone(self.win.session)  # 옛 코드로 풀이 기록을 열지 않는다
+        self.assertIsNone(self.win.session)  # 옛 코드로 풀이 기록을 열지 않음
         self.assertIn("새 버전", self.win.dialog.text.text())
         self.choose("ok")
         self.assertTrue(self.win.restart)
@@ -382,7 +382,7 @@ class HomeAndGitTest(GuiTest):
         self.git.replies["submit"] = {"status": "ok", "message": "제출했습니다. 브라우저에서 PR 을 확인하세요.", "pr_url": url}
         self.git.delay = 0.3
         click(self.win.home.git_btn)
-        self.assertFalse(self.win.home.git_btn.isEnabled())  # 도는 동안 잠근다
+        self.assertFalse(self.win.home.git_btn.isEnabled())  # 도는 동안 잠금
         self.assertTrue(self.win.home.busy_bar.isVisible())
         self.idle()
         self.git.delay = 0
@@ -395,7 +395,7 @@ class HomeAndGitTest(GuiTest):
         self.git.replies["submit"] = {"status": "auth", "message": "저장소에 올릴 권한이 없습니다.", "pr_url": None, "detail": "git push: 403"}
         click(self.win.home.git_btn)
         self.idle()
-        self.assertEqual(self.opened, [url])  # 실패하면 브라우저를 열지 않는다
+        self.assertEqual(self.opened, [url])  # 실패하면 브라우저를 열지 않음
         self.assertIn("권한이 없습니다", self.win.dialog.text.text())
         self.choose("ok")
 
@@ -411,7 +411,7 @@ class HomeAndGitTest(GuiTest):
         self.choose("remote")
         self.idle()
         self.assertEqual(self.git.calls, ["sync", "submit", "resolve:remote"])
-        self.assertIsNot(self.win.session, before)  # 내 풀이 폴더가 바뀌었으므로 새로 읽는다
+        self.assertIsNot(self.win.session, before)  # 내 풀이 폴더가 바뀌었으므로 새로 읽음
         self.assertIn("가져왔습니다", self.win.dialog.text.text())
         self.assertIn("/보관함/사본", self.win.dialog.text.text())
         self.choose("ok")
@@ -443,7 +443,7 @@ class HomeAndGitTest(GuiTest):
         self.idle()
         self.assertIsNot(self.win.session, before)
         self.assertIn("새 문제를 받았습니다", self.win.dialog.text.text())
-        self.assertFalse(self.win.home.notice.isVisible())  # 시작할 때의 알림은 지운다
+        self.assertFalse(self.win.home.notice.isVisible())  # 시작할 때의 알림은 지움
         self.choose("ok")
 
     def test_pending_answers_are_written_before_submitting(self):
@@ -479,7 +479,7 @@ class HomeAndGitTest(GuiTest):
         good = study.read_text(path)
         study.write_text(path, "<<<<<<< HEAD\n" + good + "=======\n>>>>>>> main\n")
         click(self.win.home.action_btn)
-        self.assertIs(self.page(), self.win.home)  # 열지 않고 복구를 제안한다
+        self.assertIs(self.page(), self.win.home)  # 열지 않고 복구를 제안함
         self.assertIn("quiz.py.bak", self.win.dialog.text.text())
         self.choose("repair")
         self.assertTrue(os.path.isfile(path + ".bak"))
@@ -487,7 +487,7 @@ class HomeAndGitTest(GuiTest):
         self.assertEqual(sum(1 for it in page.view["items"] if it["answered"]), 3)
         self.assertIn("3개", self.win.dialog.text.text())
         self.choose("ok")
-        # 풀던 중에 답안지가 깨지면: 저장을 거부하고, 복구한 뒤에 방금 답을 다시 쓴다
+        # 풀던 중에 답안지가 깨지면 저장을 거부하고, 복구한 뒤에 방금 답을 다시 씀
         study.write_text(path, study.read_text(path) + "x = (\n")
         item = self.select(lambda it: it["no"] == 4)
         self.fill(item, [2] if item["type"] == "choice" else "y")
@@ -539,7 +539,7 @@ class HomeAndGitTest(GuiTest):
         click(self.win.round_page.submit_btn)
         dialog = self.win.dialog
         self.assertIn("아직 작성한 문항이 없습니다", dialog.text.text())
-        self.assertFalse(any(button.isDefault() or button.autoDefault() for button in dialog.buttons.values()))  # Enter 로 제출되지 않는다
+        self.assertFalse(any(button.isDefault() or button.autoDefault() for button in dialog.buttons.values()))  # Enter 로 제출되지 않음
         self.choose("")
         self.assertEqual(self.attempts(), [])
 
@@ -581,7 +581,7 @@ class ErrorTest(GuiTest):
         click(dialog.copy)
         self.assertIn("ZeroDivisionError", QGuiApplication.clipboard().text())
         dialog.close()
-        click(self.win.home.action_btn)  # 오류 뒤에도 계속 쓸 수 있다
+        click(self.win.home.action_btn)  # 오류 뒤에도 계속 쓸 수 있음
         self.assertIs(self.page(), self.win.round_page)
 
     def test_core_exit_in_the_worker_does_not_kill_the_window(self):
@@ -593,7 +593,7 @@ class ErrorTest(GuiTest):
         self.assertEqual(done, ["fail"])
         self.assertTrue(self.win.isVisible())
         self.assertIn("SystemExit", errors.state["dialog"].view.toPlainText())
-        self.assertTrue(self.win.home.action_btn.isEnabled())  # 잠금이 풀린다
+        self.assertTrue(self.win.home.action_btn.isEnabled())  # 잠금이 풀림
 
     def test_session_error_is_shown_as_is(self):
         self.expect_error = False
@@ -642,16 +642,16 @@ class BankTest(GuiTest):
         page = self.win.round_page
         single, multi, short, output, code, fill, _ = page.view["items"]
 
-        # 복수 정답 객관식: 여러 개가 함께 선택된다
+        # 복수 정답 객관식: 여러 개가 함께 선택됨
         self.select(lambda it: it is multi)
         self.assertIn("모두", page.choice_panel.hint.text())
         click(page.choice_panel.buttons[2])
         click(page.choice_panel.buttons[0])
         self.assertEqual([b.isChecked() for b in page.choice_panel.buttons[:3]], [True, False, True])
-        pump(save_delay())  # 다른 문항으로 가지 않아도 입력이 멈추면 저장된다
+        pump(save_delay())  # 다른 문항으로 가지 않아도 입력이 멈추면 저장됨
         self.assertEqual(self.saved_quiz("r90")[multi["id"]], [1, 3])
 
-        # 단답: 한 줄, 한글도 그대로
+        # 단답: 한 줄, 한글도 입력한 대로 저장됨
         self.select(lambda it: it is short)
         self.assertIn("따옴표 없이", page.text_panel.hint.text())
         self.assertTrue(page.text_panel.single.isVisible())
@@ -661,18 +661,18 @@ class BankTest(GuiTest):
         pump(save_delay())
         self.assertEqual(self.saved_quiz("r90")[short["id"]], "abc 1 한글")
 
-        # 출력 예측: 여러 줄과 앞 공백이 보이는 그대로
+        # 출력 예측: 여러 줄과 앞 공백이 보이는 대로 저장됨
         self.select(lambda it: it is output)
         self.assertTrue(page.text_panel.multi.isVisible())
         self.assertTrue(page.text_panel.multi.font().fixedPitch())
         QTest.keyClicks(page.text_panel.multi, "line 1")
         QTest.keyClick(page.text_panel.multi, Qt.Key.Key_Return)
         QTest.keyClicks(page.text_panel.multi, "  line 2")
-        self.select(lambda it: it is single)  # 문항을 옮기면 기다리지 않고 바로 저장된다
+        self.select(lambda it: it is single)  # 문항을 옮기면 기다리지 않고 바로 저장됨
         self.assertEqual(self.saved_quiz("r90")[output["id"]].strip("\n"), "line 1\n  line 2")
         self.assertEqual(self.saved_quiz("r90")[multi["id"]], [1, 3])
 
-        # 코드: 키로 친 내용이 파일에 그대로, 실행 결과에는 함수 안에서 출력한 내용도 보인다
+        # 코드: 키로 친 내용이 파일에 똑같이 들어가고, 실행 결과에는 함수 안에서 출력한 내용도 보임
         self.select(lambda it: it is code)
         path = os.path.join(self.win.session.folder("r90"), code["id"] + ".py")
         name = self.win.session.cat[code["key"]]["spec"]["cases"][0]["call"].split("(")[0]
@@ -685,14 +685,14 @@ class BankTest(GuiTest):
         QTest.keyClicks(editor, "return None")
         pump(save_delay())
         self.assertEqual(study.read_text(path), "def %s(*args):\n    print('debug', len(args))\n    return None\n" % name)
-        self.assertIn("자동 저장됨", page.status.text())
+        self.assertIn("자동 저장했습니다", page.status.text())
         click(page.run_btn)
         self.idle()
         shown = page.code_panel.console.toPlainText()
         for word in ("실패", "기대한 반환값", "실제 반환값", "None", "함수 안 출력", "debug", "기록되지 않습니다"):
             self.assertIn(word, shown)
 
-        # 무한 루프 코드도 화면을 멈추지 않는다
+        # 무한 루프 코드도 화면을 멈추지 않음
         editor.setPlainText("def %s(*args):\n    while True:\n        pass\n" % name)
         ticks = []
         timer = QTimer()
@@ -723,13 +723,13 @@ class BankTest(GuiTest):
         self.assertEqual(study.read_text(path), code["starter"])
         self.assertFalse(code["answered"])
 
-        # 빈칸 채우기: 안내가 나오고, 빈칸을 그대로 두고 실행하면 이유를 알려 준다
+        # 빈칸 채우기: 안내가 나오고, 빈칸을 안 채우고 실행하면 이유를 알려 줌
         self.select(lambda it: it is fill)
         self.assertIn("빈칸(____)만", page.code_panel.hint.text())
         click(page.run_btn)
         self.idle()
         self.assertIn("빈칸", page.code_panel.console.toPlainText())
-        self.assertEqual(self.attempts(), [])  # 실행은 기록하지 않는다
+        self.assertEqual(self.attempts(), [])  # 실행은 기록하지 않음
 
     def test_every_bank_item_shows_without_errors(self):
         self.boot()
@@ -750,7 +750,7 @@ class BankTest(GuiTest):
             if item["kind"] == "code":
                 self.assertEqual(page.code_panel.editor.toPlainText(), item["starter"])
                 self.assertNotIn("\t", item["starter"])
-        self.assertEqual(page.dirty, {})  # 보기만 해서는 아무것도 저장하지 않는다
+        self.assertEqual(page.dirty, {})  # 보기만 해서는 아무것도 저장하지 않음
         self.win.show_result("r99")
         result = self.win.result_page
         for row in range(1, result.listw.count()):
@@ -825,7 +825,7 @@ class EditorTest(unittest.TestCase):
         self.assertTrue(self.ed.font().fixedPitch())
         self.assertFalse(hasattr(self.ed, "completer"))
         self.ed.setReadOnly(True)
-        self.assertEqual(self.keys(Qt.Key.Key_Tab, Qt.Key.Key_Return), "")  # 잠겨 있을 때는 키로도 바뀌지 않는다
+        self.assertEqual(self.keys(Qt.Key.Key_Tab, Qt.Key.Key_Return), "")  # 잠겨 있을 때는 키로도 바뀌지 않음
 
 
 def save_delay():

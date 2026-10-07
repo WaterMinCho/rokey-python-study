@@ -36,7 +36,7 @@ class HomePage(QWidget):
         self.win = win
         inner = QWidget()
         inner.setObjectName("page")
-        scroll = QScrollArea()  # 창이 작으면 내용을 찌그러뜨리지 않고 스크롤한다
+        scroll = QScrollArea()  # 창이 작으면 내용을 찌그러뜨리지 않고 스크롤함
         scroll.setWidgetResizable(True)
         scroll.setFrameShape(QFrame.Shape.NoFrame)
         scroll.setWidget(inner)
@@ -172,12 +172,12 @@ class HomePage(QWidget):
             item = QListWidgetItem("%s    %d / %d점 (%d%%)" % (r["title"], earned, total, round(100 * earned / total) if total else 0))
             item.setData(Qt.ItemDataRole.UserRole, r["id"])
             self.rounds.addItem(item)
-        self.rounds_hint.setText("회차를 누르면 결과와 해설을 다시 볼 수 있습니다. 점수는 첫 제출 기준입니다." if done else "아직 제출한 회차가 없습니다.")
+        self.rounds_hint.setText("회차를 누르면 결과와 해설을 다시 볼 수 있습니다. 목록에는 첫 제출 때 받은 점수가 나옵니다." if done else "아직 제출한 회차가 없습니다.")
         usable = win.gitflow is not None
         self.git_btn.setEnabled(usable)
         self.sync_btn.setEnabled(usable)
-        self.git_hint.setText("제출: 내 풀이 폴더를 올리고 브라우저에서 PR 페이지를 엽니다.\n문제 받기: 새로 올라온 문제를 내려받습니다. 내 풀이는 그대로 둡니다."
-                              if usable else "지금은 제출과 문제 받기를 쓸 수 없습니다. 풀이와 채점은 그대로 됩니다.\n" + win.git_reason)
+        self.git_hint.setText("제출: 내 풀이 폴더를 올리고 브라우저에서 PR 페이지를 엽니다.\n문제 받기: 새로 올라온 문제를 내려받습니다. 내 풀이는 바꾸지 않습니다."
+                              if usable else "지금은 제출과 문제 받기를 쓸 수 없습니다. 풀이와 채점은 계속할 수 있습니다.\n" + win.git_reason)
         note = win.notice
         self.notice.setVisible(bool(note))
         if note:

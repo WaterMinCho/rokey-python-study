@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""제출(git) — 화면의 [문제 받기]·[제출] 이 부르는 창구.
+"""화면의 [문제 받기]·[제출] 이 부르는 git 작업.
 
-원칙은 두 가지다.
-  ① submissions/<ID>/ 는 나만 쓰므로 작업 폴더의 내용이 언제나 정답이다.
-  ② 그 밖은 언제나 origin/main 과 같아야 한다.
-그래서 병합하지 않는다. "origin/main 의 트리 + 내 폴더"로 커밋을 직접 만들어(임시 인덱스, commit-tree)
-study/<ID> 브랜치에 fast-forward 로만 올린다. 강제 푸시·reset --hard·clean·stash 는 쓰지 않는다.
+submissions/<ID>/ 는 나만 쓰므로 작업 폴더의 내용을 정답으로 봄. 그 밖은 origin/main 과 같게 맞춤.
+병합하지 않고 "origin/main 의 트리 + 내 폴더"로 커밋을 직접 만들어(임시 인덱스, commit-tree)
+study/<ID> 브랜치에 fast-forward 로만 올림. 강제 푸시·reset --hard·clean·stash 는 쓰지 않음.
 
-공개 메서드는 예외를 올리지 않고 dict 를 돌려준다. 브라우저는 열지 않는다(화면이 pr_url 을 연다).
-git 판정은 종료 코드와 --porcelain 출력으로 한다. 사람용 문구는 원격 실패 이유를 가릴 때만 본다(remote_problem).
+공개 메서드는 예외를 올리지 않고 dict 를 돌려줌. 브라우저는 화면이 pr_url 로 열고 여기서는 열지 않음.
+git 결과는 종료 코드와 --porcelain 출력으로 판정하고, 사람용 문구는 원격 실패 이유를 가릴 때만 봄(remote_problem).
 """
 import collections
 import json
@@ -26,20 +24,20 @@ import urllib.request
 import study
 
 MAIN = "refs/remotes/origin/main"
-FETCH_REFSPECS = ("+refs/heads/main:refs/remotes/origin/main",  # clone 방식(--single-branch 등)에 기대지 않는다
+FETCH_REFSPECS = ("+refs/heads/main:refs/remotes/origin/main",  # --single-branch 로 clone 한 폴더에서도 받게 직접 적음
                   "+refs/heads/study/*:refs/remotes/origin/study/*")
 TOOL_FILES = ("study.py", "adaptive.py", "session.py", "mdlite.py", "gitflow.py", "bootstrap.py")
 TOOL_DIRS = ("gui/",)
 STALLED = (("MERGE_HEAD", "merge"), ("rebase-merge", "rebase"), ("rebase-apply", "rebase"),
            ("CHERRY_PICK_HEAD", "cherry-pick"), ("REVERT_HEAD", "revert"))
-PUSH_PATIENCE = 5  # push 제한 시간 = timeout 의 몇 배. 첫 push 는 로그인 창(브라우저)에서 시간이 걸린다
-FETCH_LIMIT = 20  # 받기(fetch)는 로그인이 필요 없으니 오래 기다리지 않는다(시작할 때 화면이 여기서 기다린다)
+PUSH_PATIENCE = 5  # push 제한 시간 = timeout 의 몇 배. 첫 push 는 브라우저 로그인 창에서 시간이 걸림
+FETCH_LIMIT = 20  # fetch 는 로그인 없이 되고, 시작할 때 화면이 이 시간만큼 기다리므로 짧게 잡음
 PR_WAIT, PR_POLL = 30, 3  # 올린 뒤 저장소의 Actions 가 PR 을 만들 때까지 기다리는 시간과 확인 간격(초)
 URL_LIMIT = 2000
 REMOTE_RE = re.compile(r"github\.com[:/]+([^/\s:]+)/([^/\s]+?)(?:\.git)?/?$")
-BROKEN = object()  # profile.json 은 있는데 읽을 수 없다
+BROKEN = object()  # profile.json 이 있는데 읽지 못함
 
-# 원격 실패 이유를 가리는 문구(LC_ALL=C 의 영어 출력, 소문자로 비교). 위에서부터 먼저 맞는 것을 쓴다.
+# 원격 실패 이유를 가리는 문구. LC_ALL=C 의 영어 출력을 소문자로 비교하고, 위에서부터 먼저 맞는 것을 씀
 REMOTE_MARKS = (
     ("login", ("terminal prompts disabled", "authentication failed", "error: 401", "permission denied (publickey")),
     ("denied", ("error: 403", "denied to ", "write access to repository not granted")),
@@ -78,7 +76,7 @@ M_NOTHING = "새로 제출할 풀이가 없습니다. 지난번에 올린 내용
 M_EMPTY = "아직 제출할 풀이가 없습니다. 문제를 푼 뒤 다시 눌러 주세요."
 M_ADDED = "제출했습니다. 열려 있는 PR 에 이어서 올라갔습니다."
 M_SAME = "이미 제출돼 있습니다. 바뀐 내용이 없어 그대로 두었습니다."
-M_CREATED = "제출했습니다. PR 이 만들어졌습니다."
+M_CREATED = "제출했습니다. PR 이 자동으로 만들어졌습니다."
 M_OPEN_PR = ("올렸습니다. PR 은 잠시 뒤 자동으로 만들어집니다. 브라우저에 열리는 화면에 [View pull request] 가 보이면 그것을, "
              "[Create pull request] 가 보이면 그 단추를 눌러 주세요.")
 M_PUSHED = "%s 브랜치에 올렸습니다."
@@ -89,7 +87,7 @@ Run = collections.namedtuple("Run", "args code out err")  # git 한 번의 결�
 
 
 class GitError(Exception):
-    """git 명령이 실패했다. 문구는 결과의 detail 에 그대로 싣는다."""
+    """실패한 git 명령. 문구는 결과의 detail 에 실림."""
 
     def __init__(self, run):
         how = "시간 초과" if run.code is None else "exit %d" % run.code
@@ -97,7 +95,7 @@ class GitError(Exception):
 
 
 class Stop(Exception):
-    """작업을 멈추고 이 상태·문구로 결과를 돌려준다."""
+    """작업을 멈추고 이 상태·문구로 결과를 돌려줌."""
 
     def __init__(self, status, message, detail=""):
         super().__init__(message)
@@ -112,7 +110,7 @@ def remote_slug(url):
 
 def remote_problem(stderr):
     """fetch·push 가 원격 때문에 실패한 이유: 'login' | 'denied' | 'offline' | None.
-    git 은 이것을 기계가 읽을 형식으로 주지 않아 영어 문구에서 찾는다."""
+    git 이 기계가 읽을 형식으로 주지 않아 영어 문구에서 찾음."""
     low = stderr.lower()
     for kind, marks in REMOTE_MARKS:
         if any(mark in low for mark in marks):
@@ -129,7 +127,7 @@ def find_open_pr(owner, repo, branch, timeout=5):
         with urllib.request.urlopen(request, timeout=timeout) as response:
             pulls = json.loads(response.read().decode("utf-8"))
         return pulls[0]["html_url"] if pulls else None
-    except Exception:  # 오프라인·조회 한도 초과 등 — 새 PR 화면 주소로 대신한다
+    except Exception:  # 오프라인이나 조회 한도 초과. 부른 쪽이 새 PR 화면 주소로 대신함
         return None
 
 
@@ -145,16 +143,16 @@ def is_tool(path):
 
 
 class GitFlow:
-    """sync()·submit()·resolve() 는 아래 모양의 dict 를 돌려준다.
+    """sync()·submit()·resolve() 는 아래 모양의 dict 를 돌려줌.
         status   ok | nothing | offline | auth | diverged | blocked | no_git | not_repo | error
-        message  사용자에게 그대로 보여 줄 문구
+        message  사용자에게 보여 줄 문구
         detail   디버깅용(명령·stderr)
         pr_url   브라우저로 열 주소 또는 None
         restart  도구 파일이 바뀌어 프로그램을 다시 시작해야 하면 True
         changed  문제·도구 파일이나 내 폴더가 바뀌어 세션을 새로 만들어야 하면 True
         backup   이번에 사본을 보관한 폴더(.git/study-backup/<시각>) 또는 None
-    한 번에 한 작업만 부른다. 부르는 동안에는 답안 자동 저장을 멈춰야 쓰다 만 파일이 올라가지 않는다.
-    find_pr(owner, repo, branch) 는 열린 PR 주소를 찾는 함수(바꿔 끼울 수 있다), log 는 부른 git 명령의 기록이다."""
+    한 번에 한 작업만 부름. 부르는 동안 답안 자동 저장을 멈춰야 쓰다 만 파일이 올라가지 않음.
+    find_pr(owner, repo, branch) 는 열린 PR 주소를 찾는 함수고, log 는 부른 git 명령의 기록임."""
 
     def __init__(self, root, user, timeout=60):
         self.root = os.path.abspath(root)
@@ -165,7 +163,7 @@ class GitFlow:
         self.branch = "study/%s" % user
         self.tip_ref = "refs/remotes/origin/" + self.branch
         self.outside = [".", ":(exclude)" + self.rel]
-        self.find_pr = find_open_pr  # 테스트는 네트워크를 부르지 않게 바꿔 끼운다
+        self.find_pr = find_open_pr  # 테스트에서는 네트워크를 타지 않는 함수로 바꿈
         self.fetch_timeout = min(timeout, FETCH_LIMIT)
         self.pr_wait, self.sleep = PR_WAIT, time.sleep
         self.log = []
@@ -173,11 +171,11 @@ class GitFlow:
         self._op, self._notes, self._backup, self._changed = "sync", [], None, False
         self._url = self._base = self._tip = ""  # origin 주소, 받아 온 main 과 원격의 내 브랜치 끝(커밋 해시, 없으면 "")
 
-    # ── 공개 창구 ──
+    # 공개 메서드
 
     def doctor(self):
-        """받기·제출을 할 수 있는 폴더인지 본다(네트워크는 쓰지 않는다).
-        ok 는 시도할 수 있는지(git·clone 한 폴더·origin)이고, problems 에는 막지 않는 알림도 들어간다."""
+        """받기·제출을 할 수 있는 폴더인지 네트워크 없이 확인함.
+        ok 는 시도할 수 있는지(git·clone 한 폴더·origin)를 뜻하고, problems 에는 ok 를 막지 않는 알림도 들어감."""
         info = {"ok": False, "git": False, "repo": False, "remote": None, "branch": None, "problems": []}
         problems = info["problems"]
         try:
@@ -209,24 +207,24 @@ class GitFlow:
         return info
 
     def sync(self):
-        """내 폴더는 그대로 두고 그 밖을 최신 main 으로 맞춘다."""
+        """내 폴더는 그대로 두고 그 밖을 최신 main 으로 맞춤."""
         return self._run("sync", self._sync)
 
     def submit(self):
-        """내 폴더를 study/<ID> 에 올리고 PR 주소를 돌려준다. 이 컴퓨터의 파일·브랜치는 바꾸지 않는다
-        (멈춘 git 작업이 있거나 원격에 더 새 판이 있을 때만 예외이고, 그때는 문구와 backup 으로 알린다)."""
+        """내 폴더를 study/<ID> 에 올리고 PR 주소를 돌려줌. 이 컴퓨터의 파일·브랜치는 바꾸지 않음.
+        멈춘 git 작업이 있거나 원격에 더 새 판이 있을 때만 바꾸고, 그때는 문구와 backup 으로 알림."""
         return self._run("submit", self._submit)
 
     def resolve(self, choice):
-        """"diverged" 로 멈춘 뒤 사용자가 고른 쪽으로 푼다.
-        "remote": 원격 풀이를 가져온다(이 컴퓨터 것은 보관함으로). "local": 이 컴퓨터 풀이를 그대로 올린다."""
+        """"diverged" 로 멈춘 뒤 사용자가 고른 쪽을 적용함.
+        "remote" 면 원격 풀이를 가져오고 이 컴퓨터 것은 보관함에 복사함. "local" 이면 이 컴퓨터 풀이를 올림."""
         if choice == "remote":
             return self._run("sync", self._take_remote)
         if choice == "local":
             return self._run("submit", lambda: self._submit(force=True))
         return self._run("sync", lambda: self._result("error", M_BAD_CHOICE % (choice,)))
 
-    # ── 공통 틀 ──
+    # 공통 처리
 
     def _run(self, op, work):
         self._op, self._notes, self._backup, self._changed = op, [], None, False
@@ -250,11 +248,11 @@ class GitFlow:
         return {"status": status, "message": " ".join(self._notes + [message]).strip(), "detail": detail, "pr_url": pr_url,
                 "restart": restart, "changed": changed or self._changed, "backup": self._backup}
 
-    # ── git 부르기 ──
+    # git 부르기
 
     def _git(self, *args, check=True, env=None, timeout=None):
-        """git 을 한 번 부른다. 출력은 파이프 대신 임시 파일로 받는다 — 시간 초과로 git 을 끝냈을 때
-        남은 자식(git-remote-https 등)이 파이프를 쥐고 있으면 읽기가 끝나지 않는다."""
+        """git 을 한 번 부름. 시간 초과로 git 을 끝냈을 때 남은 자식(git-remote-https 등)이 파이프를 쥐고 있으면
+        읽기가 끝나지 않아서, 출력은 파이프 대신 임시 파일로 받음."""
         full = dict(os.environ, GIT_TERMINAL_PROMPT="0", LC_ALL="C")
         full.update(env or {})
         with tempfile.TemporaryFile() as out, tempfile.TemporaryFile() as err:
@@ -307,10 +305,10 @@ class GitFlow:
         """그 커밋에 든 내 폴더의 트리 해시. 폴더가 없으면 ""."""
         return self._out("rev-parse", "-q", "--verify", "%s:%s" % (rev, self.rel), check=False)
 
-    # ── 보관함 ──
+    # 보관함
 
     def _backup_dir(self):
-        """이번 작업의 보관함(.git/study-backup/<시각>). 처음 필요할 때 만든다."""
+        """이번 작업의 보관함(.git/study-backup/<시각>). 처음 필요할 때 만듦."""
         if not self._backup:
             base = os.path.join(self._gitdir(), "study-backup", time.strftime("%Y%m%d-%H%M%S"))
             path, n = base, 1
@@ -322,13 +320,13 @@ class GitFlow:
         return self._backup
 
     def _keep_folder(self, label):
-        """내 폴더를 보관함의 label 폴더로 통째로 복사한다. 복사할 파일이 없으면 False."""
+        """내 폴더를 보관함의 label 폴더로 통째로 복사함. 복사할 파일이 없으면 False."""
         if not any(files for _, _, files in os.walk(self.folder)):
             return False
         shutil.copytree(self.folder, os.path.join(self._backup_dir(), label), ignore=shutil.ignore_patterns("__pycache__"))
         return True
 
-    # ── 단계 ──
+    # 단계
 
     def _stalled(self):
         """멈춰 있는 git 작업의 종류(merge·rebase·cherry-pick·revert)."""
@@ -336,7 +334,7 @@ class GitFlow:
         return sorted(set(found))
 
     def _preflight(self):
-        """손으로 git 을 쓰다 멈춘 병합·리베이스를 되돌린다. 되돌리면 그동안 고친 내용이 사라질 수 있어 내 폴더를 먼저 보관한다."""
+        """손으로 git 을 쓰다 멈춘 병합·리베이스를 되돌림. 되돌리면 그동안 고친 내용이 사라질 수 있어 내 폴더를 먼저 보관함."""
         stalled = self._stalled()
         if not stalled:
             return
@@ -356,7 +354,7 @@ class GitFlow:
         return name or "분리된 HEAD"
 
     def _remote_stop(self, kind, text, verb):
-        """원격 때문에 실패한 fetch·push 를 사용자 안내로 바꿔 멈춘다."""
+        """원격 때문에 실패한 fetch·push 를 사용자 안내로 바꿔 멈춤."""
         if kind == "login":
             raise Stop("auth", M_LOGIN % verb, text)
         if kind == "denied":
@@ -368,7 +366,7 @@ class GitFlow:
         raise Stop("error", M_BEHIND if kind == "behind" else M_ERROR[self._op], text)
 
     def _fetch(self):
-        """최신 main 과 study/* 를 받는다. 지워진 원격 브랜치는 로컬 표식도 지운다."""
+        """최신 main 과 study/* 를 받음. 원격에서 지워진 브랜치는 로컬의 origin/ 참조도 지움."""
         run = self._git("fetch", "--prune", "origin", *FETCH_REFSPECS, check=False, timeout=self.fetch_timeout)
         if run.code != 0:
             kind = "slow" if run.code is None else remote_problem(run.err)
@@ -397,21 +395,21 @@ class GitFlow:
             return BROKEN
 
     def _remote_copies(self):
-        """원격에 있는 내 풀이의 [(커밋, 시도 기록)]. 아직 머지되지 않은 내 브랜치가 있으면 그것이 main 보다 새 판이라 main 은 보지 않는다."""
+        """원격에 있는 내 풀이의 [(커밋, 시도 기록)]. 아직 머지되지 않은 내 브랜치가 있으면 그것이 main 보다 새 판이라 main 은 보지 않음."""
         refs = [self._tip] if self._tip else []
         if not self._tip or self._is_ancestor(self._tip, self._base):
             refs.append(self._base)
         return [(ref, attempts) for ref in refs for attempts in [self._attempts(ref)] if isinstance(attempts, list)]
 
     def _reconcile(self):
-        """가장 새 판의 내 풀이가 작업 폴더에 오게 한다. 시도 기록은 덧붙기만 하므로 앞부분이 같으면 긴 쪽이 새것이다.
-        작업 폴더가 비었거나 옛 판이면 새 판을 가져오고, 서로 다르게 이어졌으면 덮어쓰지 않고 멈춘다."""
+        """가장 새 판의 내 풀이가 작업 폴더에 오게 함. 시도 기록은 덧붙기만 하므로 앞부분이 같으면 긴 쪽을 새 판으로 봄.
+        작업 폴더가 비었거나 옛 판이면 새 판을 가져오고, 서로 다르게 이어졌으면 덮어쓰지 않고 멈춤."""
         local = self._attempts()
         if local is BROKEN:
             raise Stop("blocked", M_BROKEN_PROFILE)
         copies = self._remote_copies()
         mine = "refs/heads/" + self.branch
-        if self._branch() != self.branch and self._has(mine):  # 손으로 브랜치를 옮겨 폴더가 옛 판이 됐을 때만 쓴다
+        if self._branch() != self.branch and self._has(mine):  # 손으로 브랜치를 옮겨 폴더가 옛 판이 됐을 때만 씀
             attempts = self._attempts(mine)
             if isinstance(attempts, list) and (local is None or attempts[:len(local)] == local):
                 copies.append((mine, attempts))
@@ -425,8 +423,8 @@ class GitFlow:
         self._take(ref)
 
     def _take(self, ref, exact=False):
-        """내 폴더를 ref 에 있는 판으로 바꾼다. 지금 것은 보관함에 복사해 둔다.
-        exact 면 ref 에 없는 파일(갈라진 뒤 이 컴퓨터에서만 만든 회차)도 치운다 — 남겨 두면 새 회차의 답으로 읽힌다."""
+        """내 폴더를 ref 에 있는 판으로 바꾸고 지금 것은 보관함에 복사해 둠.
+        exact 면 ref 에 없는 파일(갈라진 뒤 이 컴퓨터에서만 만든 회차)도 지움. 남겨 두면 새 회차의 답으로 읽힘."""
         kept = self._keep_folder("replaced")
         self._git("checkout", "-q", ref, "--", self.rel)
         if exact:
@@ -446,46 +444,46 @@ class GitFlow:
         return index
 
     def _snapshot(self, message):
-        """origin/main 의 트리에서 내 폴더만 작업 폴더 내용으로 바꾼 커밋을 만든다. 작업 폴더·인덱스·HEAD 는 건드리지 않는다."""
+        """origin/main 의 트리에서 내 폴더만 작업 폴더 내용으로 바꾼 커밋을 만듦. 작업 폴더·인덱스·HEAD 는 건드리지 않음."""
         base, tip = self._base, self._tip
-        env = {"GIT_INDEX_FILE": self._drop_index()}  # 임시 인덱스 — 진짜 인덱스가 잠겨 있어도 된다
+        env = {"GIT_INDEX_FILE": self._drop_index()}  # 임시 인덱스를 써서 진짜 인덱스가 잠겨 있어도 됨
         try:
             self._git("read-tree", base, env=env)
             if os.path.isdir(self.folder):
-                self._git("add", "-A", "--", self.rel, env=env)  # 내 폴더를 통째로(삭제 포함). .gitignore 는 그대로 적용
+                self._git("add", "-A", "--", self.rel, env=env)  # 삭제까지 포함해 내 폴더를 통째로 담음. .gitignore 는 적용됨
             tree = self._out("write-tree", env=env)
         finally:
             self._drop_index()
-        for old in (tip, self._commit_of("HEAD")):  # 바뀐 것이 없으면 새 커밋을 만들지 않는다
+        for old in (tip, self._commit_of("HEAD")):  # 바뀐 것이 없으면 새 커밋을 만들지 않음
             if old and self._out("rev-parse", old + "^{tree}") == tree and self._is_ancestor(base, old) \
                     and (not tip or self._is_ancestor(tip, old)):
                 return old
         if not tip or self._is_ancestor(tip, base):
             parents = [base]  # 브랜치가 없거나 이미 main 에 들어감 → main 위에 커밋 하나
         elif self._is_ancestor(base, tip):
-            parents = [tip]  # PR 이 열려 있고 main 은 그대로 → 브랜치에 커밋 하나 추가
+            parents = [tip]  # PR 이 열려 있고 main 은 안 움직임 → 브랜치에 커밋 하나 추가
         else:
-            parents = [tip, base]  # PR 이 열린 동안 main 이 움직임(또는 squash 머지 뒤 브랜치가 남음) → 둘을 잇는다
+            parents = [tip, base]  # PR 이 열린 동안 main 이 움직임(또는 squash 머지 뒤 브랜치가 남음) → 둘을 이음
         return self._out("commit-tree", tree, *[arg for parent in parents for arg in ("-p", parent)],
                          "-m", message, env=self._identity())
 
     def _identity(self):
-        """git 에 이름·메일을 설정한 적 없는 컴퓨터에서도 커밋이 만들어지게 한다(사용자 설정은 바꾸지 않는다)."""
+        """git 에 이름·메일을 설정한 적 없는 컴퓨터에서도 커밋이 만들어지게 함. 사용자 설정은 바꾸지 않음."""
         if self._out("config", "user.name", check=False) and self._out("config", "user.email", check=False):
             return {}
         who = {"NAME": self.user, "EMAIL": "%s@users.noreply.github.com" % self.user}
         return {"GIT_%s_%s" % (role, key): value for role in ("AUTHOR", "COMMITTER") for key, value in who.items()}
 
     def _park_outside(self, target):
-        """내 폴더 밖에서 고치거나 지운 파일, target 이 새로 만들 경로를 차지한 미추적 파일을 보관함에 복사하고 원래대로 돌린다.
-        손으로 커밋해 버린 밖 변경은 사본만 남긴다(브랜치를 옮기면 작업 폴더에서 사라진다). 사본을 남긴 경로를 돌려준다."""
+        """내 폴더 밖에서 고치거나 지운 파일, target 이 새로 만들 경로를 차지한 미추적 파일을 보관함에 복사하고 원래대로 돌림.
+        손으로 커밋해 버린 밖 변경은 브랜치를 옮기면 작업 폴더에서 사라지므로 사본만 남김. 사본을 남긴 경로를 돌려줌."""
         changed = set(self._paths("diff", "--name-only", "-z", "HEAD", "--", *self.outside))
         changed |= set(self._paths("diff", "--name-only", "-z", "--cached", "HEAD", "--", *self.outside))
         committed = set(self._paths("diff", "--name-only", "-z", MAIN + "...HEAD", "--", *self.outside))
         self._copy_out(changed | committed)
         if changed:
             self._git("checkout", "-q", "HEAD", "--", *self.outside)  # 사본을 만든 뒤 추적 파일을 원본으로
-            self._git("reset", "-q", "--", *self.outside)  # 손으로 add 해 둔 새 파일은 올려 두기만 취소한다(파일은 그대로)
+            self._git("reset", "-q", "--", *self.outside)  # 손으로 add 해 둔 새 파일은 add 만 취소하고 파일은 남김
         untracked = set(self._paths("ls-files", "-z", "--others", "--exclude-standard", "--", *self.outside))
         incoming = set(self._paths("diff", "--name-only", "-z", "--diff-filter=A", "HEAD", target, "--", *self.outside))
         collide = untracked & incoming
@@ -523,7 +521,7 @@ class GitFlow:
         return broken
 
     def _push(self, commit):
-        """강제 옵션 없이 올린다. ('ok' | 'behind' | 'slow' | 'login' | 'denied' | 'offline' | None, git 출력)."""
+        """강제 옵션 없이 올림. ('ok' | 'behind' | 'slow' | 'login' | 'denied' | 'offline' | None, git 출력) 을 돌려줌."""
         run = self._git("push", "--porcelain", "origin", "%s:refs/heads/%s" % (commit, self.branch),
                         check=False, timeout=self.timeout * PUSH_PATIENCE)
         text = "git %s\n%s" % (run.args, (run.out + run.err).strip())
@@ -532,11 +530,11 @@ class GitFlow:
         if run.code is None:
             return "slow", text
         if any(line.startswith("!") and "[rejected]" in line for line in run.out.splitlines()):
-            return "behind", text  # non-fast-forward · fetch first: 원격의 내 브랜치에 모르는 커밋이 있다
+            return "behind", text  # non-fast-forward · fetch first: 원격의 내 브랜치에 모르는 커밋이 있음
         return remote_problem(run.err), text
 
     def _pull_of(self, commit):
-        """그 커밋이 끝인 PR 번호(원격의 refs/pull/N/head). GitHub 는 열린 PR 의 이 참조를 push 때마다 옮긴다. 없으면 None."""
+        """그 커밋이 끝인 PR 번호(원격의 refs/pull/N/head). GitHub 는 열린 PR 의 이 참조를 push 때마다 옮김. 없으면 None."""
         run = self._git("ls-remote", "origin", "refs/pull/*/head", check=False, timeout=self.fetch_timeout)
         for line in (run.out if run.code == 0 else "").splitlines():
             sha, _, ref = line.partition("\t")
@@ -554,7 +552,7 @@ class GitFlow:
         if url:
             return url, "open"
         waited = 0
-        while pushed and waited < self.pr_wait:  # 저장소의 Actions 가 study/* 브랜치에 PR 을 만들어 준다
+        while pushed and waited < self.pr_wait:  # 저장소의 Actions 가 study/* 브랜치에 PR 을 만들어 줌
             self.sleep(PR_POLL)
             waited += PR_POLL
             number = self._pull_of(commit)
@@ -562,7 +560,7 @@ class GitFlow:
                 return "https://github.com/%s/%s/pull/%s" % (slug[0], slug[1], number), "created"
         return new_pr_url(slug[0], slug[1], self.branch, "%s 풀이" % self.user), "manual"
 
-    # ── 작업 ──
+    # 작업
 
     def _sync(self):
         dev = self._dev_branch()
@@ -577,17 +575,17 @@ class GitFlow:
         if before != snap or self._branch() != self.branch:
             if os.path.isdir(self.folder) or self._paths("ls-files", "-z", "--", self.rel):
                 self._git("add", "-A", "--", self.rel)  # 인덱스의 내 폴더 = 작업 폴더 = 스냅샷
-            self._git("checkout", "-q", "-B", self.branch, snap)  # 덮어쓸 수정이 있으면 git 이 거부한다
+            self._git("checkout", "-q", "-B", self.branch, snap)  # 덮어쓸 수정이 있으면 git 이 거부함
         moved |= set(self._paths("diff", "--name-only", "-z", before, snap, "--", *self.outside))
         restart = any(is_tool(path) for path in moved)
         changed = restart or any(path.startswith("problems/") for path in moved)
         stale = self._paths("diff", "--name-only", "-z", "HEAD", "--", *self.outside)
-        if stale:  # checkout 은 파일을 못 바꿔도 0 으로 끝난다 → 직접 확인. 나머지 파일은 이미 바뀌었으니 restart·changed 는 그대로 알린다
+        if stale:  # checkout 은 파일을 못 바꿔도 0 으로 끝나서 직접 확인함. 나머지 파일은 이미 바뀌었으니 restart·changed 도 같이 알림
             return self._result("blocked", M_LOCKED % (len(stale), ", ".join(stale[:3])), "\n".join(stale), restart=restart, changed=changed)
         return self._result("ok", M_RESTART if restart else M_NEW if changed else M_LATEST, restart=restart, changed=changed)
 
     def _submit(self, force=False):
-        if not self._dev_branch():  # 개발 중인 폴더의 멈춘 작업은 건드리지 않는다
+        if not self._dev_branch():  # 개발 중인 폴더의 멈춘 작업은 건드리지 않음
             self._preflight()
         broken = self._broken_files()
         if broken:
