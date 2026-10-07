@@ -5,6 +5,7 @@
   "points": 8,
   "mode": "io",
   "tags": ["컴파일 옵션", "앵커 ^와 $", "findall과 finditer"],
+  "examples": 1,
   "cases": [
     {"stdin": "4\nINFO start\nERROR disk full\nWARN no ERROR here\nERROR timeout 30s\n", "stdout": "ERROR disk full\nERROR timeout 30s\n2\n"},
     {"stdin": "3\nINFO a\nINFO b\nINFO c\n", "stdout": "0\n"},

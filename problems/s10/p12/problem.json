@@ -9,6 +9,7 @@
     "super()",
     "자식 __init__"
   ],
+  "examples": 3,
   "cases": [
     {
       "code": "d = DoubleCounter()\nd.up()\nd.up()\nd.show()",

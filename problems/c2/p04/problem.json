@@ -5,6 +5,7 @@
   "points": 8,
   "mode": "call",
   "tags": ["정렬", "선택 정렬", "동점 처리"],
+  "examples": 2,
   "cases": [
     {"call": "solution([80, 95, 80, 70, 95, 60], 3)", "expected": "[80, 4]"},
     {"call": "solution([80, 95, 80, 70, 95, 60], 1)", "expected": "[95, 2]"},

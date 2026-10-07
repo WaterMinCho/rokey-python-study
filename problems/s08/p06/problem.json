@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["최댓값·최솟값", "인덱스와 값"],
+  "examples": 3,
   "cases": [
     {"call": "solution([12, 30, 25, 41, 8])", "expected": "3"},
     {"call": "solution([1, 9, 4, 9])", "expected": "1"},

@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "exec",
   "tags": ["디폴트 매개변수", "print 출력 형식"],
+  "examples": 3,
   "cases": [
     {"code": "print_box()", "stdout": "***\n***\n"},
     {"code": "print_box(5)", "stdout": "*****\n*****\n"},

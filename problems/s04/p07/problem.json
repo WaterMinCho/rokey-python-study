@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["슬라이싱"],
+  "examples": 3,
   "cases": [
     {"call": "solution(['가', '나', '다', '라', '마'], 1, 3)", "expected": "['나', '다', '라']"},
     {"call": "solution([10, 20, 30, 40], 0, 0)", "expected": "[10]"},

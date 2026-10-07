@@ -5,6 +5,7 @@
   "points": 8,
   "mode": "call",
   "tags": ["elif 사슬", "논리 연산자", "경계값"],
+  "examples": 3,
   "cases": [
     {"call": "solution(10, False)", "expected": "2000"},
     {"call": "solution(19, True)", "expected": "2000"},

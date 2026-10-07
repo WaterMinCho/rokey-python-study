@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "io",
   "tags": ["시그널과 슬롯 연결", "함수 객체"],
+  "examples": 3,
   "cases": [
     {"stdin": "3\n", "stdout": "주문하세요\n주문하세요\n주문하세요\n"},
     {"stdin": "1\n", "stdout": "주문하세요\n"},

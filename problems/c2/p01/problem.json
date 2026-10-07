@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["시뮬레이션", "경계 검사", "문자열 순회"],
+  "examples": 3,
   "cases": [
     {"call": "solution(3, 4, 10, \"RRDDL\")", "expected": "[2, 1]"},
     {"call": "solution(3, 4, 2, \"UUR\")", "expected": "[0, 1]"},

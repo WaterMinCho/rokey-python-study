@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "io",
   "tags": ["elif 사슬", "경계값"],
+  "examples": 2,
   "cases": [
     {"stdin": "120000\n", "stdout": "VIP\n"},
     {"stdin": "100000\n", "stdout": "VIP\n"},

@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["self", "객체별 상태"],
+  "examples": 3,
   "cases": [
     {"call": "solution([\"apple\", \"milk\"], [2, 1])", "expected": "['apple', 'apple', 'milk']"},
     {"call": "solution([\"tea\"], [3])", "expected": "['tea', 'tea', 'tea']"},

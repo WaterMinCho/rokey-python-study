@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "io",
   "tags": ["try-except 흐름", "출력 형식"],
+  "examples": 1,
   "cases": [
     {"stdin": "5\n4\nabc\n7\n5\n0\n", "stdout": "무시: abc (숫자 아님)\n무시: 7 (범위 밖)\n무시: 0 (범위 밖)\n유효 응답 2개\n합계 9\n"},
     {"stdin": "3\n1\n5\n3\n", "stdout": "유효 응답 3개\n합계 9\n"},

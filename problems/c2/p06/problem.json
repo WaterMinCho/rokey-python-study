@@ -5,6 +5,7 @@
   "points": 8,
   "mode": "call",
   "tags": ["그리디", "while 반복", "경계값"],
+  "examples": 3,
   "cases": [
     {"call": "solution(10, 4, [3, 5, 8])", "expected": "3"},
     {"call": "solution(10, 4, [2, 6])", "expected": "2"},

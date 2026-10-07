@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "io",
   "tags": ["덱 메서드", "빈 자료구조 처리"],
+  "examples": 3,
   "cases": [
     {"stdin": "level\n", "stdout": "True\n"},
     {"stdin": "robot\n", "stdout": "False\n"},

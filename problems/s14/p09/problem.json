@@ -5,6 +5,7 @@
   "points": 8,
   "mode": "io",
   "tags": ["앵커 ^와 $", "match와 search", "반복 메타 문자"],
+  "examples": 1,
   "cases": [
     {"stdin": "6\nrokey1\nabc\nRokey1\nrokey_2024\nrokeyrokey\na1234567890\n", "stdout": "OK\nNO\nNO\nOK\nNO\nNO\n"},
     {"stdin": "4\na_1_b\n1abcd\nab-cd1\naBCDE1\n", "stdout": "OK\nNO\nNO\nNO\n"},

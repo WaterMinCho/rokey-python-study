@@ -4,7 +4,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, 'study/**']   # study/<ID> = 프로그램의 [제출] 버튼이 올리는 브랜치
 
 permissions:
   contents: write
@@ -26,33 +26,51 @@ jobs:
           python-version: "3.12"
       # 모든 모범 답안이 테스트를 통과하는지, 정답표가 실제 실행 결과와 맞는지 확인
       - run: python tools/verify_bank.py
+      # 세션 서비스·제출 흐름·실행기 테스트 (화면 테스트는 아래 별도 작업)
+      - run: python -m unittest discover -s tests
 
   grade:
     name: 채점
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
+      # [제출] 버튼이 study/<ID> 브랜치를 올리면 PR 을 대신 만들어 준다(사람이 Create pull request 를 누를 필요가 없게).
+      - name: PR 자동 생성
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/study/')
+        run: |
+          BRANCH="${GITHUB_REF#refs/heads/}"
+          ID="${BRANCH#study/}"
+          NUMBER=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$BRANCH" --base main --state open --json number -q '.[0].number')
+          if [ -z "$NUMBER" ]; then
+            gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$BRANCH" --title "$ID 풀이" \
+              --body "프로그램의 [제출] 버튼으로 올린 풀이입니다. 채점·분석 결과는 아래 코멘트에 달립니다."
+            NUMBER=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$BRANCH" --base main --state open --json number -q '.[0].number')
+          fi
+          echo "PR=$NUMBER" >> "$GITHUB_ENV"
+          echo "STUDY_BASE_REF=main" >> "$GITHUB_ENV"
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      # PR: 풀이가 바뀐 사람만 채점 / main: 전체 현황판. 결과는 실행 요약(Summary)에 남습니다.
+      # PR·study 브랜치: 풀이가 바뀐 사람만 분석 / main: 전체 현황판. 결과는 실행 요약(Summary)에 남습니다.
       - name: 채점 리포트
         run: python tools/ci_report.py
-      # PR 에 점수 코멘트를 남깁니다(포크에서 온 PR 은 권한이 없어 건너뜁니다).
+      # PR 에 점수·분석 코멘트를 남깁니다(포크에서 온 PR 은 권한이 없어 건너뜁니다).
       - name: PR 코멘트
-        if: always() && github.event_name == 'pull_request'
+        if: always() && (github.event_name == 'pull_request' || env.PR != '')
         continue-on-error: true
         env:
-          GH_TOKEN: ${{ github.token }}
-          PR: ${{ github.event.pull_request.number }}
+          PR_EVENT: ${{ github.event.pull_request.number }}
         run: |
-          gh pr comment "$PR" --body-file report.md --edit-last --create-if-none \
-            || gh pr comment "$PR" --body-file report.md
+          NUMBER="${PR_EVENT:-$PR}"
+          gh pr comment "$NUMBER" --body-file report.md --edit-last --create-if-none \
+            || gh pr comment "$NUMBER" --body-file report.md
       # main 에 풀이가 올라오면 학습 현황판을 다시 만들어 dashboard 브랜치에 커밋합니다(README 가 이 브랜치의 이미지를 보여 줍니다).
       - name: 현황판 갱신
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         continue-on-error: true
         run: |
           python tools/dashboard.py --out out
@@ -71,10 +89,8 @@ jobs:
           git push -q origin HEAD:dashboard
       # 문제 은행에 모자란 문항이 있으면 "출제 요청" 이슈를 만들거나 갱신합니다(main 푸시 때).
       - name: 출제 요청 이슈
-        if: github.event_name == 'push' && hashFiles('shortage.md') != ''
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && hashFiles('shortage.md') != ''
         continue-on-error: true
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           N=$(gh issue list --label "출제 요청" --state open --json number -q '.[0].number')
           if [ -n "$N" ]; then
@@ -82,3 +98,21 @@ jobs:
           else
             gh issue create --title "출제 요청: 문제 은행에 모자란 문항" --body-file shortage.md --label "출제 요청"
           fi
+
+  gui:
+    name: 화면 테스트
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      # 화면 없이(offscreen) PyQt6 화면 테스트를 돌린다. 필수 검사는 아니다(환경 문제로 실패해도 머지를 막지 않음).
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libegl1 libgl1 libxkbcommon0 libdbus-1-3 libfontconfig1 fonts-nanum
+          python -m pip install -q --only-binary=:all: PyQt6
+      - run: python -m unittest tests.test_gui
+        env:
+          QT_QPA_PLATFORM: offscreen

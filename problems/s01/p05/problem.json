@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "io",
   "tags": ["따옴표와 문자열", "대소문자 구분"],
+  "examples": 1,
   "cases": [
     {"stdout": "print\nHello\n"}
   ]

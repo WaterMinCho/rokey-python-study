@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "exec",
   "tags": ["맞바꾸기", "리스트 매개변수"],
+  "examples": 1,
   "cases": [
     {"code": "ca = [3, 6, 9, 12]\nfswap(ca, 0, 2)\nprint(ca)", "stdout": "[9, 6, 3, 12]\n"},
     {"code": "ca = [10, 11]\nfswap(ca, 0, 1)\nprint(ca)", "stdout": "[11, 10]\n"},

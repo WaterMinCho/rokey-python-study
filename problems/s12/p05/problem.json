@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["읽기 메서드", "형 변환"],
+  "examples": 1,
   "cases": [
     {"files": {"n.txt": "10\n20\n30\n"}, "call": "solution(\"n.txt\")", "expected": "60"},
     {"files": {"n.txt": "5"}, "call": "solution(\"n.txt\")", "expected": "5"},

@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "io",
   "tags": ["재귀 함수"],
+  "examples": 3,
   "cases": [
     {"stdin": "4\n", "stdout": "10\n"},
     {"stdin": "0\n", "stdout": "0\n"},

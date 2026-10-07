@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["약수", "나머지 연산", "반복 범위"],
+  "examples": 3,
   "cases": [
     {"call": "solution(12, 18)", "expected": "4"},
     {"call": "solution(1, 1)", "expected": "1"},

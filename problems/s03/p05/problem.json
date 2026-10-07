@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["논리 연산자", "경계값", "반환값과 자료형"],
+  "examples": 2,
   "cases": [
     {"call": "solution(18, False)", "expected": "True"},
     {"call": "solution(25, False)", "expected": "True"},

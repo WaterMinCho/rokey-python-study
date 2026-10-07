@@ -8,6 +8,7 @@
     "range 끝 값",
     "복합 대입 연산자"
   ],
+  "examples": 3,
   "cases": [
     {
       "stdin": "10\n",

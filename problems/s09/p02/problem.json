@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "call",
   "tags": ["메서드 반환값", "self"],
+  "examples": 3,
   "cases": [
     {"call": "Rect(3, 4).area()", "expected": "12"},
     {"call": "Rect(3, 4).perimeter()", "expected": "14"},

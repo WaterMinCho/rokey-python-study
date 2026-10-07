@@ -5,6 +5,7 @@
   "points": 8,
   "tags": ["while 조건", "누적 패턴", "반복 후 변수"],
   "mode": "call",
+  "examples": 3,
   "cases": [
     {"call": "solution(1)", "expected": "1"},
     {"call": "solution(10)", "expected": "4"},

@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "io",
   "tags": ["회전 큐", "덱 메서드", "덱 출력 형식"],
+  "examples": 2,
   "cases": [
     {"stdin": "5\n1\n2\n3\n4\n5\n2\n", "stdout": "deque([3, 4, 5, 1, 2])\n"},
     {"stdin": "3\n7\n8\n9\n4\n", "stdout": "deque([8, 9, 7])\n"},

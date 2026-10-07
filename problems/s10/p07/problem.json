@@ -8,6 +8,7 @@
     "super()",
     "__name__"
   ],
+  "examples": 1,
   "cases": [
     {
       "stdout": "자전거 25\n기어: 7\n"

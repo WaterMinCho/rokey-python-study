@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "io",
   "tags": ["print 기초", "대소문자 구분"],
+  "examples": 1,
   "cases": [
     {"stdout": "Hello ROKEY!\n"}
   ]

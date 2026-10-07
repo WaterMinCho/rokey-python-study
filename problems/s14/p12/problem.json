@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["findall과 finditer", "반복 메타 문자"],
+  "examples": 2,
   "cases": [
     {"call": "solution(\"a12 b345 c6\")", "expected": "'345'"},
     {"call": "solution(\"no digits\")", "expected": "''"},

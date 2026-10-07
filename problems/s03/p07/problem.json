@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "io",
   "tags": ["elif 사슬", "비교 연산자"],
+  "examples": 3,
   "cases": [
     {"stdin": "7\n+\n3\n", "stdout": "7 + 3 = 10\n"},
     {"stdin": "8\n/\n2\n", "stdout": "8 / 2 = 4.0\n"},

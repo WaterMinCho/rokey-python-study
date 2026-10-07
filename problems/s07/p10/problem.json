@@ -5,6 +5,7 @@
   "points": 8,
   "mode": "exec",
   "tags": ["global", "print 출력 형식"],
+  "examples": 1,
   "cases": [
     {"code": "deposit(3000)\nwithdraw(1000)\nwithdraw(5000)\nprint(balance)", "stdout": "입금 3000 잔액 3000\n출금 1000 잔액 2000\n잔액 부족\n2000\n"},
     {"code": "withdraw(100)\ndeposit(500)\ndeposit(500)\nwithdraw(1000)\nprint(balance)", "stdout": "잔액 부족\n입금 500 잔액 500\n입금 500 잔액 1000\n출금 1000 잔액 0\n0\n"},

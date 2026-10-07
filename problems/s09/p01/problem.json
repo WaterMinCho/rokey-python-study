@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "io",
   "tags": ["클래스 정의 문법", "self", "객체 생성"],
+  "examples": 1,
   "cases": [
     {"stdout": "RK-11\n삐빅\n"}
   ]

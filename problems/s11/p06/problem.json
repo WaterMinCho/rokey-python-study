@@ -5,6 +5,7 @@
   "points": 8,
   "mode": "exec",
   "tags": ["라디오 버튼과 체크박스", "클래스와 인스턴스 변수"],
+  "examples": 2,
   "cases": [
     {"code": "g = RadioGroup([\"A런치\", \"B런치\", \"C런치\"])\ng.order()\ng.setChecked(\"B런치\")\ng.order()\nprint(g.isChecked(\"B런치\"), g.isChecked(\"A런치\"))", "stdout": "선택된 항목이 없습니다.\nB런치 주문\nTrue False\n"},
     {"code": "g = RadioGroup([\"S\", \"M\", \"L\"])\ng.setChecked(\"S\")\ng.setChecked(\"L\")\nprint(g.isChecked(\"S\"))\ng.setChecked(\"XL\")\ng.order()", "stdout": "False\nXL: 없는 항목\nL 주문\n"},

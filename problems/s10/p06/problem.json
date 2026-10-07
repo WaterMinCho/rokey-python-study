@@ -8,6 +8,7 @@
     "super()",
     "오버라이딩"
   ],
+  "examples": 2,
   "cases": [
     {
       "code": "b = BonusAccount()\nb.deposit(500)\nprint(b.balance)",

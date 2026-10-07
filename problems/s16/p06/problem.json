@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["괄호 짝 검사", "스택 LIFO"],
+  "examples": 3,
   "cases": [
     {"call": "solution(\"()\")", "expected": "True"},
     {"call": "solution(\"(())\")", "expected": "True"},

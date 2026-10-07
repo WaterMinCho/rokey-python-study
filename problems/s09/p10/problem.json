@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "exec",
   "tags": ["__init__", "메서드 반환값", "self"],
+  "examples": 2,
   "cases": [
     {"code": "t = Trip(\"부산\", 3)\nprint(t.label())\nprint(t.nights)", "stdout": "부산 2박 3일\n2\n"},
     {"code": "t = Trip(\"부산\", 3)\nt.extend(2)\nprint(t.label())\nprint(t.days, t.nights)", "stdout": "부산 4박 5일\n5 4\n"},

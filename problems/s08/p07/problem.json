@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "io",
   "tags": ["최댓값·최솟값", "출력 형식"],
+  "examples": 2,
   "cases": [
     {"stdin": "5\n23\n8\n61\n15\n34\n", "stdout": "최댓값: 61\n최솟값: 8\n"},
     {"stdin": "3\n-7\n-2\n-9\n", "stdout": "최댓값: -2\n최솟값: -9\n"},

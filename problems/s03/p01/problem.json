@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "io",
   "tags": ["if 문법", "비교 연산자"],
+  "examples": 3,
   "cases": [
     {"stdin": "auto\n", "stdout": "로봇이 스스로 움직입니다.\n"},
     {"stdin": "manual\n", "stdout": "로봇을 직접 조종합니다.\n"},

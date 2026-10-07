@@ -9,6 +9,7 @@
     "super()",
     "자식 __init__"
   ],
+  "examples": 1,
   "cases": [
     {
       "code": "settle([Car(\"12가3456\", 2)])",

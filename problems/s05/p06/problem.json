@@ -5,6 +5,7 @@
   "points": 6,
   "tags": ["while 조건", "break", "continue"],
   "mode": "io",
+  "examples": 2,
   "cases": [
     {"stdin": "90\n120\n75\n-1\n", "stdout": "잘못된 점수\n합계: 165\n"},
     {"stdin": "-1\n", "stdout": "합계: 0\n"},

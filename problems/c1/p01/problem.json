@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "call",
   "tags": ["문자열 split", "인덱싱", "문자열 이어 붙이기"],
+  "examples": 3,
   "cases": [
     {"call": "solution(\"robot operating system\")", "expected": "'ros'"},
     {"call": "solution(\"python\")", "expected": "'p'"},

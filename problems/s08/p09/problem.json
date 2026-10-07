@@ -5,6 +5,7 @@
   "points": 8,
   "mode": "call",
   "tags": ["맞바꾸기", "인덱스와 값"],
+  "examples": 3,
   "cases": [
     {"call": "solution([5, 8, 2, 7, 4, 11, 6])", "expected": "[5, 11, 2, 7, 4, 8, 6]"},
     {"call": "solution([1, 4])", "expected": "[4, 1]"},

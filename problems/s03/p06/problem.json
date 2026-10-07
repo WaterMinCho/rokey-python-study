@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "io",
   "tags": ["elif 사슬", "input 형변환"],
+  "examples": 3,
   "cases": [
     {"stdin": "50\n20\n", "stdout": "볼륨: 70\n"},
     {"stdin": "90\n20\n", "stdout": "볼륨: 100\n"},

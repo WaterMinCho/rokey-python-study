@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "call",
   "tags": ["리스트 순회", "sum·len 평균", "조건 세기"],
+  "examples": 3,
   "cases": [
     {"call": "solution([80, 90, 70])", "expected": "2"},
     {"call": "solution([50])", "expected": "1"},

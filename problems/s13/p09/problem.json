@@ -5,6 +5,7 @@
   "points": 8,
   "mode": "io",
   "tags": ["except 여러 개", "예외의 종류", "출력 형식"],
+  "examples": 2,
   "cases": [
     {"stdin": "3\n라떼 1\n피자 2\n커피 x\n", "stdout": "라떼 x 1 = 4000\n없는 메뉴: 피자\n수량 오류: x\n총액: 4000\n"},
     {"stdin": "2\n커피 2\n케이크 1\n", "stdout": "커피 x 2 = 6000\n케이크 x 1 = 5500\n총액: 11500\n"},

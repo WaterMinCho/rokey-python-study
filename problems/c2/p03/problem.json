@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["딕셔너리 누적", "dict.get", "삽입 순서"],
+  "examples": 2,
   "cases": [
     {"call": "solution([\"kim 300\", \"lee 500\", \"kim 250\", \"park 100\"], 500)", "expected": "['kim', 'lee']"},
     {"call": "solution([\"kim 100\", \"lee 200\"], 1000)", "expected": "[]"},

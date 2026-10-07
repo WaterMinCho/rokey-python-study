@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "io",
   "tags": ["raise와 예외 메시지"],
+  "examples": 3,
   "cases": [
     {"stdin": "25\n", "stdout": "나이: 25\n"},
     {"stdin": "-3\n", "stdout": "오류: 나이는 0 이상이어야 합니다\n"},

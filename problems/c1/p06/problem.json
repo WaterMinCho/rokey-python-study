@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["정렬", "인덱스 계산", "선택 정렬"],
+  "examples": 3,
   "cases": [
     {"call": "solution([5, 1, 9, 3, 7])", "expected": "5"},
     {"call": "solution([1])", "expected": "1"},

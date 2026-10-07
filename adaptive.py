@@ -31,14 +31,25 @@ def now():
 
 # ───────────────────────── 문항 목록 ─────────────────────────
 
+_UNITS = None  # 문제 은행은 실행 중에 바뀌지 않으므로 한 번만 읽는다(바뀌면 clear_cache)
+
+
+def clear_cache():
+    global _UNITS
+    _UNITS = None
+
+
 def units():
-    """적응형 학습의 단원 = 차시 세트(연습용 s00 제외)."""
-    out = []
-    for sid in study.all_set_ids():
-        s = study.load_set(sid)
-        if s["meta"].get("kind", "session") == "session" and sid != "s00":
-            out.append(s)
-    return out
+    """적응형 학습의 단원 = 차시 세트."""
+    global _UNITS
+    if _UNITS is None:
+        out = []
+        for sid in study.all_set_ids():
+            s = study.load_set(sid)
+            if s["meta"].get("kind", "session") == "session":
+                out.append(s)
+        _UNITS = out
+    return _UNITS
 
 
 def short_title(s):
@@ -174,9 +185,10 @@ def completed_rounds(prof):
 def last_ratio(prof):
     """직전에 끝낸 회차의 득점률(없으면 None)."""
     done = completed_rounds(prof)
-    if not done or not done[-1].get("score"):
+    score = (done[-1].get("first_score") or done[-1].get("score")) if done else None  # 고쳐서 다시 채점한 점수는 쓰지 않는다
+    if not score:
         return None
-    earned, total = done[-1]["score"].split("/")
+    earned, total = score.split("/")
     return int(earned) / int(total) if int(total) else None
 
 
@@ -399,8 +411,7 @@ def write_round(user, rnd, cat):
     os.makedirs(folder, exist_ok=True)
     title = round_title(rnd)
     readme = ["# %s" % title, "",
-              "> 퀴즈는 코드를 실행하지 말고 눈으로 풀어 `quiz.py` 에 답을 적습니다. 코드 문제는 같은 폴더의 `.py` 파일을 고칩니다.",
-              "> 채점: `python study.py grade %s`" % rnd["id"], ""]
+              "> 프로그램(`python study.py`)에서 풀면 이 폴더의 `quiz.py` 와 `.py` 파일에 답이 자동으로 저장됩니다.", ""]
     if rnd["focus"]:
         readme.append("문항 %d개(%s) · 평균 레벨 %.1f · 단원: %s" % (len(rnd["items"]), rnd.get("size_reason", ""), rnd.get("avg_level", 0), ", ".join(
             "%s %d" % (f["unit"], f["count"]) for f in rnd["focus"])))
@@ -408,6 +419,8 @@ def write_round(user, rnd, cat):
     quiz_lines = ["# %s — 퀴즈 답안지. 문제는 같은 폴더의 README.md" % title,
                   "# 객관식: 번호(복수 정답은 [1, 3]) / 출력 예측·단답: 문자열(여러 줄은 \"\"\" 사용) / 안 푼 문제는 None", ""]
     for key in rnd["items"]:
+        if key not in cat:  # 은행에서 사라진 문항
+            continue
         it = cat[key]
         name = fname_of(key)
         if it["kind"] == "quiz":
@@ -444,6 +457,8 @@ def grade_round(user, rnd, cat):
         answers, error = study.parse_quiz_answers(os.path.join(folder, "quiz.py"))
     items = []
     for key in rnd["items"]:
+        if key not in cat:  # 은행에서 사라진 문항
+            continue
         it = cat[key]
         name = fname_of(key)
         if it["kind"] == "quiz":
@@ -457,22 +472,32 @@ def grade_round(user, rnd, cat):
     return items
 
 
-def record(prof, rnd, items):
-    """답한 문항만 시도로 기록한다(빈 문항은 나중에 답했을 때 첫 시도가 된다)."""
+def record(prof, rnd, items, finalize=False):
+    """답한 문항만 시도로 기록한다(빈 문항은 나중에 답했을 때 첫 시도가 된다).
+    finalize=True 면 시험처럼 미응답도 오답으로 확정해 기록하고 회차를 끝낼 수 있게 한다."""
     stamp = now()
     results = rnd.setdefault("results", {})  # 문항별 마지막 결과 — 같은 결과를 다시 채점해도 중복 기록하지 않는다
+    blanks = 0
     for it in items:
-        if it["state"] == "blank" or results.get(it["key"]) == it["state"]:
+        state = it["state"]
+        if state == "blank":
+            if not finalize or it["key"] in results:
+                blanks += 0 if it["key"] in results else 1
+                continue
+            state = "skipped"
+        if results.get(it["key"]) == state:
             continue
         tries = sum(1 for a in prof["attempts"] if a["round"] == rnd["id"] and a["item"] == it["key"])
-        prof["attempts"].append({"round": rnd["id"], "item": it["key"], "try": tries + 1,
-                                 "ok": it["state"] == "ok", "at": stamp})
-        results[it["key"]] = it["state"]
+        attempt = {"round": rnd["id"], "item": it["key"], "try": tries + 1, "ok": state == "ok", "at": stamp}
+        if state == "skipped":
+            attempt["skipped"] = True
+        prof["attempts"].append(attempt)
+        results[it["key"]] = state
     rnd["tries"] = rnd.get("tries", 0) + 1
     rnd["last_graded"] = stamp
     earned, total, _ = study.totals(items)
     rnd["score"] = "%d/%d" % (earned, total)
-    rnd["unanswered"] = sum(1 for it in items if it["state"] == "blank")
+    rnd["unanswered"] = blanks
 
 
 # ───────────────────────── 가이드 ─────────────────────────
@@ -504,6 +529,29 @@ def weak_tags(prof, cat, limit=6):
     return [t for t, _ in sorted(count.items(), key=lambda x: -x[1])[:limit]]
 
 
+def round_verdicts(rnd, states, cat):
+    """이번 회차에 나온 단원별 판정. [{unit, title, level, kind: up|mastered|done|retry|keep, text}]"""
+    by_unit = {st["unit"]: st for st in states}
+    out = []
+    for f in sorted(rnd.get("focus") or [], key=lambda f: study.natural_key(f["unit"])):
+        st = by_unit.get(f["unit"])
+        if not st:
+            continue
+        if st["passed"].get(f["level"]):
+            if f["level"] >= 3:
+                kind, text = "done", "레벨3 통과 → 단원 완료"
+            elif st["mastered"] and f["level"] == MASTER_LEVEL:
+                kind, text = "mastered", "레벨%d 통과 → 단원 숙달" % f["level"]
+            else:
+                kind, text = "up", "레벨%d 통과 → 다음은 레벨%d" % (f["level"], f["level"] + 1)
+        elif st["retry"]:
+            kind, text = "retry", "정답률 낮음 → 같은 레벨을 다른 문항으로 재도전"
+        else:
+            kind, text = "keep", "레벨%d 유지 → 같은 레벨 문항을 조금 더" % f["level"]
+        out.append({"unit": f["unit"], "title": cat_unit_title(cat, f["unit"]), "level": f["level"], "kind": kind, "text": text})
+    return out
+
+
 def guide_text(prof, cat, rnd=None, show_next=False):
     states = all_states(prof, cat)
     lines = ["", "시험 준비도 %d%% (단원 준비도의 중요도 가중 평균)" % readiness(states),
@@ -517,25 +565,15 @@ def guide_text(prof, cat, rnd=None, show_next=False):
         trend = " (지난 회차 %.1f)" % prev[-1]["avg_level"] if prev else ""
         lines.append("이번 회차 난이도: 평균 레벨 %.1f%s · 문항 %d개" % (rnd.get("avg_level", 0), trend, len(rnd["items"])))
         lines.append("단원별 판정")
-        by_unit = {st["unit"]: st for st in states}
-        for f in sorted(rnd["focus"], key=lambda f: study.natural_key(f["unit"])):
-            st = by_unit[f["unit"]]
-            if st["passed"].get(f["level"]):
-                verdict = "레벨%d 통과 → 다음은 레벨%d" % (f["level"], f["level"] + 1) if f["level"] < 3 else "레벨3 통과 → 단원 완료"
-                if st["mastered"] and f["level"] == MASTER_LEVEL:
-                    verdict = "레벨%d 통과 → 단원 숙달" % f["level"]
-            elif st["retry"]:
-                verdict = "정답률 낮음 → 같은 레벨을 다른 문항으로 재도전"
-            else:
-                verdict = "레벨%d 유지 → 같은 레벨 문항을 조금 더" % f["level"]
-            lines.append("  %s %s %s" % (f["unit"], pad(cat_unit_title(cat, f["unit"])[:14], 28), verdict))
+        for v in round_verdicts(rnd, states, cat):
+            lines.append("  %s %s %s" % (v["unit"], pad(v["title"][:14], 28), v["text"]))
     if rnd and rnd.get("retest"):
         lines.append("  다시 낸 오답 문항: " + ", ".join(fname_of(k) for k in rnd["retest"]))
     if rnd and rnd.get("unanswered"):
         lines.append("  아직 답하지 않은 문항 %d개 — 마저 풀고 다시 채점하면 기록됩니다." % rnd["unanswered"])
     lines.append("")
     if not prof["rounds"]:
-        lines.append("아직 진단 전입니다. python study.py 를 실행하면 진단 테스트부터 시작합니다.")
+        lines.append("아직 진단 전입니다. 프로그램을 실행하면 진단 테스트부터 시작합니다.")
     elif all(st["mastered"] for st in states):
         lines.append("전 단원을 숙달했습니다. 실전 모의고사(120분): python study.py start m1  — 계속하면 심화(레벨3) 회차가 이어집니다.")
     else:
@@ -544,7 +582,7 @@ def guide_text(prof, cat, rnd=None, show_next=False):
         lines.append("다음 회차: 문항 %d개(%s) · 많이 나올 단원 %s" % (
             size, reason, ", ".join("%s(레벨%d)" % (st["unit"], st["level"]) for st in ranked)))
         if show_next:
-            lines.append("이어서 하기: python study.py")
+            lines.append("이어서 하기: python study.py go")
     shortages = (rnd or {}).get("shortages") or []
     if shortages:
         lines.append("문항이 바닥난 단원·레벨: " + ", ".join("%s 레벨%d" % (x["unit"], x["level"]) for x in shortages)

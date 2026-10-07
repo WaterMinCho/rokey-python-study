@@ -5,6 +5,7 @@
   "points": 4,
   "mode": "call",
   "tags": ["스택 LIFO", "빈 자료구조 처리"],
+  "examples": 3,
   "cases": [
     {"call": "solution([3, 5, 0, 7])", "expected": "[3, 7]"},
     {"call": "solution([1, 2, 3])", "expected": "[1, 2, 3]"},

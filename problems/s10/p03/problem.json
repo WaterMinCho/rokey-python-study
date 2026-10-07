@@ -8,6 +8,7 @@
     "오버라이딩",
     "상속 문법"
   ],
+  "examples": 2,
   "cases": [
     {
       "code": "c = CleanBot()\nc.greet()\nc.work()",

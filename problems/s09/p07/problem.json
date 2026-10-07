@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "exec",
   "tags": ["디폴트 매개변수", "self"],
+  "examples": 1,
   "cases": [
     {"code": "t = Tank()\nt.fill()\nprint(t.level)\nt.fill(5)\nprint(t.level)\nt.fill_twice(20)\nprint(t.level)", "stdout": "10\n15\n55\n"},
     {"code": "t = Tank()\nprint(t.level)\nt.fill_twice(7)\nprint(t.level)", "stdout": "0\n14\n"},

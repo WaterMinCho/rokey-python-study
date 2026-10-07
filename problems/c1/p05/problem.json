@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["딕셔너리 개수 세기", "문자열 순회", "values 순회"],
+  "examples": 3,
   "cases": [
     {"call": "solution(\"programming\")", "expected": "3"},
     {"call": "solution(\"abc\")", "expected": "0"},

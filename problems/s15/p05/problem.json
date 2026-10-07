@@ -5,6 +5,7 @@
   "points": 6,
   "mode": "io",
   "tags": ["제너레이터와 yield", "제너레이터 표현식", "range 경계"],
+  "examples": 1,
   "cases": [
     {"stdout": "3\n2\n1\n1\n4\n9\n16\n"}
   ]
