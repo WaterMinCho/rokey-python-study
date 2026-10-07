@@ -33,6 +33,8 @@ TOOL_DIRS = ("gui/",)
 STALLED = (("MERGE_HEAD", "merge"), ("rebase-merge", "rebase"), ("rebase-apply", "rebase"),
            ("CHERRY_PICK_HEAD", "cherry-pick"), ("REVERT_HEAD", "revert"))
 PUSH_PATIENCE = 5  # push 제한 시간 = timeout 의 몇 배. 첫 push 는 로그인 창(브라우저)에서 시간이 걸린다
+FETCH_LIMIT = 20  # 받기(fetch)는 로그인이 필요 없으니 오래 기다리지 않는다(시작할 때 화면이 여기서 기다린다)
+PR_WAIT, PR_POLL = 30, 3  # 올린 뒤 저장소의 Actions 가 PR 을 만들 때까지 기다리는 시간과 확인 간격(초)
 URL_LIMIT = 2000
 REMOTE_RE = re.compile(r"github\.com[:/]+([^/\s:]+)/([^/\s]+?)(?:\.git)?/?$")
 BROKEN = object()  # profile.json 은 있는데 읽을 수 없다
@@ -76,7 +78,9 @@ M_NOTHING = "새로 제출할 풀이가 없습니다. 지난번에 올린 내용
 M_EMPTY = "아직 제출할 풀이가 없습니다. 문제를 푼 뒤 다시 눌러 주세요."
 M_ADDED = "제출했습니다. 열려 있는 PR 에 이어서 올라갔습니다."
 M_SAME = "이미 제출돼 있습니다. 바뀐 내용이 없어 그대로 두었습니다."
-M_OPEN_PR = "올렸습니다. 브라우저에 열리는 화면에서 [Create pull request] 를 누르면 제출이 끝납니다."
+M_CREATED = "제출했습니다. PR 이 만들어졌습니다."
+M_OPEN_PR = ("올렸습니다. PR 은 잠시 뒤 자동으로 만들어집니다. 브라우저에 열리는 화면에 [View pull request] 가 보이면 그것을, "
+             "[Create pull request] 가 보이면 그 단추를 눌러 주세요.")
 M_PUSHED = "%s 브랜치에 올렸습니다."
 M_NO_REMOTE_COPY = "가져올 원격 풀이가 없습니다. 이 컴퓨터의 풀이는 그대로 두었습니다."
 M_BAD_CHOICE = "고를 수 있는 것은 remote(원격 풀이 가져오기)와 local(이 컴퓨터 풀이로 올리기)입니다: %r"
@@ -162,6 +166,8 @@ class GitFlow:
         self.tip_ref = "refs/remotes/origin/" + self.branch
         self.outside = [".", ":(exclude)" + self.rel]
         self.find_pr = find_open_pr  # 테스트는 네트워크를 부르지 않게 바꿔 끼운다
+        self.fetch_timeout = min(timeout, FETCH_LIMIT)
+        self.pr_wait, self.sleep = PR_WAIT, time.sleep
         self.log = []
         self._gitdir_path = None
         self._op, self._notes, self._backup, self._changed = "sync", [], None, False
@@ -363,7 +369,7 @@ class GitFlow:
 
     def _fetch(self):
         """최신 main 과 study/* 를 받는다. 지워진 원격 브랜치는 로컬 표식도 지운다."""
-        run = self._git("fetch", "--prune", "origin", *FETCH_REFSPECS, check=False)
+        run = self._git("fetch", "--prune", "origin", *FETCH_REFSPECS, check=False, timeout=self.fetch_timeout)
         if run.code != 0:
             kind = "slow" if run.code is None else remote_problem(run.err)
             self._remote_stop(kind if kind in ("slow", "login", "denied") else "offline", "git %s\n%s" % (run.args, run.err.strip()), "받지")
@@ -529,15 +535,32 @@ class GitFlow:
             return "behind", text  # non-fast-forward · fetch first: 원격의 내 브랜치에 모르는 커밋이 있다
         return remote_problem(run.err), text
 
-    def _pr(self):
-        """(PR 주소, 이미 열려 있었는지). origin 이 GitHub 주소가 아니면 (None, False)."""
+    def _pull_of(self, commit):
+        """그 커밋이 끝인 PR 번호(원격의 refs/pull/N/head). GitHub 는 열린 PR 의 이 참조를 push 때마다 옮긴다. 없으면 None."""
+        run = self._git("ls-remote", "origin", "refs/pull/*/head", check=False, timeout=self.fetch_timeout)
+        for line in (run.out if run.code == 0 else "").splitlines():
+            sha, _, ref = line.partition("\t")
+            if sha == commit and ref.startswith("refs/pull/"):
+                return ref.split("/")[2]
+        return None
+
+    def _pr(self, commit, pushed):
+        """(PR 주소, 'open' 이미 열려 있었음 | 'created' 방금 자동으로 만들어짐 | 'manual' 직접 만들어야 할 수 있음).
+        origin 이 GitHub 주소가 아니면 (None, 'manual')."""
         slug = remote_slug(self._url)
         if not slug:
-            return None, False
+            return None, "manual"
         url = self.find_pr(slug[0], slug[1], self.branch)
         if url:
-            return url, True
-        return new_pr_url(slug[0], slug[1], self.branch, "%s 풀이" % self.user), False
+            return url, "open"
+        waited = 0
+        while pushed and waited < self.pr_wait:  # 저장소의 Actions 가 study/* 브랜치에 PR 을 만들어 준다
+            self.sleep(PR_POLL)
+            waited += PR_POLL
+            number = self._pull_of(commit)
+            if number:
+                return "https://github.com/%s/%s/pull/%s" % (slug[0], slug[1], number), "created"
+        return new_pr_url(slug[0], slug[1], self.branch, "%s 풀이" % self.user), "manual"
 
     # ── 작업 ──
 
@@ -581,8 +604,11 @@ class GitFlow:
             pushed = snap != self._tip
             kind, text = self._push(snap) if pushed else ("ok", "")
             if kind == "ok":
-                url, opened = self._pr()
-                message = (M_ADDED if pushed else M_SAME) if opened else M_OPEN_PR if url else M_PUSHED % self.branch
+                url, state = self._pr(snap, pushed)
+                if state == "open":
+                    message = M_ADDED if pushed else M_SAME
+                else:
+                    message = M_CREATED if state == "created" else M_OPEN_PR if url else M_PUSHED % self.branch
                 return self._result("ok", message, text, pr_url=url)
             if kind == "behind" and attempt == 1:
                 self._fetch()  # 받아 온 직후 원격이 또 바뀐 경우: 한 번만 다시

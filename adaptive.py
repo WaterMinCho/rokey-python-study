@@ -411,8 +411,7 @@ def write_round(user, rnd, cat):
     os.makedirs(folder, exist_ok=True)
     title = round_title(rnd)
     readme = ["# %s" % title, "",
-              "> 퀴즈는 코드를 실행하지 말고 눈으로 풀어 `quiz.py` 에 답을 적습니다. 코드 문제는 같은 폴더의 `.py` 파일을 고칩니다.",
-              "> 채점: `python study.py grade %s`" % rnd["id"], ""]
+              "> 프로그램(`python study.py`)에서 풀면 이 폴더의 `quiz.py` 와 `.py` 파일에 답이 자동으로 저장됩니다.", ""]
     if rnd["focus"]:
         readme.append("문항 %d개(%s) · 평균 레벨 %.1f · 단원: %s" % (len(rnd["items"]), rnd.get("size_reason", ""), rnd.get("avg_level", 0), ", ".join(
             "%s %d" % (f["unit"], f["count"]) for f in rnd["focus"])))
@@ -574,7 +573,7 @@ def guide_text(prof, cat, rnd=None, show_next=False):
         lines.append("  아직 답하지 않은 문항 %d개 — 마저 풀고 다시 채점하면 기록됩니다." % rnd["unanswered"])
     lines.append("")
     if not prof["rounds"]:
-        lines.append("아직 진단 전입니다. python study.py 를 실행하면 진단 테스트부터 시작합니다.")
+        lines.append("아직 진단 전입니다. 프로그램을 실행하면 진단 테스트부터 시작합니다.")
     elif all(st["mastered"] for st in states):
         lines.append("전 단원을 숙달했습니다. 실전 모의고사(120분): python study.py start m1  — 계속하면 심화(레벨3) 회차가 이어집니다.")
     else:
@@ -583,7 +582,7 @@ def guide_text(prof, cat, rnd=None, show_next=False):
         lines.append("다음 회차: 문항 %d개(%s) · 많이 나올 단원 %s" % (
             size, reason, ", ".join("%s(레벨%d)" % (st["unit"], st["level"]) for st in ranked)))
         if show_next:
-            lines.append("이어서 하기: python study.py")
+            lines.append("이어서 하기: python study.py go")
     shortages = (rnd or {}).get("shortages") or []
     if shortages:
         lines.append("문항이 바닥난 단원·레벨: " + ", ".join("%s 레벨%d" % (x["unit"], x["level"]) for x in shortages)

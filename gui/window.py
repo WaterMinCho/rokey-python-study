@@ -288,7 +288,7 @@ class MainWindow(QMainWindow):
         detail = result.get("detail") or ""
         if result.get("status") == "diverged":
             self.ask(title, message, (("다른 컴퓨터의 풀이 가져오기", "remote"), ("이 컴퓨터 풀이로 올리기", "local"), ("나중에 정하기", "")),
-                     lambda choice: self.run_job("처리하는 중입니다.", lambda: self.gitflow.resolve(choice),
+                     lambda choice: self.run_job("처리하는 중입니다.", lambda: self._resolve(title, choice),
                                                  lambda done: self._git_done(title, done)), detail)
             return
         url = result.get("pr_url") if result.get("status") == "ok" else None
@@ -296,6 +296,16 @@ class MainWindow(QMainWindow):
             self.open_url(url)
             message += "\n\n브라우저에서 PR 페이지를 열었습니다. 열리지 않았으면 아래 주소를 누르세요."
         self.ask(title, message, detail=detail, link=url or "")
+
+    def _resolve(self, title, choice):
+        """갈라진 풀이를 정한 뒤, 문제 받기 도중이었으면 받기를 마저 한다(그 전에는 새 문제가 들어오지 않았다)."""
+        done = self.gitflow.resolve(choice)
+        if title == "문제 받기" and done.get("status") in ("ok", "nothing"):
+            again = self.gitflow.sync()
+            again["changed"] = again.get("changed") or done.get("changed")
+            again["backup"] = again.get("backup") or done.get("backup")
+            return again
+        return done
 
     def _restart(self, result):
         """도구 파일이 바뀌었다. 옛 코드로 새 파일을 다루지 않게, 대화상자를 어떻게 닫든 다시 시작한다."""

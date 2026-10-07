@@ -685,7 +685,7 @@ def cmd_grade(args):
         return
     set_ids = [resolve_set(args.set)] if args.set else started_sets(user)
     if not set_ids:
-        die("아직 시작한 세트가 없습니다. `python study.py` 로 진단 테스트부터 시작하세요.")
+        die("아직 시작한 세트가 없습니다. `python study.py go` 로 진단 테스트부터 시작하세요.")
     graded = grade_user(user, set_ids)
     if args.md:
         print(render_markdown(user, graded))
@@ -806,7 +806,7 @@ def announce_round(user, rnd, folder):
     else:
         print("  전 단원이 섞여 있고 약한 단원이 더 많이 나옵니다. 평균 레벨 %.1f." % rnd.get("avg_level", 0))
         print("  문항 수 기준: %s" % rnd.get("size_reason", "필요에 따라"))
-    print("  다 풀면 : python study.py")
+    print("  다 풀면 : python study.py go")
 
 
 def print_round_result(sess, result):
@@ -815,7 +815,7 @@ def print_round_result(sess, result):
     rnd = adaptive.find_round(sess.prof, result["round"]["id"])
     print_report(round_as_set(rnd), result["items"], sess.folder(rnd["id"]))
     if result["unanswered"]:
-        print("\n아직 답하지 않은 문항 %d개가 있습니다. 마저 풀고 다시 python study.py 를 실행하세요." % result["unanswered"])
+        print("\n아직 답하지 않은 문항 %d개가 있습니다. 마저 풀고 다시 python study.py go 를 실행하세요." % result["unanswered"])
         return
     print(adaptive.guide_text(sess.prof, sess.cat, rnd))
     if result["next_round"]:

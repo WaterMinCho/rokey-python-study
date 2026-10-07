@@ -24,7 +24,8 @@ def changed_files(base_ref):
 
 
 def main():
-    base_ref = os.environ.get("GITHUB_BASE_REF")  # PR 일 때만 값이 있다
+    # PR 이면 GITHUB_BASE_REF, [제출] 버튼이 올린 study/<ID> 브랜치면 워크플로가 STUDY_BASE_REF 를 준다
+    base_ref = os.environ.get("GITHUB_BASE_REF") or os.environ.get("STUDY_BASE_REF")
     cat = adaptive.catalog()
     problems = []
     if base_ref:

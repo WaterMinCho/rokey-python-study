@@ -165,6 +165,7 @@ class PC:
         self.folder = os.path.join(self.path, "submissions", user)
         self.flow = gitflow.GitFlow(self.path, user)
         self.flow.find_pr = self.find_pr
+        self.flow.pr_wait = 0  # 자동으로 만들어지는 PR 을 기다리지 않는다(기다리는 경우는 따로 테스트)
         self.open_pr, self.lookups = None, []
 
     def find_pr(self, owner, repo, branch):
@@ -462,6 +463,34 @@ class GitFlowTest(unittest.TestCase):
         result = self.sync()
         self.assertEqual((result["changed"], result["restart"]), (True, False))
         self.merge()
+
+    def test_waits_for_the_pull_request_the_repository_opens_by_itself(self):
+        """올린 뒤 저장소의 Actions 가 만든 PR(refs/pull/N/head)을 기다려 그 주소를 돌려준다."""
+        self.pc.solve()
+        flow, waits = self.pc.flow, []
+
+        def robot_opens_pr(seconds):  # 두 번째 확인 직전에 PR 이 생긴다
+            waits.append(seconds)
+            if len(waits) == 2:
+                tip = git(self.pc.origin, "rev-parse", "refs/heads/study/alice").stdout.strip()
+                git(self.pc.origin, "update-ref", "refs/pull/12/head", tip)
+
+        flow.pr_wait, flow.sleep = gitflow.PR_WAIT, robot_opens_pr
+        result = flow.submit()
+        self.assertEqual((result["status"], result["message"]), ("ok", gitflow.M_CREATED))
+        self.assertEqual(result["pr_url"], "https://github.com/%s/%s/pull/12" % (OWNER, REPO))
+        self.assertEqual(len(waits), 2)
+        # PR 이 끝내 만들어지지 않으면 기다린 뒤 '직접 만들기' 화면 주소로 대신한다
+        self.pc.solve()
+        waits.clear()
+        flow.sleep = waits.append
+        result = flow.submit()
+        self.assertEqual((result["status"], result["message"], result["pr_url"]), ("ok", gitflow.M_OPEN_PR, NEW_PR))
+        self.assertEqual(sum(waits), gitflow.PR_WAIT)
+        # 올릴 것이 없을 때는 기다리지 않는다
+        waits.clear()
+        self.assertEqual(flow.submit()["status"], "ok")
+        self.assertEqual(waits, [])
 
     def test_other_people_merged_first(self):
         pc = self.pc

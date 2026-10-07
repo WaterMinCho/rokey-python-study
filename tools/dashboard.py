@@ -67,7 +67,7 @@ def render_svg(rows, cat, unit_ids):
            '<text x="24" y="34" font-size="20" font-weight="700" fill="#1c211d">학습 현황판</text>',
            '<text x="24" y="52" fill="#6b7280">단원 = 차시. 준비도 = 단원 준비도의 중요도 가중 평균(0~100). main 에 풀이가 올라오면 자동 갱신됩니다.</text>']
     if not rows:
-        out.append('<text x="24" y="%d" fill="#6b7280">아직 진단 테스트를 한 사람이 없습니다. python study.py 로 시작하세요.</text>' % (top + 30))
+        out.append('<text x="24" y="%d" fill="#6b7280">아직 진단 테스트를 한 사람이 없습니다. 프로그램을 실행해 시작하세요.</text>' % (top + 30))
     for i, r in enumerate(rows):
         y = top + i * row_h
         out.append('<rect x="16" y="%d" width="%d" height="%d" rx="12" fill="#f5f5f3"/>' % (y, width - 32, row_h - 10))
@@ -111,7 +111,7 @@ def bar(pct, width=10):
 def render_markdown(rows, cat, unit_ids):
     lines = ["# 학습 현황판", "", "![학습 현황판](dashboard.svg)", ""]
     if not rows:
-        lines.append("아직 진단 테스트를 한 사람이 없습니다. `python study.py` 로 시작하세요.")
+        lines.append("아직 진단 테스트를 한 사람이 없습니다. 프로그램을 실행해 시작하세요.")
     else:
         lines += ["| 이름 | 준비도 | 숙달 | 진행 중 레벨 | 약한 단원 | 능숙한 단원 | 약한 개념 | 회차 | 마지막 풀이 |",
                   "|---|---|---|---|---|---|---|---|---|"]
