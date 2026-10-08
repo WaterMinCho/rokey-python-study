@@ -27,6 +27,7 @@ PROBE_TIMEOUT = 60  # 초 단위. 설치 직후 첫 import 는 백신 검사로 
 PIP_INSTALL = ["-m", "pip", "install", "--disable-pip-version-check", "--only-binary=:all:", "PyQt6"]
 PYTHON_URL = "https://www.python.org/downloads/latest/python3.14/"  # python.org 첫 화면의 단추는 최신판(곧 3.15)을 줌
 RETRY = "python study.py"
+UPDATE_RETRY = "python study.py update 로 새 버전을 받은 뒤 python study.py"
 OPENING = "화면을 엽니다. 쓰는 동안 이 터미널 창은 닫지 말아 주세요(닫으면 화면도 함께 닫힙니다)."
 YES = ("y", "yes", "ㅛ", "예", "네")  # ㅛ: 한글 입력 상태에서 y 를 누른 경우
 
@@ -178,8 +179,9 @@ def launch(argv=None, host=None):
     if error is None:
         try:
             main = host.gui_main()
-        except ImportError as import_error:
-            return fail(host, "화면 모듈(gui/app.py)을 불러오지 못했습니다: %s" % import_error)
+        except Exception as import_error:  # 문법 오류처럼 ImportError 가 아닌 예외도 같은 안내로 끝냄
+            return fail(host, "화면 모듈(gui/app.py)을 불러오지 못했습니다: %s: %s" % (type(import_error).__name__, import_error),
+                        retry=UPDATE_RETRY)
         if not rerun:  # 다시 실행된 쪽이면 부모가 이미 알렸음
             host.say(OPENING)
         return int(main() or 0)

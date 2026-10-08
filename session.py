@@ -20,7 +20,7 @@ import study
 
 UNSAFE_RE = re.compile("[\x00\ud800-\udfff]")  # 파일에 쓸 수 없는 글자(NUL, 짝 없는 서러게이트)
 LABEL_RE = re.compile(r"\*\*(\d+)번\*\*")
-ASSIGN_RE = re.compile(r"^([A-Za-z_]\w*)\s*=\s*(.+?)\s*(?:#.*)?$")
+ASSIGN_RE = re.compile(r"^([A-Za-z_]\w*)\s*=")
 
 
 class SessionError(Exception):
@@ -33,18 +33,36 @@ def valid_user(name):
     return bool(name) and bool(study.USER_RE.fullmatch(name))
 
 
+def user_folder(name):
+    """대소문자만 다른 풀이 폴더가 이미 있으면 그 폴더 이름을 돌려줌. 없으면 받은 이름 그대로.
+    git 은 경로의 대소문자를 구분해서, 폴더와 철자가 다른 ID 로는 제출이 올라가지 않음."""
+    try:
+        names = os.listdir(study.SUBMISSIONS_DIR)
+    except OSError:
+        return name
+    if name in names:
+        return name
+    return next((n for n in sorted(names) if n.lower() == name.lower() and valid_user(n)), name)
+
+
+def has_record(name):
+    """그 ID 의 풀이 기록(profile.json)이 이 컴퓨터에 이미 있는지 봄."""
+    return os.path.isfile(adaptive.profile_path(user_folder(name)))
+
+
 def saved_user():
     """환경 변수 STUDY_USER, .study_user 파일 순으로 찾음. 없으면 None."""
     name = os.environ.get("STUDY_USER")
     if not name and os.path.isfile(study.USER_FILE):
         name = study.read_text(study.USER_FILE).strip()
-    return name if valid_user(name) else None
+    return user_folder(name) if valid_user(name) else None
 
 
 def save_user(name):
     name = (name or "").strip()
     if not valid_user(name):
         raise SessionError("ID 는 영문·숫자·-·_ 만 쓸 수 있습니다(깃허브 ID 권장).")
+    name = user_folder(name)
     os.makedirs(os.path.join(study.SUBMISSIONS_DIR, name), exist_ok=True)
     study.write_text(study.USER_FILE, name + "\n")
     return name
@@ -102,17 +120,26 @@ def answer_text(q):
     return " 또는 ".join(q["answer"])
 
 
-def salvage_quiz(text):
-    """깨진 quiz.py 에서 한 줄짜리 답 가운데 읽히는 것만 건짐."""
-    answers = {}
-    for line in text.replace("\r\n", "\n").split("\n"):
+def salvage_quiz(text, names):
+    """깨진 quiz.py 에서 names 에 든 문항의 답 가운데 읽히는 것만 건짐.
+    문항 이름으로 시작하는 줄부터 다음 문항 줄 앞까지를 한 덩어리로 묶고, 뒤쪽 줄을 하나씩 덜어 가며 읽음.
+    여러 줄 답(삼중 따옴표)과 # 이 든 답도 이렇게 읽힘."""
+    chunks, lines = [], None
+    for line in text.replace("\r\n", "\n").replace("\r", "\n").split("\n"):
         m = ASSIGN_RE.match(line)
-        if not m:
-            continue
-        try:
-            answers[m.group(1)] = ast.literal_eval(m.group(2))
-        except (ValueError, SyntaxError):
-            pass
+        if m and m.group(1) in names:
+            lines = [line]
+            chunks.append((m.group(1), lines))
+        elif lines is not None:
+            lines.append(line)
+    answers = {}
+    for name, lines in chunks:
+        for end in range(len(lines), 0, -1):
+            try:
+                answers[name] = ast.literal_eval(ast.parse("\n".join(lines[:end])).body[0].value)
+                break
+            except (ValueError, SyntaxError):
+                pass
     return answers
 
 
@@ -203,12 +230,12 @@ class Session:
         """깨진 답안지를 quiz.py.bak 으로 보관하고, 건진 답만 남겨 새로 씀. 건진 답의 수를 돌려줌."""
         rnd = self._round(rid)
         path = os.path.join(self.folder(rnd["id"]), "quiz.py")
+        names = {adaptive.fname_of(k): self.cat[k] for k in self._keys(rnd) if self.cat[k]["kind"] == "quiz"}
         saved = {}
         if os.path.isfile(path):
             shutil.copyfile(path, path + ".bak")
             with open(path, encoding="utf-8", errors="replace") as f:
-                saved = salvage_quiz(f.read())
-        names = {adaptive.fname_of(k): self.cat[k] for k in self._keys(rnd) if self.cat[k]["kind"] == "quiz"}
+                saved = salvage_quiz(f.read(), names)
         answers = {}
         for name, value in saved.items():
             if name in names:
@@ -235,6 +262,8 @@ class Session:
         if it["kind"] == "quiz":
             body = adaptive.quiz_section(it["set"], it["q"]["id"])
             value = quiz_answers.get(name)
+            if it["type"] != "choice" and value is not None and not isinstance(value, str):
+                value = clean_text(value)  # 터미널 방식으로 따옴표 없이 적은 숫자 답(Q14 = 3)은 글자로 바꿔 보여 줌
             if isinstance(value, str):
                 value = value.strip("\n")  # 삼중 따옴표로 적힌 답의 앞뒤 줄바꿈
             view.update(type_label=study.QTYPE_LABEL[it["type"]], title=study.QTYPE_LABEL[it["type"]],
@@ -371,19 +400,23 @@ class Session:
         if untouched and not finalize:
             return self._result(rnd, items, untouched=True)
         with self._lock:
-            adaptive.record(self.prof, rnd, items, finalize=finalize)
-            completed_now, next_id = False, None
-            if not rnd.get("completed_at") and rnd["unanswered"] == 0:
-                rnd["completed_at"] = adaptive.now()
-                rnd["first_score"] = rnd["score"]  # 다음 회차 크기는 이 점수로 정함. 나중에 고쳐서 다시 채점해도 바꾸지 않음
-                completed_now = True
-                if rnd is self.latest():
-                    nxt = adaptive.build_round(self.prof, self.cat)
-                    if nxt:
-                        self.prof["rounds"].append(nxt)
-                        adaptive.write_round(self.user, nxt, self.cat)
-                        next_id = nxt["id"]
-            adaptive.save_profile(self.prof)
+            try:
+                adaptive.record(self.prof, rnd, items, finalize=finalize)
+                completed_now, next_id = False, None
+                if not rnd.get("completed_at") and rnd["unanswered"] == 0:
+                    rnd["completed_at"] = adaptive.now()
+                    rnd["first_score"] = rnd["score"]  # 다음 회차 크기는 이 점수로 정함. 나중에 고쳐서 다시 채점해도 바꾸지 않음
+                    completed_now = True
+                    if rnd is self.latest():
+                        nxt = adaptive.build_round(self.prof, self.cat)
+                        if nxt:
+                            self.prof["rounds"].append(nxt)
+                            adaptive.write_round(self.user, nxt, self.cat)
+                            next_id = nxt["id"]
+                adaptive.save_profile(self.prof)
+            except OSError as error:
+                self._reload()  # 저장하지 못한 채점 결과를 메모리에 두면 해설이 열리고, 그 뒤의 다시 채점이 첫 제출로 기록됨
+                raise SessionError("채점 결과를 저장하지 못했습니다. 기록은 바뀌지 않았으니 잠시 뒤 다시 눌러 주세요.\n%s" % error)
         return self._result(rnd, items, completed_now=completed_now, next_round=next_id)
 
     def _result(self, rnd, items, untouched=False, completed_now=False, next_round=None):

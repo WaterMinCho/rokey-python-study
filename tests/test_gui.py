@@ -12,6 +12,7 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest import mock
 
 try:
     from PyQt6.QtCore import QEventLoop, QMimeData, QSettings, Qt, QTimer, qInstallMessageHandler
@@ -352,6 +353,25 @@ class FirstRunTest(GuiTest):
         rnd = adaptive.find_round(adaptive.load_profile("tester"), "d1")
         self.assertNotEqual(rnd["score"], rnd["first_score"])
 
+    def test_id_that_already_has_a_record_is_confirmed_once(self):
+        """이미 풀이 기록이 있는 ID 를 넣으면 한 번 확인받고, 대소문자가 달라도 그 폴더의 철자로 이어 감."""
+        session.Session("Tester").ensure_round()
+        self.win.boot()
+        dialog = self.win.dialog
+        self.assertNotIn("WaterMinCho", dialog.edit.placeholderText())  # 예시가 실제 ID 면 그대로 넣는 사람이 생김
+        QTest.keyClicks(dialog.edit, "tester")
+        click(dialog.ok)
+        self.assertTrue(dialog.isVisible())  # 아직 저장하지 않음
+        self.assertIsNone(session.saved_user())
+        self.assertIn("Tester 의 풀이 기록", dialog.error.text())
+        self.assertEqual(dialog.ok.text(), "이 기록으로 시작")
+        click(dialog.ok)
+        self.idle()
+        self.assertEqual(session.saved_user(), "Tester")
+        self.assertEqual(self.win.home.user.text(), "ID: Tester")
+        self.assertEqual(self.win.home.action_btn.text(), "진단 테스트 시작")
+        self.assertEqual(os.listdir(study.SUBMISSIONS_DIR), ["Tester"])
+
 
 class HomeAndGitTest(GuiTest):
     def test_offline_at_start_is_one_line_notice_and_work_continues(self):
@@ -466,6 +486,34 @@ class HomeAndGitTest(GuiTest):
         self.win.close()
         self.assertFalse(self.win.isVisible())
         self.assertEqual(self.saved_quiz("d1")[item["id"]], 1)
+
+    def test_answers_that_could_not_be_saved_are_not_dropped_silently(self):
+        """자동 저장이 실패한 답을 화면을 떠나거나 창을 닫을 때 말없이 버리지 않음."""
+        self.boot()
+        click(self.win.home.action_btn)
+        page = self.win.round_page
+        item = self.select(lambda it: it["type"] == "choice")
+        with mock.patch.object(self.win.session, "set_answer", side_effect=PermissionError(13, "잠김")):
+            click(page.choice_panel.buttons[1])
+            click(page.home_btn)
+            self.assertIs(self.page(), page)  # 홈으로 가지 않음
+            self.assertIn("저장되지 않았습니다", self.win.dialog.text.text())
+            self.choose("")
+            self.assertFalse(self.win.close())  # 닫히지 않음
+            self.assertTrue(self.win.isVisible())
+            self.choose("")
+            self.assertEqual(list(page.dirty), [item["id"]])
+        click(page.home_btn)  # 저장이 되면 그대로 나감
+        self.assertIs(self.page(), self.win.home)
+        self.assertEqual(self.saved_quiz("d1")[item["id"]], 2)
+        click(self.win.home.action_btn)
+        self.select(lambda it: it is not None and it["id"] == item["id"])
+        with mock.patch.object(self.win.session, "set_answer", side_effect=PermissionError(13, "잠김")):
+            click(page.choice_panel.buttons[2])
+            click(page.home_btn)
+            self.choose("drop")  # 저장하지 않고 나가기
+        self.assertIs(self.page(), self.win.home)
+        self.assertEqual(self.saved_quiz("d1")[item["id"]], 2)
 
     def test_broken_answer_sheet_offers_repair(self):
         self.boot()
@@ -744,6 +792,22 @@ class BankTest(GuiTest):
         self.win.show_result("r91")  # 지난 회차를 다시 열면 채점 결과가 없어 다시 채점을 안내함
         result.listw.setCurrentRow(1)
         self.assertIn("다시 채점", result.detail.toPlainText())
+
+    def test_number_written_by_hand_in_the_answer_sheet_opens_in_the_text_box(self):
+        """터미널 방식으로 따옴표 없이 적은 숫자 답(Q14 = 3)이 든 답안지를 열어도 입력칸과 저장할 문항이 어긋나지 않음."""
+        self.boot()
+        self.make_round("r92", [self.first(type="return"), self.first(type="short")])
+        path = os.path.join(self.win.session.folder("r92"), "quiz.py")
+        name = adaptive.fname_of(self.first(type="short"))
+        study.write_text(path, study.read_text(path).replace("%s = None" % name, "%s = 3" % name))
+        self.win.open_round("r92")
+        page = self.win.round_page
+        item = self.select(lambda it: it["type"] == "short")
+        self.assertIs(page.stack.currentWidget(), page.text_panel)
+        self.assertEqual(page.text_panel.single.text(), "3")
+        self.fill(item, "4")
+        click(page.home_btn)
+        self.assertEqual(self.saved_quiz("r92")[name], "4")
 
     def test_every_bank_item_shows_without_errors(self):
         self.boot()

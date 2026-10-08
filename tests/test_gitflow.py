@@ -596,6 +596,32 @@ class GitFlowTest(unittest.TestCase):
         self.assertEqual(result["changed"], True)
         self.assertIn('"attempts": []', pc2.backup_text(result))
 
+    def test_id_differs_only_in_case_from_merged_folder(self):
+        """main 에 내 풀이가 다른 철자(Alice)로 들어가 있으면 받기도 제출도 아무것도 바꾸지 않고 멈춤."""
+        pc = self.pc
+        pc.solve()
+        self.server.other_user("Alice")
+        state = pc.state()
+        for result in (self.sync(pc, expect="blocked"), self.submit(pc, expect="blocked")):
+            self.assertIn("Alice", result["message"])
+            self.assertIsNone(result["backup"])
+        self.assertEqual(pc.state(), state)
+        self.assertEqual(self.server.rev("study/alice"), "")
+
+    def test_other_branches_differing_only_in_case(self):
+        """남의 브랜치 둘이 대소문자만 달라도 내 받기와 제출은 그대로 됨(남의 브랜치는 받지 않음)."""
+        pc = self.pc
+        self.sync(pc)
+        git(self.origin, "pack-refs", "--all")  # 원격(GitHub)은 대소문자를 구분함. 묶인 참조로 두 이름을 함께 둠
+        main = self.server.rev("main")
+        with open(os.path.join(self.origin, "packed-refs"), "a", encoding="utf-8") as f:
+            f.write("%s refs/heads/study/Kim\n%s refs/heads/study/kim\n" % (main, main))
+        for _ in range(3):
+            self.sync(pc)
+        pc.solve(); self.submit(pc)
+        self.assertEqual(git(pc.path, "for-each-ref", "--format=%(refname)", "refs/remotes/origin/study").stdout.split(),
+                         ["refs/remotes/origin/study/alice"])
+
     def test_single_branch_clone(self):
         pc = self.pc
         mine = pc.solve(); self.submit()
@@ -684,6 +710,21 @@ class GitFlowTest(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(result["backup"], "stalled", "profile.json")))
         self.submit()
         self.merge()
+
+    def test_stalled_merge_in_a_copied_folder(self):
+        """멈춘 병합이 있는 폴더를 통째로 복사해 온 경우. 인덱스의 파일 정보가 낡아 git merge --abort 가 거부함."""
+        pc = self.pc
+        mine = pc.solve()
+        git(pc.path, "add", "-A"); git(pc.path, "commit", "-q", "-m", "내 풀이")
+        self.server.add_problems("s17")
+        git(pc.path, "fetch", "-q", "origin")
+        git(pc.path, "merge", "--no-commit", "--no-ff", "origin/main")
+        for base, dirs, files in os.walk(pc.path):
+            dirs[:] = [d for d in dirs if d != ".git"]
+            for name in files:
+                os.utime(os.path.join(base, name), (1, 1))
+        result = self.sync(after=mine)
+        self.assertIn(gitflow.M_UNSTALLED_KEPT, result["message"])
 
     def test_stalled_rebase_from_manual_pull(self):
         mine = self.stalled_pull("--rebase")

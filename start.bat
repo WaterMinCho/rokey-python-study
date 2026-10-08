@@ -9,4 +9,4 @@ if %errorlevel%==0 (
     python study.py
 )
 if %errorlevel%==9009 echo Python 을 찾지 못했습니다. https://www.python.org/downloads/latest/python3.14/ 에서 Python 3.14 를 설치한 뒤 다시 실행해 주세요.
-if errorlevel 1 pause
+if not %errorlevel%==0 pause

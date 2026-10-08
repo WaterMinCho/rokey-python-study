@@ -528,7 +528,7 @@ def print_report(s, items, sub_dir, explain_hint=True):
         print("  ── " + note)
     wrong = [it["id"] for it in items if it["state"] == "wrong"]
     if wrong and explain_hint:
-        target = wrong[0] if "_" in wrong[0] else "%s %s" % (s["id"], wrong[0])  # 라운드 문항은 s03_Q4 꼴
+        target = wrong[0] if "_" in wrong[0] else "%s %s" % (s["id"], wrong[0])  # 회차 문항은 s03_Q4 꼴
         print("  틀린 문제는 다시 풀어 본 뒤 해설 확인: python study.py explain %s" % target)
 
 
@@ -767,7 +767,7 @@ def in_open_round(key):
 
 def cmd_explain(args):
     set_token, item = args.set, args.item
-    if item is None and "_" in set_token:  # 라운드 문항 ID: s03_Q4
+    if item is None and "_" in set_token:  # 회차 문항 ID: s03_Q4
         set_token, item = set_token.split("_", 1)
     if item is None:
         die("문항을 지정하세요. 예) python study.py explain 3 Q4  또는  python study.py explain s03_Q4")
@@ -809,7 +809,7 @@ def cmd_reset(args):
 # 적응형 학습 명령
 
 def round_as_set(rnd):
-    """라운드를 print_report 가 받는 세트 모양으로 감쌈."""
+    """회차를 print_report 가 받는 세트 모양으로 감쌈."""
     import adaptive
     return {"id": rnd["id"], "meta": {"title": adaptive.round_title(rnd)}}
 
@@ -919,7 +919,7 @@ def cmd_me(args):
     user = current_user(args)
     cat = adaptive.catalog()
     prof = adaptive.load_profile(user)
-    print("%s 님의 학습 현황 (라운드 %d회, 시도 %d문항)" % (user, len(prof["rounds"]), len(adaptive.first_attempts(prof))))
+    print("%s 님의 학습 현황 (회차 %d회, 시도 %d문항)" % (user, len(prof["rounds"]), len(adaptive.first_attempts(prof))))
     print(adaptive.guide_text(prof, cat, show_next=True))
 
 
@@ -931,21 +931,39 @@ def cmd_analyze(args):
         print(adaptive.shortage_request_markdown(shortages, adaptive.catalog()))
 
 
+def cmd_update(args):
+    """화면이 열리지 않을 때 터미널에서 새 버전과 새 문제를 받음. 화면이 켤 때 하는 문제 받기와 같은 일을 함."""
+    import gitflow
+    import session
+    result = gitflow.GitFlow(ROOT, session.user_folder(current_user(args))).sync()
+    print(result["message"])
+    if result["backup"]:
+        print("보관한 사본: %s" % result["backup"])
+    if result["status"] != "ok":
+        if result["detail"]:
+            print(result["detail"], file=sys.stderr)
+        sys.exit(1)
+
+
 def build_parser():
     parser = argparse.ArgumentParser(description="ROKEY 파이썬 스터디 도구입니다. `python study.py` 만 치면 화면(창)이 열리고, 터미널 모드는 뒤에 go 를 붙입니다.")
     sub = parser.add_subparsers(dest="command")
 
     sub.add_parser("gui", help="(기본) 화면(창)으로 열기: 문제 받기 · 풀기 · 실행 · 채점 · 해설 · 제출")
 
-    p = sub.add_parser("go", help="터미널 모드로 다음 할 일 이어 가기: 진단 → 풀기 → 채점 → 다음 라운드")
+    p = sub.add_parser("go", help="터미널 모드로 다음 할 일 이어 가기: 진단 → 풀기 → 채점 → 다음 회차")
     p.add_argument("--user")
     p.set_defaults(func=cmd_go)
+
+    p = sub.add_parser("update", help="새 버전과 새 문제 받기 (화면이 열리지 않을 때)")
+    p.add_argument("--user")
+    p.set_defaults(func=cmd_update)
 
     p = sub.add_parser("diagnose", help="진단 테스트 새로 받기")
     p.add_argument("--user")
     p.set_defaults(func=cmd_diagnose)
 
-    p = sub.add_parser("next", help="다음 맞춤 라운드 받기")
+    p = sub.add_parser("next", help="다음 맞춤 회차 받기")
     p.add_argument("--user")
     p.set_defaults(func=cmd_next)
 
@@ -984,7 +1002,7 @@ def build_parser():
     p.set_defaults(func=cmd_board)
 
     p = sub.add_parser("explain", help="해설·정답 보기 (스스로 다시 풀어 본 뒤에 보세요)")
-    p.add_argument("set", help="세트 또는 라운드 문항 ID (예: 3, s03_Q4)")
+    p.add_argument("set", help="세트 또는 회차 문항 ID (예: 3, s03_Q4)")
     p.add_argument("item", nargs="?", help="문항 ID (예: Q3, p01)")
     p.set_defaults(func=cmd_explain)
 

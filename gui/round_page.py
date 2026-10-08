@@ -151,14 +151,14 @@ class RoundPage(QWidget):
         self.submit_btn.clicked.connect(self.submit)
         self.code_panel.reset_btn.clicked.connect(self.ask_reset)
         self.home_btn.clicked.connect(win.go_home)
-        self.back_btn.clicked.connect(lambda: win.show_result(self.view["id"]))
+        self.back_btn.clicked.connect(self.back)
 
     # 불러오기
 
     def load(self, rid, review=False, select=None):
         """회차를 화면에 올림. 답안지를 읽을 수 없으면 화면을 바꾸지 않고 SessionError 를 냄."""
-        if self.view:
-            self.flush()  # 앞에 보던 회차에 남은 입력부터 저장
+        if self.view and not self.flush():  # 앞에 보던 회차에 남은 입력부터 저장. 못 하면 그 입력을 지우지 않고 멈춤
+            raise SessionError(self.status.text())
         view = self.win.session.open_round(rid)
         self.dirty.clear()
         self.view, self.review, self.current = view, review, None
@@ -192,7 +192,7 @@ class RoundPage(QWidget):
         self.flush()  # 앞 문항에 남은 입력부터 저장
         if not 0 <= row < len(self.view["items"]):
             return
-        item = self.current = self.view["items"][row]
+        item = self.view["items"][row]
         label = "%s · %s · %d점" % (item["type_label"], item["unit_title"], item["points"])
         if item["kind"] == "code":
             label = "%s · %s" % (item["title"], label)
@@ -206,6 +206,7 @@ class RoundPage(QWidget):
             panel, name = self.text_panel, "답안 · " + item["type_label"]
         panel.set_item(item)
         self.stack.setCurrentWidget(panel)
+        self.current = item  # 패널을 바꾼 뒤에 옮김. 위에서 오류가 나도 보이는 입력칸과 저장할 문항이 어긋나지 않음
         self.pane_title.setText(name)
         self.run_btn.setVisible(item["kind"] == "code")
         self.prev_btn.setEnabled(row > 0)
@@ -237,8 +238,9 @@ class RoundPage(QWidget):
         self.listw.item(item["no"] - 1).setText(self._row_text(item))
         self._update_progress()
 
-    def flush(self, commit=True):
-        """대기 중인 답을 파일에 쓰고, 다 썼으면 True 를 돌려줌. commit=True 면 조합 중인 한글부터 확정함."""
+    def flush(self, commit=True, offer=True):
+        """대기 중인 답을 파일에 쓰고, 다 썼으면 True 를 돌려줌. commit=True 면 조합 중인 한글부터 확정함.
+        offer=False 면 답안지 복구를 제안하지 않음(부른 쪽이 직접 알릴 때)."""
         if commit:
             QGuiApplication.inputMethod().commit()
         self.save_timer.stop()
@@ -249,7 +251,8 @@ class RoundPage(QWidget):
                 self.win.session.set_answer(self.view["id"], item_id, value)
             except (SessionError, OSError) as error:
                 self.status.setText("저장하지 못했습니다: %s" % error)
-                self.win.offer_repair(self.view["id"], self.reload)
+                if offer:
+                    self.win.offer_repair(self.view["id"], self.reload)
                 return False
             del self.dirty[item_id]
         self.status.setText("%s 에 자동 저장했습니다." % datetime.datetime.now().strftime("%H:%M:%S"))
@@ -257,8 +260,12 @@ class RoundPage(QWidget):
 
     def reload(self):
         """답안지를 복구한 뒤에 부름. 못 쓴 답을 마저 쓰고 파일에 남은 답으로 화면을 다시 맞춤."""
-        self.flush()
-        self.load(self.view["id"], self.review, self.current["id"] if self.current else None)
+        if self.flush():
+            self.load(self.view["id"], self.review, self.current["id"] if self.current else None)
+
+    def back(self):
+        if self.win.leave_round(self.back, "저장하지 않고 나가기"):
+            self.win.show_result(self.view["id"])
 
     # 실행 · 제출
 

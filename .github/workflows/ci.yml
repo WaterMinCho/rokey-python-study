@@ -24,6 +24,14 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
+      # Windows·macOS 는 대소문자만 다른 폴더를 한 폴더로 열어서, 둘 다 main 에 들어가면 전원의 문제 받기가 막힘
+      - name: 풀이 폴더 이름 검사
+        run: |
+          DUP=$(git ls-tree --name-only HEAD submissions/ | tr 'A-Z' 'a-z' | sort | uniq -d)
+          if [ -n "$DUP" ]; then
+            echo "::error::대소문자만 다른 풀이 폴더가 있습니다: $DUP"
+            exit 1
+          fi
       # 모든 모범 답안이 테스트를 통과하는지, 정답표가 실제 실행 결과와 맞는지 확인
       - run: python tools/verify_bank.py
       # 세션 서비스·제출 흐름·실행기 테스트 (화면 테스트는 아래 별도 작업)
