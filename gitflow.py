@@ -24,8 +24,7 @@ import urllib.request
 import study
 
 MAIN = "refs/remotes/origin/main"
-FETCH_REFSPECS = ("+refs/heads/main:refs/remotes/origin/main",  # --single-branch 로 clone 한 폴더에서도 받게 직접 적음
-                  "+refs/heads/study/*:refs/remotes/origin/study/*")
+MAIN_REFSPEC = "+refs/heads/main:" + MAIN  # --single-branch 로 clone 한 폴더에서도 받게 직접 적음
 TOOL_FILES = ("study.py", "adaptive.py", "session.py", "mdlite.py", "gitflow.py", "bootstrap.py")
 TOOL_DIRS = ("gui/",)
 STALLED = (("MERGE_HEAD", "merge"), ("rebase-merge", "rebase"), ("rebase-apply", "rebase"),
@@ -82,6 +81,8 @@ M_OPEN_PR = ("올렸습니다. PR 은 잠시 뒤 자동으로 만들어집니다
 M_NO_OPEN_PR = ("지난번에 올린 내용과 같아 새로 올리지 않았고, 열려 있는 PR 은 찾지 못했습니다. 브라우저에 열리는 화면에 "
                 "[View pull request] 가 보이면 그것을, [Create pull request] 가 보이면 그 단추를 눌러 주세요.")
 M_PUSHED = "%s 브랜치에 올렸습니다."
+M_SPELLING = ("ID '%%s' 가 이미 있는 풀이 폴더 '%%s' 와 대소문자만 다릅니다(%s). submissions 폴더 안의 '%%s' 폴더 이름을 "
+              "'%%s' 로 바꾼 뒤 프로그램을 다시 실행해 주세요.") % SAFE
 M_NO_REMOTE_COPY = "가져올 원격 풀이가 없습니다. 이 컴퓨터의 풀이는 그대로 두었습니다."
 M_BAD_CHOICE = "고를 수 있는 것은 remote(원격 풀이 가져오기)와 local(이 컴퓨터 풀이로 올리기)입니다: %r"
 
@@ -341,6 +342,7 @@ class GitFlow:
         if not stalled:
             return
         kept = self._keep_folder("stalled")
+        self._git("update-index", "-q", "--refresh", check=False)  # 폴더를 복사해 왔으면 인덱스의 파일 정보가 낡아 --abort 가 거부함
         for command in stalled:
             self._git(command, "--abort")
         self._notes.append(M_UNSTALLED_KEPT if kept else M_UNSTALLED)
@@ -372,13 +374,26 @@ class GitFlow:
         raise Stop("error", M_BEHIND if kind == "behind" else M_ERROR[self._op], text)
 
     def _fetch(self):
-        """최신 main 과 study/* 를 받음. 원격에서 지워진 브랜치는 로컬의 origin/ 참조도 지움."""
-        run = self._git("fetch", "--prune", "origin", *FETCH_REFSPECS, check=False, timeout=self.fetch_timeout)
+        """최신 main 과 내 브랜치를 받음. 원격에서 지워진 브랜치는 로컬의 origin/ 참조도 지움.
+        남의 브랜치는 받지 않음. 대소문자만 다른 브랜치가 원격에 둘 있으면 Windows·macOS 에서는 fetch 가 통째로 실패함."""
+        mine = "+refs/heads/%s*:refs/remotes/origin/%s*" % (self.branch, self.branch)  # 끝의 * 가 있어야 브랜치가 없을 때도 실패하지 않음
+        run = self._git("fetch", "--prune", "origin", MAIN_REFSPEC, mine, check=False, timeout=self.fetch_timeout)
         if run.code != 0:
             kind = "slow" if run.code is None else remote_problem(run.err)
             self._remote_stop(kind if kind in ("slow", "login", "denied") else "offline", "git %s\n%s" % (run.args, run.err.strip()), "받지")
         self._base = self._out("rev-parse", MAIN + "^{commit}")
         self._tip = self._commit_of(self.tip_ref)
+        self._check_spelling()
+
+    def _check_spelling(self):
+        """내 ID 와 대소문자만 다른 풀이 폴더가 이 컴퓨터나 main 에 있으면 아무것도 바꾸기 전에 멈춤.
+        Windows·macOS 는 둘을 같은 폴더로 열지만 git 은 다른 경로로 봐서, 내 풀이를 폴더 밖 파일로 알고 되돌림."""
+        parent = os.path.dirname(self.folder)
+        names = set(os.listdir(parent)) if os.path.isdir(parent) else set()
+        names |= {path.rsplit("/", 1)[-1] for path in self._paths("ls-tree", "-z", "--name-only", self._base, "submissions/")}
+        others = sorted(name for name in names if name != self.user and name.lower() == self.user.lower())
+        if others:
+            raise Stop("blocked", M_SPELLING % (self.user, others[0], self.user, others[0]))
 
     def _attempts(self, ref=None):
         """profile.json 의 시도 기록(덧붙기만 하는 목록). ref 가 없으면 작업 폴더의 것. 파일이 없으면 None, 못 읽으면 BROKEN."""

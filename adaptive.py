@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""적응형 학습 엔진. 진단 → 약점 분석 → 맞춤 라운드 → 채점·가이드 → 모의고사 순으로 진행함.
+"""적응형 학습 엔진. 진단 → 약점 분석 → 맞춤 회차 → 채점·가이드 → 모의고사 순으로 진행함.
 
 결과가 사람마다 달라서 받는 문항도 달라짐. 상태는 submissions/<ID>/profile.json 에만 기록하고,
 PR 로 올라가면 CI 와 스터디장이 같은 기준으로 분석함. study.py 가 불러 쓰는 모듈임.
@@ -179,7 +179,7 @@ def state_label(st):
     return "레벨%d 진행" % st["level"]
 
 
-# 라운드 만들기
+# 회차 만들기
 
 def completed_rounds(prof):
     return [r for r in prof["rounds"] if r["kind"] != "diag" and r.get("completed_at")]
@@ -409,7 +409,7 @@ def problem_body(spec):
 
 
 def write_round(user, rnd, cat):
-    """라운드 폴더에 문제지(README.md), 퀴즈 답안지(quiz.py), 코드 문제 시작 파일을 만듦."""
+    """회차 폴더에 문제지(README.md), 퀴즈 답안지(quiz.py), 코드 문제 시작 파일을 만듦."""
     folder = os.path.join(study.SUBMISSIONS_DIR, user, rnd["id"])
     os.makedirs(folder, exist_ok=True)
     title = round_title(rnd)
@@ -453,7 +453,7 @@ def cat_unit_title(cat, unit_id):
 # 채점 · 기록
 
 def grade_round(user, rnd, cat):
-    """라운드 채점. 세트 채점과 같은 항목 형식으로 돌려줌."""
+    """회차 채점. 세트 채점과 같은 항목 형식으로 돌려줌."""
     folder = os.path.join(study.SUBMISSIONS_DIR, user, rnd["id"])
     answers, error = {}, None
     if os.path.isfile(os.path.join(folder, "quiz.py")):
@@ -621,7 +621,7 @@ def user_analysis_markdown(user, cat):
 
 
 def collect_shortages(profiles):
-    """최근 3개 라운드에 기록된 부족 문항 수를 (단원, 레벨)별 최댓값으로 모음."""
+    """최근 3개 회차에 기록된 부족 문항 수를 (단원, 레벨)별 최댓값으로 모음."""
     total = {}
     for prof in profiles:
         for rnd in prof["rounds"][-3:]:
@@ -664,7 +664,7 @@ def team_analysis_markdown(cat):
 
 
 def shortage_request_markdown(shortages, cat):
-    lines = ["문제 은행에 아래 문항이 모자랍니다. 스터디장이 `docs/AUTHORING.md` 규격대로 추가하면 다음 `git pull` 부터 라운드에 포함됩니다.", "",
+    lines = ["문제 은행에 아래 문항이 모자랍니다. 스터디장이 `docs/AUTHORING.md` 규격대로 추가하면 다음 `git pull` 부터 회차에 포함됩니다.", "",
              "| 단원 | 레벨 | 부족 수 |", "|---|---|---|"]
     for (u, L), n in sorted(shortages.items()):
         lines.append("| %s %s | %d | %d |" % (u, cat_unit_title(cat, u), L, n))

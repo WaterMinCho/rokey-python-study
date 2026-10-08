@@ -79,6 +79,7 @@ class IdDialog(QDialog):
         self.setModal(True)
         self.setMinimumWidth(480)
         self.on_saved = on_saved
+        self.asked = ""  # 풀이 기록이 이미 있다고 알린 ID
         box = QVBoxLayout(self)
         box.setContentsMargins(22, 20, 22, 16)
         box.setSpacing(10)
@@ -90,7 +91,7 @@ class IdDialog(QDialog):
         why.setWordWrap(True)
         why.setObjectName("muted")
         self.edit = QLineEdit()
-        self.edit.setPlaceholderText("예: WaterMinCho")
+        self.edit.setPlaceholderText("예: gildong-hong")
         self.error = QLabel(" ")
         self.error.setObjectName("error")
         self.error.setWordWrap(True)
@@ -111,10 +112,19 @@ class IdDialog(QDialog):
         text = text.strip()
         good = session.valid_user(text)
         self.ok.setEnabled(good)
+        self.ok.setText("시작")
+        self.asked = ""
         self.error.setText(" " if good or not text else "영문·숫자·-·_ 만 쓸 수 있고, 첫 글자는 영문이나 숫자여야 합니다.")
 
     def save(self):
         QGuiApplication.inputMethod().commit()
+        name = self.edit.text().strip()
+        if name != self.asked and session.valid_user(name) and session.has_record(name):  # 남의 ID 를 넣어 그 사람 기록을 이어 쓰지 않게 한 번 물음
+            self.asked = name
+            self.ok.setText("이 기록으로 시작")
+            self.error.setText("이 컴퓨터에 %s 의 풀이 기록이 있습니다. 내 ID 가 맞으면 [이 기록으로 시작]을 눌러 이어서 풉니다. "
+                               "다른 사람의 ID 라면 내 ID 로 고쳐 주세요." % session.user_folder(name))
+            return
         try:
             user = session.save_user(self.edit.text())
         except (session.SessionError, OSError) as error:

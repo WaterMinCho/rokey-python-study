@@ -135,9 +135,26 @@ class MainWindow(QMainWindow):
     # 화면 전환
 
     def go_home(self):
-        self.round_page.flush()
+        if not self.leave_round(self.go_home, "저장하지 않고 나가기"):
+            return
         self.home.refresh()
         self.pages.setCurrentWidget(self.home)
+
+    def leave_round(self, then, leave):
+        """회차 화면을 떠나기 전에 쓰던 답을 저장하고 True 를 돌려줌. 저장하지 못하면 알리고 False 를 돌려줌.
+        leave 는 그 답을 버리고 떠나는 버튼의 글자. 그 버튼을 고르면 then() 을 부름."""
+        page = self.round_page
+        if page.flush(offer=False):
+            return True
+
+        def drop(_):
+            page.dirty.clear()
+            then()
+
+        self.ask("저장하지 못한 답", "%s\n\n쓰던 답 %d개가 파일에 저장되지 않았습니다. [돌아가기]를 누르면 회차 화면에 남습니다. "
+                 "답을 메모장에 복사해 두고 다시 해 보세요.\n[%s]를 누르면 저장되지 않은 답은 지워집니다." % (page.status.text(), len(page.dirty), leave),
+                 (("돌아가기", ""), (leave, "drop")), drop)
+        return False
 
     def next_action(self, overview):
         """'지금 할 일' 버튼의 글자와 설명."""
@@ -331,6 +348,8 @@ class MainWindow(QMainWindow):
             self.job[1].set_busy(True, "하던 작업이 끝나면 창을 닫습니다.")
             event.ignore()
             return
-        self.round_page.flush()
+        if not self.leave_round(self.close, "저장하지 않고 닫기"):
+            event.ignore()
+            return
         self.settings.setValue("geometry", self.saveGeometry())
         event.accept()

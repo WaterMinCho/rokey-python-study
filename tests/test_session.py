@@ -74,6 +74,19 @@ class SessionTest(unittest.TestCase):
             with self.assertRaises(session.SessionError):
                 session.save_user(bad)
 
+    def test_id_follows_the_spelling_of_an_existing_folder(self):
+        """다른 컴퓨터에서 대소문자만 다르게 넣은 ID 는 이미 있는 풀이 폴더 이름을 따름(철자가 다르면 제출이 올라가지 않음)."""
+        os.makedirs(os.path.join(study.SUBMISSIONS_DIR, "Alice"))
+        self.assertFalse(session.has_record("alice"))
+        study.write_text(adaptive.profile_path("Alice"), '{"user": "Alice", "seed": 1, "rounds": [], "attempts": []}\n')
+        self.assertTrue(session.has_record("alice"))
+        self.assertEqual(session.save_user("alice"), "Alice")
+        self.assertEqual(study.read_text(study.USER_FILE), "Alice\n")
+        self.assertEqual(os.listdir(study.SUBMISSIONS_DIR), ["Alice"])
+        study.write_text(study.USER_FILE, "ALICE\n")  # 고치기 전 버전이 저장해 둔 철자
+        self.assertEqual(session.saved_user(), "Alice")
+        self.assertEqual(session.save_user("bob"), "bob")
+
     # 회차 만들기
 
     def test_first_run_creates_diagnostic_once(self):
@@ -332,6 +345,44 @@ class SessionTest(unittest.TestCase):
         self.assertTrue(os.path.isfile(path + ".bak"))
         self.assertIsNone(self.sess.quiz_problem("d1"))
         self.assertEqual(sum(1 for v in self.sess.open_round("d1")["items"] if v["answered"]), 3)
+
+    def test_repair_keeps_multiline_and_hash_answers(self):
+        """답안지 복구가 프로그램이 쓴 형식 그대로인 여러 줄 답과 # 이 든 답을 버리지 않음."""
+        self.sess.ensure_round()
+        views = [v for v in self.sess.open_round("d1")["items"] if v["type"] in ("output", "short")][:3]
+        values = ["1\n2\n3", "# 주석", "a = 1  # 한 줄"]
+        for view, value in zip(views, values):
+            self.sess.set_answer("d1", view["id"], value)
+        path = os.path.join(self.sess.folder("d1"), "quiz.py")
+        study.write_text(path, study.read_text(path) + "x = (\n")
+        self.assertEqual(self.sess.repair_quiz("d1"), 3)
+        answers = {v["id"]: v["answer"] for v in self.sess.open_round("d1")["items"]}
+        self.assertEqual([answers[view["id"]] for view in views], values)
+
+    def test_number_written_by_hand_opens_as_text(self):
+        """터미널 방식으로 따옴표 없이 적은 숫자 답(Q14 = 3)을 화면용으로 열면 글자로 돌려줌."""
+        self.sess.ensure_round()
+        view = next(v for v in self.sess.open_round("d1")["items"] if v["type"] in ("output", "short"))
+        path = os.path.join(self.sess.folder("d1"), "quiz.py")
+        study.write_text(path, study.read_text(path).replace("%s = None" % view["id"], "%s = 3" % view["id"]))
+        opened = next(v for v in self.sess.open_round("d1")["items"] if v["id"] == view["id"])
+        self.assertEqual((opened["answer"], opened["answered"]), ("3", True))
+
+    def test_failed_save_does_not_leave_the_round_looking_submitted(self):
+        """회차 제출 중 profile.json 저장이 실패하면 메모리의 채점 결과를 버림. 남겨 두면 해설이 열리고 다시 채점이 첫 제출로 기록됨."""
+        self.sess.ensure_round()
+        first = self.sess.open_round("d1")["items"][0]
+        self.sess.set_answer("d1", first["id"], wrong_answer(first))
+        with mock.patch.object(adaptive, "save_profile", side_effect=PermissionError(13, "잠김")):
+            with self.assertRaises(session.SessionError):
+                self.sess.grade("d1", finalize=True)
+        self.assertEqual(self.sess.overview()["current"]["id"], "d1")
+        self.assertEqual(self.sess.prof["attempts"], [])
+        with self.assertRaises(session.SessionError):
+            self.sess.explain("d1", first["id"])
+        self.assertTrue(self.sess.grade("d1", finalize=True)["completed_now"])  # 다시 누르면 그대로 제출됨
+        firsts = [a for a in adaptive.load_profile("tester")["attempts"] if a["item"] == first["key"]]
+        self.assertEqual([(a["try"], a["ok"]) for a in firsts], [(1, False)])
 
     def test_unsafe_characters_never_reach_the_files(self):
         rid = self.first_real_round()
