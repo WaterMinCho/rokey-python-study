@@ -15,9 +15,9 @@ FONT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts")  # 
 CLEAR_FONTS = ("NanumGothic", "Nanum Gothic", "Noto Sans KR", "Noto Sans CJK KR")  # 화면 글꼴로 먼저 씀
 UI_FONTS = CLEAR_FONTS + ("Malgun Gothic", "Apple SD Gothic Neo")  # 한글이 있는 글꼴
 CODE_FONTS = ("D2Coding", "Consolas", "Menlo", "Cascadia Mono", "DejaVu Sans Mono", "Courier New")
-UI_PX = 14  # 버튼·목록·안내 글자 크기
-CODE_PX = 15  # 편집기 글자 크기(확대 0 일 때)
-DOC_PX = 1  # 문제 본문은 mdlite.CSS 의 크기에 이만큼 더함
+UI_PX = 15  # 버튼·목록·안내 글자 크기
+CODE_PX = 16  # 편집기 글자 크기(확대 0 일 때)
+DOC_PX = 2  # 문제 본문은 mdlite.CSS 의 크기에 이만큼 더함
 ZOOM_RANGE = (-3, 10)
 
 MODES = {"system": "시스템", "light": "밝게", "dark": "어둡게"}  # 홈의 단추를 누르면 이 순서로 돎
@@ -88,12 +88,12 @@ def qcolor(name):
 STYLE = """
 QMainWindow, QDialog, QWidget#page, QScrollArea { background: %(bg)s; }
 QLabel { color: %(ink)s; }
-QLabel#h1 { font-size: 20px; font-weight: 700; color: %(heading)s; }
-QLabel#h2 { font-size: 16px; font-weight: 700; color: %(heading)s; }
+QLabel#h1 { font-size: 21px; font-weight: 700; color: %(heading)s; }
+QLabel#h2 { font-size: 17px; font-weight: 700; color: %(heading)s; }
 QLabel#muted { color: %(muted)s; }
 QLabel#big { font-size: 46px; font-weight: 700; color: %(heading)s; }
 QLabel#ready { font-size: 26px; font-weight: 700; color: %(heading)s; }
-QLabel#me { background: %(primary)s; color: %(primary_ink)s; border-radius: 9px; padding: 1px 8px; font-size: 11px; font-weight: 700; }
+QLabel#me { background: %(primary)s; color: %(primary_ink)s; border-radius: 9px; padding: 1px 8px; font-size: 12px; font-weight: 700; }
 QLabel#error { color: %(wrong)s; }
 QLabel#warn { color: %(retry)s; }
 QLabel#notice { background: %(notice_bg)s; color: %(ink)s; border: 1px solid %(notice_border)s; border-radius: 6px; padding: 8px 12px; }
@@ -117,7 +117,7 @@ QPushButton:disabled { color: %(faint)s; background: %(bg)s; }
 QPushButton#primary { background: %(primary)s; color: %(primary_ink)s; border: 1px solid %(primary_hover)s; font-weight: 700; }
 QPushButton#primary:hover, QPushButton#primary:pressed { background: %(primary_hover)s; }
 QPushButton#primary:disabled { background: %(primary_off)s; border-color: %(primary_off)s; color: %(primary_off_ink)s; }
-QPushButton#primary[big="true"] { font-size: 17px; }
+QPushButton#primary[big="true"] { font-size: 18px; }
 QPushButton#quiet { background: transparent; color: %(muted)s; border: 1px solid %(border)s; padding: 4px 12px; }
 QPushButton#quiet:hover { background: %(hover)s; color: %(ink)s; }
 QProgressBar { background: %(track)s; border: 0; border-radius: 5px; max-height: 10px; min-height: 10px; }

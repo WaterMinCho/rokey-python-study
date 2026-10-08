@@ -636,7 +636,7 @@ class HomeAndGitTest(GuiTest):
         click(self.win.home.action_btn)
         self.select(lambda it: it["type"] == "choice")
         card = page.choice_panel.buttons[0]
-        self.assertIn("font-size: 14px", card.doc.defaultStyleSheet())
+        self.assertIn("body { font-size: %dpx" % (14 + theme.DOC_PX), card.doc.defaultStyleSheet())
         self.win.set_zoom(2)
         self.assertEqual(page.code_panel.editor.font().pixelSize(), theme.CODE_PX + 2)
         self.assertEqual(page.text_panel.multi.font().pixelSize(), theme.CODE_PX + 2)
@@ -1091,6 +1091,8 @@ class ChoiceCardTest(GuiTest):
         self.boot()
         win, page = self.win, self.win.round_page
         button = win.home.action_btn
+        win.resize(1280, 800)  # 창 좌표로 누르므로 버튼이 화면 밖으로 밀리지 않는 크기로 둠
+        pump()
         QTest.mouseDClick(win.windowHandle(), LEFT, pos=button.mapTo(win, button.rect().center()))
         pump()
         self.assertIs(self.page(), page)
