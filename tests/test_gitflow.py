@@ -492,6 +492,43 @@ class GitFlowTest(unittest.TestCase):
         self.assertEqual(flow.submit()["status"], "ok")
         self.assertEqual(waits, [])
 
+    def test_pull_request_closed_without_merging(self):
+        """PR 이 머지 없이 닫힌 뒤: 올리지 않았으면 올렸다고 하지 않고, 닫힌 PR 의 주소를 새 PR 로 알리지 않음."""
+        pc, flow, waits = self.pc, self.pc.flow, []
+        pc.solve(); self.submit()
+        self.sync()  # 프로그램을 다시 켠 상태: 로컬 브랜치가 올린 커밋에 있음
+        closed = self.server.rev("study/alice")
+        git(pc.origin, "update-ref", "refs/pull/5/head", closed)  # GitHub 는 닫힌 PR 의 참조를 지우지 않음
+        flow.pr_wait, flow.sleep = gitflow.PR_WAIT, waits.append
+        result = self.submit()  # 브랜치가 남아 있어 올릴 것이 없음
+        self.assertEqual((result["message"], result["pr_url"], waits), (gitflow.M_NO_OPEN_PR, NEW_PR, []))
+        git(pc.origin, "update-ref", "-d", "refs/heads/study/alice")  # 브랜치까지 지워져 같은 커밋을 다시 올림
+
+        def robot_opens_pr(seconds):  # 두 번째 확인 직전에 새 PR 이 생김
+            waits.append(seconds)
+            if len(waits) == 2:
+                git(pc.origin, "update-ref", "refs/pull/6/head", closed)
+
+        flow.sleep = robot_opens_pr
+        result = self.submit()
+        self.assertEqual(self.server.rev("study/alice"), closed)
+        self.assertEqual((result["message"], result["pr_url"]), (gitflow.M_CREATED, "https://github.com/%s/%s/pull/6" % (OWNER, REPO)))
+        self.assertEqual(len(waits), 2)
+
+    def test_open_pull_request_found_without_the_api(self):
+        """익명 조회가 막혀도(한도 초과 등) 올린 뒤 끝이 옮겨진 PR 은 '열려 있던 PR'로 알림."""
+        pc, flow = self.pc, self.pc.flow
+        pc.solve(); self.submit()
+        git(pc.origin, "update-ref", "refs/pull/7/head", self.server.rev("study/alice"))
+        pc.solve()
+
+        def github_moves_the_ref(seconds):
+            git(pc.origin, "update-ref", "refs/pull/7/head", self.server.rev("study/alice"))
+
+        flow.pr_wait, flow.sleep = gitflow.PR_WAIT, github_moves_the_ref
+        result = self.submit()
+        self.assertEqual((result["message"], result["pr_url"]), (gitflow.M_ADDED, OPEN_PR))
+
     def test_other_people_merged_first(self):
         pc = self.pc
         self.server.other_user("bob")  # 내가 시작하기도 전에 bob 것이 머지됨
@@ -597,7 +634,7 @@ class GitFlowTest(unittest.TestCase):
         with open(os.path.join(result["backup"], "replaced", "profile.json"), "rb") as f:
             self.assertEqual(f.read(), mine["submissions/alice/profile.json"])
         self.sync()
-        self.assertEqual(self.submit()["message"], gitflow.M_OPEN_PR)  # 원격과 같으므로 새로 올리지 않음
+        self.assertEqual(self.submit()["message"], gitflow.M_NO_OPEN_PR)  # 원격과 같으므로 새로 올리지 않음
         pc.solve(); self.submit()
         self.merge()
 
@@ -654,6 +691,39 @@ class GitFlowTest(unittest.TestCase):
         result = self.submit(after=mine)  # 받기를 거치지 않고 제출부터 눌러도 됨
         self.assertIn(gitflow.M_UNSTALLED_KEPT, result["message"])
         self.sync(); self.merge()
+
+    def test_stalled_pull_on_old_personal_branch(self):
+        """예전 안내대로 만든 개인 브랜치(<ID>/day1)에서 git pull 이 병합 메시지 편집기에서 멈춘 경우.
+        내 폴더 밖이 달라 보이는 것은 받아 오던 main 때문이라 개발 폴더로 보지 않고, 되돌린 뒤 받음."""
+        pc = self.pc
+        git(pc.path, "switch", "-q", "-c", pc.user + "/day1")
+        mine = pc.solve()
+        git(pc.path, "add", "-A"); git(pc.path, "commit", "-q", "-m", "1일차")
+        self.server.add_problems("s17")
+        git(pc.path, "fetch", "-q", "origin", "main")
+        git(pc.path, "merge", "--no-commit", "--no-ff", "FETCH_HEAD")  # 편집기를 닫지 못하고 터미널을 끈 것과 같은 상태
+        self.assertTrue(os.path.exists(pc.gitdir("MERGE_HEAD")))
+        result = self.sync(after=mine)
+        self.assertIn(gitflow.M_UNSTALLED_KEPT, result["message"])
+        self.assertEqual(result["restart"], True)
+        self.submit(); self.merge()
+
+    def test_renamed_id_folder(self):
+        """ID 를 잘못 넣고 풀다가 폴더 이름과 ID 를 고친 경우. study/<옛 ID> 브랜치에 남아 있어도 개발 폴더로 보지 않고 받음."""
+        pc = self.pc
+        pc.solve(); self.sync()  # study/alice 에 내 폴더가 커밋돼 있음
+        renamed = os.path.join(pc.path, "submissions", "alicia")
+        os.rename(pc.folder, renamed)
+        flow = gitflow.GitFlow(pc.path, "alicia")
+        flow.find_pr, flow.pr_wait = pc.find_pr, 0
+        result = flow.sync()
+        pc.flow.log += flow.log  # 금지 명령 검사에 포함
+        self.assertEqual(result["status"], "ok", result)
+        self.assertEqual(git(pc.path, "symbolic-ref", "--short", "HEAD").stdout.strip(), "study/alicia")
+        self.assertFalse(os.path.exists(pc.folder))
+        self.assertTrue(os.path.isfile(os.path.join(renamed, "profile.json")))
+        self.assertEqual(flow.submit()["status"], "ok")
+        self.assertTrue(self.server.folder("study/alicia", "alicia"))
 
     def test_manual_switch_to_main(self):
         pc = self.pc

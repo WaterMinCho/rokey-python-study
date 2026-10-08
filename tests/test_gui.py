@@ -731,6 +731,20 @@ class BankTest(GuiTest):
         self.assertIn("빈칸", page.code_panel.console.toPlainText())
         self.assertEqual(self.attempts(), [])  # 실행은 기록하지 않음
 
+    def test_result_page_says_why_a_code_item_is_wrong(self):
+        self.boot()
+        self.make_round("r91", [self.first(type="return")])
+        self.win.open_round("r91")
+        result = self.win.result_page
+        self.fill(self.select(lambda it: it["kind"] == "code"), "print('오답')\n")
+        self.submit_round()
+        self.assertIs(self.page(), result)
+        result.listw.setCurrentRow(1)
+        self.assertIn("틀린 이유", result.detail.toPlainText())
+        self.win.show_result("r91")  # 지난 회차를 다시 열면 채점 결과가 없어 다시 채점을 안내함
+        result.listw.setCurrentRow(1)
+        self.assertIn("다시 채점", result.detail.toPlainText())
+
     def test_every_bank_item_shows_without_errors(self):
         self.boot()
         sess = self.win.session

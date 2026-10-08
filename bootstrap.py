@@ -147,7 +147,7 @@ def fail(host, reason, retry=RETRY):
     """원인과 선택지를 알리고 종료 코드 1 을 돌려줌."""
     host.say(reason)
     host.say("  다시 시도     : %s" % retry)
-    host.say("  터미널로 쓰기 : python study.py go")
+    host.say("  터미널로 쓰기 : python study.py go  (채점하기 전에 묻습니다. 채점하면 화면에서 쓰다 만 답도 첫 시도로 기록됩니다)")
     return 1
 
 

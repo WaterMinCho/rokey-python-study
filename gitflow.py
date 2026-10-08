@@ -79,6 +79,8 @@ M_SAME = "이미 제출돼 있습니다. 바뀐 내용이 없어 그대로 두�
 M_CREATED = "제출했습니다. PR 이 자동으로 만들어졌습니다."
 M_OPEN_PR = ("올렸습니다. PR 은 잠시 뒤 자동으로 만들어집니다. 브라우저에 열리는 화면에 [View pull request] 가 보이면 그것을, "
              "[Create pull request] 가 보이면 그 단추를 눌러 주세요.")
+M_NO_OPEN_PR = ("지난번에 올린 내용과 같아 새로 올리지 않았고, 열려 있는 PR 은 찾지 못했습니다. 브라우저에 열리는 화면에 "
+                "[View pull request] 가 보이면 그것을, [Create pull request] 가 보이면 그 단추를 눌러 주세요.")
 M_PUSHED = "%s 브랜치에 올렸습니다."
 M_NO_REMOTE_COPY = "가져올 원격 풀이가 없습니다. 이 컴퓨터의 풀이는 그대로 두었습니다."
 M_BAD_CHOICE = "고를 수 있는 것은 remote(원격 풀이 가져오기)와 local(이 컴퓨터 풀이로 올리기)입니다: %r"
@@ -346,12 +348,16 @@ class GitFlow:
     def _dev_branch(self):
         """main·study/<ID> 가 아닌 곳에서 내 폴더 밖을 고치고 있으면(스터디장의 개발 폴더) 그 브랜치 이름, 아니면 None."""
         name = self._branch()
-        if name in ("main", self.branch) or not self._has(MAIN):
+        if name in ("main", self.branch) or name.startswith("study/") or not self._has(MAIN):  # study/* 는 이 프로그램이 만든 브랜치(ID 를 고친 뒤 등)
             return None
         if self._ok("diff", "--quiet", MAIN + "...HEAD", "--", *self.outside) \
-                and self._ok("diff", "--quiet", "HEAD", "--", *self.outside):
+                and (self._ok("diff", "--quiet", "HEAD", "--", *self.outside) or self._pulling()):
             return None
         return name or "분리된 HEAD"
+
+    def _pulling(self):
+        """손으로 친 git pull 이 병합 도중에 멈춘 상태인지 봄. 내 폴더 밖이 받아 오던 커밋(MERGE_HEAD)과 같으면 개발 중인 수정이 아님."""
+        return self._has("MERGE_HEAD") and self._ok("diff", "--quiet", "MERGE_HEAD", "--", *self.outside)
 
     def _remote_stop(self, kind, text, verb):
         """원격 때문에 실패한 fetch·push 를 사용자 안내로 바꿔 멈춤."""
@@ -533,18 +539,20 @@ class GitFlow:
             return "behind", text  # non-fast-forward · fetch first: 원격의 내 브랜치에 모르는 커밋이 있음
         return remote_problem(run.err), text
 
-    def _pull_of(self, commit):
-        """그 커밋이 끝인 PR 번호(원격의 refs/pull/N/head). GitHub 는 열린 PR 의 이 참조를 push 때마다 옮김. 없으면 None."""
+    def _pulls(self):
+        """원격의 {PR 번호: 그 PR 의 끝 커밋}(refs/pull/N/head). GitHub 는 열린 PR 의 것만 push 때마다 옮기고,
+        닫힌 PR 의 것은 닫힐 때의 커밋에 남겨 둠. 조회하지 못하면 {}."""
         run = self._git("ls-remote", "origin", "refs/pull/*/head", check=False, timeout=self.fetch_timeout)
+        found = {}
         for line in (run.out if run.code == 0 else "").splitlines():
             sha, _, ref = line.partition("\t")
-            if sha == commit and ref.startswith("refs/pull/"):
-                return ref.split("/")[2]
-        return None
+            if ref.startswith("refs/pull/"):
+                found[ref.split("/")[2]] = sha
+        return found
 
-    def _pr(self, commit, pushed):
+    def _pr(self, commit, pushed, before):
         """(PR 주소, 'open' 이미 열려 있었음 | 'created' 방금 자동으로 만들어짐 | 'manual' 직접 만들어야 할 수 있음).
-        origin 이 GitHub 주소가 아니면 (None, 'manual')."""
+        origin 이 GitHub 주소가 아니면 (None, 'manual'). before 는 올리기 직전의 _pulls()."""
         slug = remote_slug(self._url)
         if not slug:
             return None, "manual"
@@ -555,9 +563,9 @@ class GitFlow:
         while pushed and waited < self.pr_wait:  # 저장소의 Actions 가 study/* 브랜치에 PR 을 만들어 줌
             self.sleep(PR_POLL)
             waited += PR_POLL
-            number = self._pull_of(commit)
-            if number:
-                return "https://github.com/%s/%s/pull/%s" % (slug[0], slug[1], number), "created"
+            for number, sha in self._pulls().items():
+                if sha == commit and before.get(number) != commit:  # 전부터 이 커밋을 가리키던 것은 닫힌 PR 임
+                    return "https://github.com/%s/%s/pull/%s" % (slug[0], slug[1], number), "open" if number in before else "created"
         return new_pr_url(slug[0], slug[1], self.branch, "%s 풀이" % self.user), "manual"
 
     # 작업
@@ -600,13 +608,16 @@ class GitFlow:
             if mine == self._folder_tree(self._base):
                 return self._result("nothing", M_NOTHING if mine else M_EMPTY)
             pushed = snap != self._tip
+            before = self._pulls() if pushed else {}
             kind, text = self._push(snap) if pushed else ("ok", "")
             if kind == "ok":
-                url, state = self._pr(snap, pushed)
+                url, state = self._pr(snap, pushed, before)
                 if state == "open":
                     message = M_ADDED if pushed else M_SAME
+                elif state == "created":
+                    message = M_CREATED
                 else:
-                    message = M_CREATED if state == "created" else M_OPEN_PR if url else M_PUSHED % self.branch
+                    message = (M_OPEN_PR if pushed else M_NO_OPEN_PR) if url else M_PUSHED % self.branch
                 return self._result("ok", message, text, pr_url=url)
             if kind == "behind" and attempt == 1:
                 self._fetch()  # 받아 온 직후 원격이 또 바뀐 경우: 한 번만 다시

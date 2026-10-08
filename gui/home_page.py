@@ -59,6 +59,7 @@ class HomePage(QWidget):
         self.notice = QLabel()
         self.notice.setObjectName("notice")
         self.notice.setWordWrap(True)
+        self.notice.setTextFormat(Qt.TextFormat.RichText)  # refresh 가 html.escape 한 글을 넣음. 링크가 없는 글에서도 &#x27; 가 글자로 보이지 않게 함
         self.notice.linkActivated.connect(lambda _: win.show_notice_detail())
         self.notice.hide()
         root.addWidget(self.notice)

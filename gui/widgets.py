@@ -159,7 +159,8 @@ class TextPanel(QWidget):
         self.multi.setVisible(is_output)
         self.single.setVisible(not is_output)
         self.pad.setVisible(not is_output)
-        self.hint.setText("따옴표 없이, 화면에 나올 그대로 적으세요." + (" 여러 줄이면 줄을 바꿔 적습니다." if is_output else ""))
+        self.hint.setText("실행하면 화면에 찍히는 글자를 그대로 적으세요. 답을 따옴표로 감싸지는 않지만, 출력에 찍히는 따옴표는 적습니다. "
+                          "여러 줄이면 줄을 바꿔 적습니다." if is_output else "따옴표 없이 한 줄로 적으세요.")
         text = item["answer"] or ""
         self.multi.setPlainText(text if is_output else "")
         self.single.setText("" if is_output else text)
