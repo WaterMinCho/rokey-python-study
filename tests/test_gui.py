@@ -1091,6 +1091,8 @@ class ChoiceCardTest(GuiTest):
         self.boot()
         win, page = self.win, self.win.round_page
         button = win.home.action_btn
+        win.resize(1280, 800)  # 창 좌표로 누르므로 버튼이 화면 밖으로 밀리지 않는 크기로 둠
+        pump()
         QTest.mouseDClick(win.windowHandle(), LEFT, pos=button.mapTo(win, button.rect().center()))
         pump()
         self.assertIs(self.page(), page)
