@@ -1497,9 +1497,14 @@ class ThemeTest(GuiTest):
         self.assertEqual((len(win.team_page.cards), win.team_page.empty is not None), (1, True))
         check(win)
         click(win.team_page.home_btn)
+        big = win.home.foot.font()  # 획이 굵어야 가장자리가 섞이지 않은 링크 색 픽셀이 글꼴과 플랫폼에 상관없이 생김
+        big.setPixelSize(40)
+        win.home.foot.setFont(big)
+        win.home.foot.resize(win.home.foot.sizeHint())
         foot = win.home.foot.grab().toImage()  # 링크 색은 글을 넣을 때 굳으므로 테마가 바뀌면 다시 넣어야 함
         colors = {foot.pixelColor(x, y).name() for x in range(foot.width()) for y in range(foot.height())}
-        self.assertTrue(theme.DARK["link"] in colors and theme.LIGHT["link"] not in colors)
+        self.assertIn(theme.DARK["link"], colors)
+        self.assertNotIn(theme.LIGHT["link"], colors)
         boxes = [win.ask("알림", "글", (("확인", "ok"), ("닫기", "")), detail="자세한 내용", link="https://example.com/pr"),
                  dialogs.IdDialog(win, lambda user: None), dialogs.ErrorDialog("오류 내용", None, errors.ISSUE_URL)]
         for box in boxes:
