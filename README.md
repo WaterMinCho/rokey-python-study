@@ -41,15 +41,16 @@ ID 를 잘못 넣었으면 프로그램을 끄고 `submissions/<잘못 넣은 ID
 
 파이썬을 새로 깔 때는 [3.14](https://www.python.org/downloads/latest/python3.14/)를 고르세요. 10/9 에 나오는 3.15 에는 PyQt6 가 아직 설치되지 않습니다.
 
-### 예전 버전을 받아 둔 사람
+### 예전 버전을 받아 뒀거나 문제 받기가 계속 오류로 끝날 때
 
-터미널에서 쓰던 예전 버전을 받아 뒀다면, 그 폴더에서 아래 명령을 실행한 뒤 프로그램을 켜세요. 풀던 기록은 지워지지 않고 새 프로그램에서 이어집니다.
+터미널에서 쓰던 예전 버전을 받아 뒀거나, 프로그램을 켤 때마다 "문제를 받다가 오류가 났습니다"가 나오면 그 폴더에서 아래 네 줄을 차례로 실행한 뒤 프로그램을 켜세요. 새로 clone 하지 않아도 되고, 풀이 폴더(`submissions`)는 건드리지 않아서 풀던 기록이 새 프로그램에서 이어집니다.
 
 ```bash
-git pull --no-rebase --no-edit origin main
+git fetch origin main
+git reset -q FETCH_HEAD
+git checkout -q -- . ":(exclude)submissions"
+git clean -fdq problems
 ```
-
-명령이 실패하면 저장소를 새로 clone 하고 예전 폴더의 `submissions/<내 ID>` 를 새 폴더의 같은 자리로 옮기세요.
 
 ## 문제 풀기
 
