@@ -31,30 +31,6 @@ def cell_kind(st):
     return "L%d" % min(st["level"], 2)
 
 
-def summarize(user, cat, unit_ids):
-    prof = adaptive.load_profile(user)
-    states = {st["unit"]: st for st in adaptive.all_states(prof, cat)}
-    firsts = adaptive.first_attempts(prof)
-    mastered = [u for u in unit_ids if states[u]["mastered"]]
-    not_mastered = [states[u] for u in unit_ids if not states[u]["mastered"] and states[u]["tested"]]
-    weak = [st["unit"] for st in adaptive.rank_units(not_mastered)[:3]]
-    strong = sorted(mastered, key=lambda u: -(states[u]["accuracy"] or 0))[:3]
-    last = max((a["at"] for a in prof["attempts"]), default=None)
-    levels = {"L1": 0, "L2": 0, "L3": 0}
-    for u in unit_ids:
-        st = states[u]
-        if st["tested"] and not st["mastered"]:
-            levels["L%d" % st["level"]] += 1
-    return {
-        "user": user, "states": states, "mastered": len(mastered), "total": len(unit_ids),
-        "readiness": adaptive.readiness([states[u] for u in unit_ids]),
-        "weak": weak, "strong": strong, "tags": adaptive.weak_tags(prof, cat, 4), "levels": levels,
-        "rounds": len(prof["rounds"]), "attempts": len(firsts),
-        "accuracy": (sum(1 for a in firsts if a["ok"]) / len(firsts)) if firsts else None,
-        "last": last,
-    }
-
-
 def esc(text):
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
@@ -131,7 +107,7 @@ def main():
     out_dir = sys.argv[sys.argv.index("--out") + 1] if "--out" in sys.argv else OUT_DIR
     cat = adaptive.catalog()
     unit_ids = [s["id"] for s in adaptive.units()]
-    rows = [summarize(u, cat, unit_ids) for u in adaptive.users_with_profile()]
+    rows = [adaptive.user_summary(u, cat) for u in adaptive.users_with_profile()]
     rows.sort(key=lambda r: (-r["readiness"], -r["mastered"], r["user"]))
     study.write_text(os.path.join(out_dir, "dashboard.svg"), render_svg(rows, cat, unit_ids))
     study.write_text(os.path.join(out_dir, "DASHBOARD.md"), render_markdown(rows, cat, unit_ids))

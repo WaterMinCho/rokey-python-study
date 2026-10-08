@@ -6,6 +6,7 @@
 import argparse
 import ast
 import contextlib
+import importlib.util
 import io
 import os
 import shutil
@@ -320,6 +321,53 @@ class SessionTest(unittest.TestCase):
         self.assertTrue(all(u["tested"] for u in after["units"]))
         self.assertEqual([r["id"] for r in after["rounds"]], ["d1", "r01"])
 
+    def other_member(self, user, correct):
+        """다른 사람의 풀이 기록을 만듦. 진단에서 앞의 correct 문항만 맞히고 제출함."""
+        sess = session.Session(user)
+        sess.ensure_round()
+        for view in sess.open_round("d1")["items"][:correct]:
+            sess.set_answer("d1", view["id"], right_answer(sess, view))
+        sess.grade("d1", finalize=True)
+
+    def test_team_summarizes_every_readable_record_in_readiness_order(self):
+        self.other_member("tester", 30)
+        self.other_member("other", 3)
+        self.sess = session.Session("tester")
+        os.makedirs(os.path.join(study.SUBMISSIONS_DIR, "nobody"))  # 풀이 기록이 없는 폴더
+        study.write_text(adaptive.profile_path("broken"), '{"rounds": [<<<<<<<')
+        study.write_text(adaptive.profile_path("odd"), '{"rounds": 3, "attempts": [1], "seed": 1}')
+        study.write_text(adaptive.profile_path("list"), "[]")
+        rows = self.sess.team()
+        self.assertEqual([(row["user"], row["me"]) for row in rows], [("tester", True), ("other", False)])
+        self.assertGreater(rows[0]["readiness"], rows[1]["readiness"])
+        for row in rows:
+            prof = adaptive.load_profile(row["user"])
+            states = adaptive.all_states(prof, self.sess.cat)
+            firsts = adaptive.first_attempts(prof)
+            self.assertEqual(row["readiness"], adaptive.readiness(states))
+            self.assertEqual((row["mastered"], row["total"]), (sum(1 for st in states if st["mastered"]), len(states)))
+            self.assertEqual((row["rounds"], row["attempts"]), (len(prof["rounds"]), len(firsts)))
+            self.assertAlmostEqual(row["accuracy"], sum(1 for a in firsts if a["ok"]) / len(firsts))
+            self.assertEqual(row["last"], max(a["at"] for a in prof["attempts"])[:10])
+            self.assertEqual([unit["unit"] for unit in row["units"]], [s["id"] for s in adaptive.units()])
+            self.assertTrue(set(row["weak"]) | set(row["strong"]) <= {unit["unit"] for unit in row["units"]})
+        mine = self.sess.overview()
+        self.assertEqual((rows[0]["readiness"], rows[0]["mastered"], rows[0]["units"]), (mine["readiness"], mine["mastered"], mine["units"]))
+
+    def test_dashboard_draws_from_the_same_summary_as_the_team_screen(self):
+        self.other_member("tester", 20)
+        spec = importlib.util.spec_from_file_location("dashboard", os.path.join(study.ROOT, "tools", "dashboard.py"))
+        dashboard = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(dashboard)
+        out = os.path.join(self.tmp, "out")
+        with mock.patch.object(sys, "argv", ["dashboard.py", "--out", out]), contextlib.redirect_stdout(io.StringIO()):
+            dashboard.main()
+        row = session.Session("tester").team()[0]
+        self.assertIn("| tester | %s %d%% | %d/%d |" % (dashboard.bar(row["readiness"] / 100), row["readiness"], row["mastered"], row["total"]),
+                      study.read_text(os.path.join(out, "DASHBOARD.md")))
+        self.assertIn("준비도 %d%% · 숙달 %d/%d · 회차 %d" % (row["readiness"], row["mastered"], row["total"], row["rounds"]),
+                      study.read_text(os.path.join(out, "dashboard.svg")))
+
     # 기록을 망가뜨리던 경로들
 
     def test_broken_answer_sheet_is_never_treated_as_empty(self):
@@ -451,6 +499,40 @@ class SessionTest(unittest.TestCase):
         for key in ("s09/Q3", "s10/Q2", "s04/Q5"):  # 보기가 코드 블록인 문항
             it = self.sess.cat[key]
             self.assertEqual(session.choice_count(adaptive.quiz_section(it["set"], it["q"]["id"])), 4, key)
+
+    def test_choice_body_splits_into_question_and_options_for_every_question(self):
+        """보기 카드에 쓰는 나누기가 보기 수 세기와 어긋나지 않고, 지문과 보기가 비지 않음."""
+        for key, it in self.sess.cat.items():
+            if it["kind"] == "quiz" and it["type"] == "choice":
+                body = adaptive.quiz_section(it["set"], it["q"]["id"])
+                stem, options = session.split_choices(body)
+                self.assertEqual(len(options), session.choice_count(body), key)
+                self.assertTrue(any(block.get("text", "").strip() for block in stem), key)
+                for option in options:
+                    self.assertTrue(any(block.get("text", "").strip() for block in option), key)
+                marks = [block for block in stem + sum(options, []) if session.LABEL_RE.fullmatch(block.get("text", ""))]
+                self.assertEqual(marks, [], key)  # `**N번**` 문단은 번호 배지가 대신하므로 어디에도 남지 않음
+        q5, q20 = (self.sess.cat[key] for key in ("s04/Q5", "s04/Q20"))
+        stem, options = session.split_choices(adaptive.quiz_section(q5["set"], q5["q"]["id"]))  # 보기가 코드 블록인 번호 목록
+        self.assertEqual([[block["t"] for block in option] for option in options], [["code"]] * 4)
+        self.assertIn("t.insert(0, 'X')", options[3][0]["text"])
+        self.assertNotIn("ol", [block["t"] for block in stem])
+        stem, options = session.split_choices(adaptive.quiz_section(q20["set"], q20["q"]["id"]))  # `**N번**` 문단
+        self.assertEqual(([block["t"] for block in stem], [[block["t"] for block in option] for option in options]), (["para"], [["code"]] * 5))
+        self.assertIn("a[len(a)] = 4", options[1][0]["text"])
+
+    def test_choice_body_that_cannot_be_split_is_left_whole(self):
+        def shape(body):
+            stem, options = session.split_choices(body)
+            return [block.get("text", block["t"]) for block in stem], [[block.get("text", block["t"]) for block in option] for option in options]
+
+        self.assertEqual(shape("지문\n\n1. 가\n2. 나\n\n덧붙임"), (["지문", "덧붙임"], [["가"], ["나"]]))
+        self.assertEqual(shape("순서\n\n1. 하나\n2. 둘\n\n고르세요.\n\n1. 가\n2. 나\n3. 다"),
+                         (["순서", "ol", "고르세요."], [["가"], ["나"], ["다"]]))  # 보기는 마지막 번호 목록
+        self.assertEqual(shape("지문\n\n**1번**\n\n첫째\n\n둘째 문단\n\n**2번**\n\n```\nx\n```"), (["지문"], [["첫째", "둘째 문단"], ["x"]]))
+        for body in ("보기가 없는 글", "**1번**\n\n가\n\n**2번**\n\n나", "지문\n\n**1번**\n\n**2번**\n\n나", "1. 가\n2. 나"):
+            self.assertEqual(session.split_choices(body), ([], []), body)  # 지문이나 보기가 비면 나누지 않음
+        self.assertEqual(session.choice_count("지문\n\n**1번**\n\n**2번**\n\n나"), 2)  # 이때 화면은 본문 전체와 번호만 든 카드를 보여 줌
 
     def test_try_run_shows_prints_made_inside_a_function(self):
         spec = next(it["spec"] for it in self.sess.cat.values() if it["kind"] == "code" and it["spec"]["mode"] == "call")

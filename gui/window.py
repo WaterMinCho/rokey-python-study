@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
-"""메인 창. 시작 순서(ID → 새 문제 받기 → 풀이 기록 열기), 화면 전환, 워커, 제출 흐름을 맡음."""
+"""메인 창. 시작 순서(ID → 새 문제 받기 → 풀이 기록 열기), 화면 전환, 워커, 제출 흐름, 테마를 맡음."""
 from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtGui import QDesktopServices, QKeySequence, QShortcut
 from PyQt6.QtWidgets import QApplication, QLabel, QMainWindow, QProgressBar, QPushButton, QStackedWidget, QVBoxLayout, QWidget
 
 import session
 import study
-from gui import errors, theme
+from gui import errors, motion, theme
 from gui.dialogs import IdDialog, MessageDialog
-from gui.guard import NOTE, Guard
+from gui.guard import Guard
 from gui.home_page import HomePage
 from gui.result_page import ResultPage
 from gui.round_page import RoundPage
+from gui.team_page import TeamPage
 from gui.worker import Job
 from session import SessionError
 
@@ -50,8 +51,10 @@ class StartPage(QWidget):
         self.retry.hide()
         self.retry.clicked.connect(win.open_session)
         box.addStretch(2)
-        for widget in (title, self.status, self.busy_bar, self.error, self.retry):
+        for widget in (title, self.status, self.busy_bar):
             box.addWidget(widget, 0, Qt.AlignmentFlag.AlignHCenter)
+        box.addWidget(self.error)  # 정렬 플래그를 주면 줄바꿈한 글이 제 높이를 받지 못해 잘림
+        box.addWidget(self.retry, 0, Qt.AlignmentFlag.AlignHCenter)
         box.addStretch(3)
 
     def set_busy(self, busy, text=""):
@@ -75,14 +78,16 @@ class MainWindow(QMainWindow):
         self.restart, self.close_pending = False, False
         self.open_url = lambda url: QDesktopServices.openUrl(QUrl(url))
         self.zoom = settings.value("zoom", 0, type=int)
+        theme.set_mode(settings.value("theme", "system", type=str))
 
         self.pages = QStackedWidget()
         self.start, self.home, self.round_page, self.result_page = StartPage(self), HomePage(self), RoundPage(self), ResultPage(self)
-        for page in (self.start, self.home, self.round_page, self.result_page):
+        self.team_page = TeamPage(self)
+        for page in (self.start, self.home, self.round_page, self.result_page, self.team_page):
             self.pages.addWidget(page)
         self.setCentralWidget(self.pages)
-        self.round_page.apply_zoom()  # 스타일시트가 있으면 부모가 바뀔 때 위젯 글꼴이 초기화되므로 창에 붙인 뒤에 글꼴을 줌
-        self.result_page.apply_zoom()
+        self.restyle()  # 스타일시트가 있으면 부모가 바뀔 때 위젯 글꼴이 초기화되므로 창에 붙인 뒤에 글꼴을 줌
+        theme.signals.changed.connect(self.restyle)
         room = self.screen().availableGeometry()  # 작은 노트북 화면에서 아래쪽 버튼이 화면 밖으로 나가지 않게
         self.resize(min(1280, room.width() - 40), min(800, room.height() - 60))
         if settings.value("geometry"):
@@ -92,7 +97,7 @@ class MainWindow(QMainWindow):
         QShortcut(QKeySequence("Ctrl+0"), self, lambda: self.set_zoom(0))
         self.guard = Guard(self)
         QApplication.instance().installEventFilter(self.guard)
-        self.guard.blocked.connect(lambda: self.round_page.status.setText(NOTE))
+        self.guard.blocked.connect(self.round_page.note_blocked)
 
     # 시작 순서
 
@@ -130,7 +135,7 @@ class MainWindow(QMainWindow):
             self.session = session.Session(self.user)
         except SessionError as error:
             self.start.show_error("%s\n파일을 고친 뒤 '다시 시도'를 눌러 주세요. 고치기 어려우면 스터디장에게 알려 주세요." % error)
-            self.pages.setCurrentWidget(self.start)
+            motion.switch(self.pages, self.start)
             return False
         self.start.show_error("")
         self.go_home()
@@ -142,7 +147,7 @@ class MainWindow(QMainWindow):
         if not self.leave_round(self.go_home, "저장하지 않고 나가기"):
             return
         self.home.refresh()
-        self.pages.setCurrentWidget(self.home)
+        motion.switch(self.pages, self.home)
 
     def leave_round(self, then, leave):
         """회차 화면을 떠나기 전에 쓰던 답을 저장하고 True 를 돌려줌. 저장하지 못하면 알리고 False 를 돌려줌.
@@ -155,8 +160,9 @@ class MainWindow(QMainWindow):
             page.dirty.clear()
             then()
 
-        self.ask("저장하지 못한 답", "%s\n\n쓰던 답 %d개가 파일에 저장되지 않았습니다. [돌아가기]를 누르면 회차 화면에 남습니다. "
-                 "답을 메모장에 복사해 두고 다시 해 보세요.\n[%s]를 누르면 저장되지 않은 답은 지워집니다." % (page.status.text(), len(page.dirty), leave),
+        self.ask("저장하지 못한 답", "%s\n\n쓰던 답 %d개가 파일에 저장되지 않았습니다. [돌아가기]를 누르면 회차 화면으로 돌아가고 쓰던 답은 화면에 남습니다. "
+                 "풀이 폴더의 파일을 다른 프로그램에서 열어 두었다면 닫고 다시 나가 보세요.\n"
+                 "[%s]를 누르면 저장되지 않은 답은 지워집니다." % (page.status.text(), len(page.dirty), leave),
                  (("돌아가기", ""), (leave, "drop")), drop)
         return False
 
@@ -188,7 +194,7 @@ class MainWindow(QMainWindow):
             self.ask("알림", str(error))
             return
         if rnd is None:
-            self.ask("알림", "전 단원을 심화까지 끝내 더 낼 문항이 없습니다.\n터미널에서 python study.py start m1 로 모의고사를 볼 수 있습니다.")
+            self.ask("알림", "전 단원을 심화까지 끝내 더 낼 문항이 없습니다.\n터미널에서 python study.py start m1 (2회는 m2)로 모의고사를 볼 수 있습니다.")
             return
         self.open_round(rnd["id"])
 
@@ -198,7 +204,7 @@ class MainWindow(QMainWindow):
         except SessionError as error:
             self._session_error(error, rid, lambda: self.open_round(rid, review, select))
             return
-        self.pages.setCurrentWidget(self.round_page)
+        motion.switch(self.pages, self.round_page)
 
     def show_result(self, rid, result=None):
         try:
@@ -206,7 +212,11 @@ class MainWindow(QMainWindow):
         except SessionError as error:
             self._session_error(error, rid, lambda: self.show_result(rid, result))
             return
-        self.pages.setCurrentWidget(self.result_page)
+        motion.switch(self.pages, self.result_page)
+
+    def show_team(self):
+        self.team_page.refresh()
+        motion.switch(self.pages, self.team_page)
 
     # 대화상자
 
@@ -337,14 +347,30 @@ class MainWindow(QMainWindow):
         self.restart = True
         self.close()
 
-    # 글자 크기 · 닫기
+    # 글자 크기 · 테마 · 닫기
 
     def set_zoom(self, zoom):
         low, high = theme.ZOOM_RANGE
         self.zoom = max(low, min(high, zoom))
         self.settings.setValue("zoom", self.zoom)
-        self.round_page.apply_zoom()
-        self.result_page.apply_zoom()
+        self.restyle()
+
+    def cycle_theme(self):
+        """시스템 → 밝게 → 어둡게 순서로 다음 테마를 고르고 기억함."""
+        modes = list(theme.MODES)
+        mode = modes[(modes.index(theme.state["mode"]) + 1) % len(modes)]
+        self.settings.setValue("theme", mode)
+
+        def change():
+            theme.set_mode(mode)
+            self.home.restyle()  # 밝기가 그대로여도 단추의 글자는 바뀜
+
+        motion.fade_over(self, change)
+
+    def restyle(self):
+        """글자 크기나 테마가 바뀌면 화면마다 본문과 색을 다시 넣음."""
+        for page in (self.home, self.round_page, self.result_page):
+            page.restyle()
 
     def closeEvent(self, event):
         if self.job is not None:  # 스레드를 도중에 버리면 프로세스가 죽으므로 채점·제출이 끝난 뒤에 닫음

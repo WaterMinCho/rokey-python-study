@@ -5,6 +5,7 @@ from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtWidgets import QDialog, QHBoxLayout, QLabel, QLineEdit, QPlainTextEdit, QPushButton, QVBoxLayout
 
 import session
+from gui.widgets import LinkLabel
 
 
 class MessageDialog(QDialog):
@@ -27,7 +28,7 @@ class MessageDialog(QDialog):
         box.addWidget(head)
         box.addWidget(self.text)
         if link:
-            self.link = QLabel('<a href="%s">%s</a>' % (link, link))
+            self.link = LinkLabel('<a href="%s">%s</a>' % (link, link))
             self.link.setWordWrap(True)
             self.link.linkActivated.connect(lambda url: parent.open_url(url))
             box.addWidget(self.link)
@@ -114,7 +115,12 @@ class IdDialog(QDialog):
         self.ok.setEnabled(good)
         self.ok.setText("시작")
         self.asked = ""
-        self.error.setText(" " if good or not text else "영문·숫자·-·_ 만 쓸 수 있고, 첫 글자는 영문이나 숫자여야 합니다.")
+        self.say(" " if good or not text else "영문·숫자·-·_ 만 쓸 수 있고, 첫 글자는 영문이나 숫자여야 합니다.")
+
+    def say(self, text):
+        """입력칸 아래에 안내를 보여 줌. 안내가 여러 줄로 늘어나면 위의 설명이 눌려 잘리므로 창을 그만큼 키움."""
+        self.error.setText(text)
+        self.resize(self.width(), max(self.height(), self.layout().totalHeightForWidth(self.width())))
 
     def save(self):
         QGuiApplication.inputMethod().commit()
@@ -122,13 +128,13 @@ class IdDialog(QDialog):
         if name != self.asked and session.valid_user(name) and session.has_record(name):  # 남의 ID 를 넣어 그 사람 기록을 이어 쓰지 않게 한 번 물음
             self.asked = name
             self.ok.setText("이 기록으로 시작")
-            self.error.setText("이 컴퓨터에 %s 의 풀이 기록이 있습니다. 내 ID 가 맞으면 [이 기록으로 시작]을 눌러 이어서 풉니다. "
-                               "다른 사람의 ID 라면 내 ID 로 고쳐 주세요." % session.user_folder(name))
+            self.say("이 컴퓨터에 %s 의 풀이 기록이 있습니다. 내 ID 가 맞으면 [이 기록으로 시작]을 눌러 이어서 풉니다. "
+                     "다른 사람의 ID 라면 내 ID 로 고쳐 주세요." % session.user_folder(name))
             return
         try:
             user = session.save_user(self.edit.text())
         except (session.SessionError, OSError) as error:
-            self.error.setText(str(error))
+            self.say(str(error))
             return
         self.accept()
         self.on_saved(user)
@@ -147,8 +153,8 @@ class ErrorDialog(QDialog):
         box.setSpacing(10)
         head = QLabel("프로그램에서 오류가 났습니다")
         head.setObjectName("h2")
-        note = QLabel("작성한 답은 저장돼 있고, 이 창을 닫으면 계속 쓸 수 있습니다. 같은 오류가 반복되면 아래 내용을 복사해 "
-                      '<a href="%s">불편 신고 양식</a>에 붙여 주세요.' % issue_url)
+        note = LinkLabel("작성한 답은 저장돼 있고, 이 창을 닫으면 계속 쓸 수 있습니다. 같은 오류가 반복되면 아래 내용을 복사해 "
+                         '<a href="%s">불편 신고 양식</a>에 붙여 주세요.' % issue_url)
         note.setWordWrap(True)
         note.setOpenExternalLinks(True)
         self.view = QPlainTextEdit(text)

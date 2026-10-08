@@ -601,6 +601,32 @@ def users_with_profile():
     return [u for u in study.all_users() if os.path.isfile(profile_path(u))]
 
 
+def user_summary(user, cat):
+    """한 사람의 학습 요약. 현황판(tools/dashboard.py)과 화면의 팀 현황이 같이 씀. profile.json 을 읽지 못하면 예외를 냄."""
+    prof = load_profile(user)
+    unit_ids = [s["id"] for s in units()]
+    states = {st["unit"]: st for st in all_states(prof, cat)}
+    firsts = first_attempts(prof)
+    mastered = [u for u in unit_ids if states[u]["mastered"]]
+    not_mastered = [states[u] for u in unit_ids if not states[u]["mastered"] and states[u]["tested"]]
+    weak = [st["unit"] for st in rank_units(not_mastered)[:3]]
+    strong = sorted(mastered, key=lambda u: -(states[u]["accuracy"] or 0))[:3]
+    last = max((a["at"] for a in prof["attempts"]), default=None)
+    levels = {"L1": 0, "L2": 0, "L3": 0}
+    for u in unit_ids:
+        st = states[u]
+        if st["tested"] and not st["mastered"]:
+            levels["L%d" % st["level"]] += 1
+    return {
+        "user": user, "states": states, "mastered": len(mastered), "total": len(unit_ids),
+        "readiness": readiness([states[u] for u in unit_ids]),
+        "weak": weak, "strong": strong, "tags": weak_tags(prof, cat, 4), "levels": levels,
+        "rounds": len(prof["rounds"]), "attempts": len(firsts),
+        "accuracy": (sum(1 for a in firsts if a["ok"]) / len(firsts)) if firsts else None,
+        "last": last,
+    }
+
+
 def user_analysis_markdown(user, cat):
     prof = load_profile(user)
     states = all_states(prof, cat)

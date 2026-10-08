@@ -198,34 +198,40 @@ def inline_plain(text):
 
 # HTML (Qt 리치텍스트 부분집합)
 
+# 색은 %(이름)s 자리에 채워 씀: ink, doc_heading, code_bg, codebox_bg, border, notice_bg, notice_border, table_head, grid, link
 CSS = """
-body { font-size: 14px; color: #1f2328; }
+body { font-size: 14px; color: %(ink)s; }
 p { margin-top: 0px; margin-bottom: 10px; }
-h1 { font-size: 20px; margin-top: 14px; margin-bottom: 8px; }
-h2 { font-size: 16px; margin-top: 16px; margin-bottom: 6px; color: #0b3d91; }
-h3 { font-size: 14px; margin-top: 12px; margin-bottom: 4px; }
-code { font-family: 'Menlo', 'Consolas', 'D2Coding', 'Courier New', monospace; font-size: 13px; background-color: #eef0f3; color: #1f2328; white-space: pre-wrap; }
-pre { font-family: 'Menlo', 'Consolas', 'D2Coding', 'Courier New', monospace; font-size: 13px; margin: 0px; color: #1f2328; }
-td.codebox { background-color: #f3f4f6; border: 1px solid #d0d7de; }
-td.quote { background-color: #fff8e1; border: 1px solid #f0d98c; }
+p.h1 { font-size: 24px; font-weight: bold; margin-top: 14px; margin-bottom: 8px; }
+p.h2 { font-size: 18px; font-weight: bold; margin-top: 16px; margin-bottom: 6px; color: %(doc_heading)s; }
+p.h3 { font-size: 14px; font-weight: bold; margin-top: 12px; margin-bottom: 4px; }
+a { color: %(link)s; }
+code { font-family: 'Menlo', 'Consolas', 'D2Coding', 'Courier New', monospace; font-size: 13px; background-color: %(code_bg)s; color: %(ink)s; white-space: pre-wrap; }
+pre { font-family: 'Menlo', 'Consolas', 'D2Coding', 'Courier New', monospace; font-size: 13px; margin: 0px; color: %(ink)s; }
+td.codebox { background-color: %(codebox_bg)s; border: 1px solid %(border)s; }
+td.quote { background-color: %(notice_bg)s; border: 1px solid %(notice_border)s; }
 table.grid { border-collapse: collapse; margin-top: 4px; margin-bottom: 10px; }
-table.grid th { background-color: #eaeef2; font-weight: bold; padding: 6px 10px; border: 1px solid #c8d1da; }
-table.grid td { padding: 6px 10px; border: 1px solid #c8d1da; }
+table.grid th { background-color: %(table_head)s; font-weight: bold; padding: 6px 10px; border: 1px solid %(grid)s; }
+table.grid td { padding: 6px 10px; border: 1px solid %(grid)s; }
 li { margin-bottom: 6px; }
 """
 
 
 def to_html(text):
-    return "<body>%s</body>" % _html(parse(text))
+    return blocks_html(parse(text))
+
+
+def blocks_html(blocks):
+    """parse 가 돌려준 블록 목록이나 그 일부를 HTML 로 만듦."""
+    return "<body>%s</body>" % _html(blocks)
 
 
 def _html(blocks, tight=False):
     out = []
     for b in blocks:
         t = b["t"]
-        if t == "heading":
-            level = min(3, max(1, b["level"]))
-            out.append("<h%d>%s</h%d>" % (level, inline_html(b["text"]), level))
+        if t == "heading":  # h1~h3 태그에는 Qt 가 CSS 의 글자 크기를 적용하지 않아 문단에 클래스를 줌
+            out.append('<p class="h%d">%s</p>' % (min(3, max(1, b["level"])), inline_html(b["text"])))
         elif t == "para":
             out.append("<p>%s</p>" % inline_html(b["text"]))
         elif t == "code":
