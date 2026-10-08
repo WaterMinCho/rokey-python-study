@@ -2,12 +2,13 @@
 """메인 창. 시작 순서(ID → 새 문제 받기 → 풀이 기록 열기), 화면 전환, 워커, 제출 흐름을 맡음."""
 from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtGui import QDesktopServices, QKeySequence, QShortcut
-from PyQt6.QtWidgets import QLabel, QMainWindow, QProgressBar, QPushButton, QStackedWidget, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QApplication, QLabel, QMainWindow, QProgressBar, QPushButton, QStackedWidget, QVBoxLayout, QWidget
 
 import session
 import study
 from gui import errors, theme
 from gui.dialogs import IdDialog, MessageDialog
+from gui.guard import NOTE, Guard
 from gui.home_page import HomePage
 from gui.result_page import ResultPage
 from gui.round_page import RoundPage
@@ -89,6 +90,9 @@ class MainWindow(QMainWindow):
         for keys, step in ((QKeySequence.StandardKey.ZoomIn, 1), ("Ctrl+=", 1), (QKeySequence.StandardKey.ZoomOut, -1)):
             QShortcut(QKeySequence(keys), self, lambda step=step: self.set_zoom(self.zoom + step))
         QShortcut(QKeySequence("Ctrl+0"), self, lambda: self.set_zoom(0))
+        self.guard = Guard(self)
+        QApplication.instance().installEventFilter(self.guard)
+        self.guard.blocked.connect(lambda: self.round_page.status.setText(NOTE))
 
     # 시작 순서
 

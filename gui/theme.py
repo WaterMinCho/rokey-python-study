@@ -11,7 +11,9 @@ import mdlite
 CLEAR_FONTS = ("NanumGothic", "Nanum Gothic", "Noto Sans KR", "Noto Sans CJK KR")  # 설치돼 있으면 화면 글꼴로 먼저 씀
 UI_FONTS = CLEAR_FONTS + ("Malgun Gothic", "Apple SD Gothic Neo")  # 한글이 있는 글꼴
 CODE_FONTS = ("D2Coding", "Consolas", "Menlo", "Cascadia Mono", "DejaVu Sans Mono", "Courier New")
-CODE_PX = 14  # 편집기 글자 크기(확대 0 일 때)
+UI_PX = 14  # 버튼·목록·안내 글자 크기
+CODE_PX = 15  # 편집기 글자 크기(확대 0 일 때)
+DOC_PX = 1  # 문제 본문은 mdlite.CSS 의 크기에 이만큼 더함
 ZOOM_RANGE = (-3, 10)
 
 INK, MUTED, GREEN, RED, ORANGE, BLUE, GRAY = "#1f2328", "#57606a", "#1a7f37", "#cf222e", "#bc4c00", "#0969da", "#6e7781"
@@ -32,7 +34,7 @@ STYLE = """
 QMainWindow, QDialog, QWidget#page, QScrollArea { background: #f4f5f7; }
 QLabel { color: #1f2328; }
 QLabel#h1 { font-size: 20px; font-weight: 700; color: #16233b; }
-QLabel#h2 { font-size: 15px; font-weight: 700; color: #16233b; }
+QLabel#h2 { font-size: 16px; font-weight: 700; color: #16233b; }
 QLabel#muted { color: #57606a; }
 QLabel#big { font-size: 46px; font-weight: 700; color: #16233b; }
 QLabel#error { color: #cf222e; }
@@ -91,10 +93,11 @@ def apply(app):
         palette.setColor(role, QColor(color))
     app.setPalette(palette)
     family = _installed(CLEAR_FONTS) or (_installed(("Malgun Gothic",)) if sys.platform == "win32" else [])
+    font = app.font()
     if family:  # 또렷한 글꼴이 있으면 그것을 쓰고, Windows 에서는 굴림 대신 맑은 고딕을 씀
-        font = app.font()
         font.setFamily(family[0])
-        app.setFont(font)
+    font.setPixelSize(UI_PX)
+    app.setFont(font)
     app.setStyleSheet(STYLE)
 
 
@@ -115,6 +118,6 @@ def code_font(zoom=0):
 
 def doc_css(zoom=0):
     """문제 본문용 CSS. mdlite.CSS 의 글자 크기를 확대 단계만큼 키우고 코드 글꼴을 설치된 글꼴로 바꿈."""
-    css = re.sub(r"font-size: (\d+)px", lambda m: "font-size: %dpx" % (int(m.group(1)) + zoom), mdlite.CSS)
+    css = re.sub(r"font-size: (\d+)px", lambda m: "font-size: %dpx" % (int(m.group(1)) + DOC_PX + zoom), mdlite.CSS)
     families = ", ".join("'%s'" % name for name in code_families())
     return re.sub(r"font-family: [^;]+;", "font-family: %s;" % families, css)
