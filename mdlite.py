@@ -3,7 +3,7 @@
 
 지원: 제목(#), 문단, 펜스 코드 블록(목록 안 들여쓴 것·`1. ```python` 꼴 포함), 번호/글머리 목록(중첩),
       인용(>), 표(| a | b |, 셀 안 <br>, \\| 이스케이프), 인라인 `코드`·``코드``·**굵게**.
-지원하지 않는 것(은행에 없음): 링크, 이미지, 기울임, 취소선, HTML 태그(문자 그대로 보여 준다).
+지원하지 않는 것(은행에 없음): 링크, 이미지, 기울임, 취소선, HTML 태그(문자 그대로 보여 줌).
 """
 import html
 import re
@@ -31,7 +31,7 @@ def split_row(line):
 
 
 def parse(text):
-    """블록 목록을 돌려준다. 블록: dict(t=..., ...)
+    """블록 목록을 돌려줌. 블록: dict(t=..., ...)
     heading(level, text) · para(text) · code(lang, text) · ol(start, items[[blocks]]) · ul(items) · quote(blocks) · table(head, rows)"""
     return _blocks(text.replace("\r\n", "\n").replace("\t", "    ").split("\n"))
 
@@ -102,7 +102,7 @@ def _blocks(lines):
                             in_fence = False
                         i += 1
                         continue
-                    if not ln.strip():  # 빈 줄: 다음 줄이 이 항목에 속해야 이어진다
+                    if not ln.strip():  # 빈 줄 다음 줄이 이 항목에 속해야 항목이 이어짐
                         j = i
                         while j < n and not lines[j].strip():
                             j += 1
@@ -151,7 +151,7 @@ def _starts_block(line):
                 or line.lstrip().startswith(">") or line.lstrip().startswith("|"))
 
 
-# ───────────── 인라인 ─────────────
+# 인라인
 
 def inline_tokens(text):
     """[(kind, text)] kind: text | code | bold | br. 굵게 안의 코드는 ('bold', [tokens]) 로 중첩."""
@@ -196,7 +196,7 @@ def inline_plain(text):
     return render(inline_tokens(text))
 
 
-# ───────────── HTML (Qt 리치텍스트 부분집합) ─────────────
+# HTML (Qt 리치텍스트 부분집합)
 
 CSS = """
 body { font-size: 14px; color: #1f2328; }
@@ -247,7 +247,7 @@ def _html(blocks, tight=False):
     return "".join(out)
 
 
-# ───────────── 감사(audit)용 기대값 ─────────────
+# 감사(audit)용 기대값
 
 def expected(text):
     """렌더링 결과와 대조할 기대 구조: 코드 줄, 표, 번호 목록의 번호, 인라인 코드, 굵게, 전체 글자."""

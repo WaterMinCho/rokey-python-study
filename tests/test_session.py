@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""세션 서비스 테스트 — 실제 문제 은행을 쓰되 풀이 폴더는 임시 폴더로 돌린다.
+"""세션 서비스 테스트. 실제 문제 은행을 쓰고 풀이 폴더만 임시 폴더로 돌림.
 
 실행: python -m unittest discover -s tests
 """
@@ -54,12 +54,12 @@ class SessionTest(unittest.TestCase):
             self.sess.set_answer(rid, view["id"], right_answer(self.sess, view) if correct else wrong_answer(view))
 
     def first_real_round(self):
-        """진단을 미응답으로 확정해 코드 문제가 섞인 1회차를 만든다."""
+        """진단을 미응답으로 확정해 코드 문제가 섞인 1회차를 만듦."""
         rnd, _ = self.sess.ensure_round()
         result = self.sess.grade(rnd["id"], finalize=True)
         return result["next_round"]
 
-    # ── 사용자 ──
+    # 사용자
 
     def test_save_and_load_user(self):
         self.assertIsNone(session.saved_user())
@@ -70,7 +70,7 @@ class SessionTest(unittest.TestCase):
             with self.assertRaises(session.SessionError):
                 session.save_user(bad)
 
-    # ── 회차 만들기 ──
+    # 회차 만들기
 
     def test_first_run_creates_diagnostic_once(self):
         rnd, created = self.sess.ensure_round()
@@ -81,7 +81,7 @@ class SessionTest(unittest.TestCase):
         self.assertEqual(again["id"], "d1")
         for name in ("README.md", "quiz.py"):
             self.assertTrue(os.path.isfile(os.path.join(self.sess.folder("d1"), name)))
-        self.assertEqual(len(session.Session("tester").prof["rounds"]), 1)  # 디스크에 저장됐다
+        self.assertEqual(len(session.Session("tester").prof["rounds"]), 1)  # 디스크에 저장됨
 
     def test_round_view_has_everything_the_screen_needs(self):
         rid = self.first_real_round()
@@ -100,7 +100,7 @@ class SessionTest(unittest.TestCase):
                 self.assertEqual(it["answer"], it["starter"])
         self.assertEqual([it["no"] for it in view["items"]], list(range(1, len(view["items"]) + 1)))
 
-    # ── 답 저장 ──
+    # 답 저장
 
     def test_quiz_answers_round_trip_and_stay_cli_compatible(self):
         rnd, _ = self.sess.ensure_round()
@@ -118,7 +118,7 @@ class SessionTest(unittest.TestCase):
             reopened = {v["id"]: v for v in self.sess.open_round("d1")["items"]}[choice["id"]]
             self.assertEqual(reopened["answer"], stored)
             self.assertEqual(reopened["answered"], stored is not None)
-        # 다른 문항의 답이 지워지지 않는다
+        # 다른 문항의 답이 지워지지 않음
         self.sess.set_answer("d1", target["id"], "남아 있어야 함")
         self.sess.set_answer("d1", choice["id"], 1)
         answers = {v["id"]: v["answer"] for v in self.sess.open_round("d1")["items"]}
@@ -138,9 +138,9 @@ class SessionTest(unittest.TestCase):
         self.assertTrue({v["id"]: v for v in self.sess.open_round(rid)["items"]}[code["id"]]["answered"])
         self.assertEqual(self.sess.reset_item(rid, code["id"]), code["starter"])
         self.assertFalse({v["id"]: v for v in self.sess.open_round(rid)["items"]}[code["id"]]["answered"])
-        self.assertEqual([f for f in os.listdir(self.sess.folder(rid)) if ".tmp" in f], [])  # 임시 파일이 남지 않는다
+        self.assertEqual([f for f in os.listdir(self.sess.folder(rid)) if ".tmp" in f], [])  # 임시 파일이 남지 않음
 
-    # ── 코드 실행 ──
+    # 코드 실행
 
     def test_try_run_shows_examples_and_records_nothing(self):
         rid = self.first_real_round()
@@ -169,7 +169,7 @@ class SessionTest(unittest.TestCase):
             self.sess.reset_item(rid, fill["id"])
             self.assertIn("빈칸", self.sess.try_run(rid, fill["id"])["message"])
 
-    # ── 채점 · 기록 ──
+    # 채점 · 기록
 
     def test_untouched_round_is_not_recorded(self):
         self.sess.ensure_round()
@@ -236,7 +236,7 @@ class SessionTest(unittest.TestCase):
         self.assertTrue(all(it["state"] == "ok" for it in adaptive.grade_round("tester", rnd, fresh.cat)))
         self.assertEqual(fresh.prof["rounds"][-1]["id"], result["next_round"])
 
-    # ── 해설 ──
+    # 해설
 
     def test_explain_is_locked_until_graded(self):
         self.sess.ensure_round()
@@ -244,7 +244,7 @@ class SessionTest(unittest.TestCase):
         with self.assertRaises(session.SessionError):
             self.sess.explain("d1", first["id"])
         self.answer_all("d1", only={1})
-        self.sess.grade("d1")  # 일부만 채점한 상태에서는 그 문항 해설도 잠겨 있다
+        self.sess.grade("d1")  # 일부만 채점한 상태에서는 그 문항 해설도 잠겨 있음
         with self.assertRaises(session.SessionError):
             self.sess.explain("d1", first["id"])
         self.sess.grade("d1", finalize=True)
@@ -259,7 +259,7 @@ class SessionTest(unittest.TestCase):
         info = self.sess.explain(rid, code["id"])
         self.assertTrue(info["solution"] and info["markdown"])
 
-    # ── 현황 ──
+    # 현황
 
     def test_overview_tracks_progress(self):
         before = self.sess.overview()
@@ -274,7 +274,7 @@ class SessionTest(unittest.TestCase):
         self.assertTrue(all(u["tested"] for u in after["units"]))
         self.assertEqual([r["id"] for r in after["rounds"]], ["d1", "r01"])
 
-    # ── 기록을 망가뜨리던 경로들 ──
+    # 기록을 망가뜨리던 경로들
 
     def test_broken_answer_sheet_is_never_treated_as_empty(self):
         self.sess.ensure_round()
@@ -291,11 +291,11 @@ class SessionTest(unittest.TestCase):
                          lambda: self.sess.grade("d1"), lambda: self.sess.grade("d1", finalize=True)):
                 with self.assertRaises(session.SessionError):
                     call()
-            self.assertEqual(study.read_text(path), broken)  # 손대지 않는다
-            self.assertEqual(self.sess.prof["attempts"], [])  # 아무것도 기록하지 않는다
+            self.assertEqual(study.read_text(path), broken)  # 파일을 건드리지 않음
+            self.assertEqual(self.sess.prof["attempts"], [])  # 아무것도 기록하지 않음
         study.write_text(path, one_bad_line)
         kept = self.sess.repair_quiz("d1")
-        self.assertEqual(kept, 3)  # 깨진 한 줄만 잃는다
+        self.assertEqual(kept, 3)  # 깨진 한 줄만 잃음
         self.assertTrue(os.path.isfile(path + ".bak"))
         self.assertIsNone(self.sess.quiz_problem("d1"))
         self.assertEqual(sum(1 for v in self.sess.open_round("d1")["items"] if v["answered"]), 3)
@@ -335,7 +335,7 @@ class SessionTest(unittest.TestCase):
         other.set_answer("d1", first["id"], wrong_answer(first))
         other.grade("d1")  # 오답이 첫 시도로 기록됨
         self.sess.set_answer("d1", first["id"], right_answer(self.sess, first))
-        self.sess.grade("d1")  # 먼저 열려 있던 세션이 고쳐서 채점
+        self.sess.grade("d1")  # 앞서 열어 둔 세션이 고쳐서 채점
         attempts = [a for a in session.Session("tester").prof["attempts"] if a["item"] == first["key"]]
         self.assertEqual([(a["try"], a["ok"]) for a in attempts], [(1, False), (2, True)])
 

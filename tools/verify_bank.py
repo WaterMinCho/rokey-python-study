@@ -4,11 +4,9 @@
 
   python tools/verify_bank.py [세트...]
 
-세트마다 확인하는 것:
-  - meta.json / README.md / quiz.md / problem.json 형식
-  - 퀴즈: 문제지(quiz.md)와 정답표의 문항 ID 일치, '출력 예측' 정답을 실제 실행 결과와 대조
-  - 코드 문제: 모범 답안이 모든 테스트를 통과하고, 시작 코드는 통과하지 못하는지
-  - 빈칸 채우기: 모범 답안이 빈칸만 채운 형태인지
+세트마다 meta.json / README.md / quiz.md / problem.json 형식을 확인함.
+퀴즈는 문제지(quiz.md)와 정답표의 문항 ID 를 맞춰 보고, '출력 예측' 정답은 코드를 실제로 실행한 결과와 대조함.
+코드 문제는 모범 답안이 모든 테스트를 통과하고 시작 코드는 통과하지 못해야 함. 빈칸 채우기는 모범 답안이 빈칸만 채운 형태여야 함.
 """
 import ast
 import os
@@ -26,7 +24,7 @@ MIN_CASES = {"call": 3, "io": 1, "exec": 1}  # 모드별 최소 테스트 수
 
 
 def run_source(text, spec):
-    """소스 문자열을 임시 파일로 만들어 테스트를 돌린다."""
+    """소스 문자열을 임시 파일로 만들어 테스트를 돌림."""
     with tempfile.TemporaryDirectory(prefix="verify_") as tmp:
         path = os.path.join(tmp, "submission.py")
         study.write_text(path, text)
@@ -111,7 +109,7 @@ def check_problem(s, p, errors):
     if not s["secrets"].get(p["id"] + "/explain.md", "").strip():
         errors.append(where + "해설(explain.md)이 없습니다.")
     if not str(p.get("title", "")).strip():
-        errors.append(where + "title 이 없습니다.")
+        errors.append(where + "title 값이 없습니다.")
     if p.get("type") not in study.TYPE_LABEL:
         errors.append(where + "type 은 fill/return/print 중 하나여야 합니다.")
         return
@@ -181,13 +179,13 @@ def check_set(sid):
     set_dir = os.path.join(study.PROBLEMS_DIR, sid)
     try:
         s = study.load_set(sid)
-    except Exception as error:  # 형식이 깨진 파일도 오류 목록으로 보고한다
+    except Exception as error:  # 형식이 깨진 파일도 오류 목록으로 보고함
         return ["세트를 읽지 못했습니다: %s: %s" % (type(error).__name__, error)], None
     meta = s["meta"]
     if meta.get("id") != sid:
         errors.append("meta.json 의 id(%r)가 폴더 이름과 다릅니다." % meta.get("id"))
     if not str(meta.get("title", "")).strip():
-        errors.append("meta.json 에 title 이 없습니다.")
+        errors.append("meta.json 에 title 값이 없습니다.")
     if meta.get("kind") not in KINDS:
         errors.append("meta.json 의 kind 는 session/codetest/mock 중 하나여야 합니다.")
     if not os.path.isfile(os.path.join(set_dir, "README.md")):
@@ -211,7 +209,7 @@ def main():
         errors, s = check_set(sid)
         if errors:
             failed = True
-            print("✘ %s — 문제 %d건" % (sid, len(errors)))
+            print("✘ %s: 문제 %d건" % (sid, len(errors)))
             for message in errors:
                 print("    - " + message)
         else:
@@ -220,11 +218,11 @@ def main():
             for p in s["problems"]:
                 kinds[p["type"]] = kinds.get(p["type"], 0) + 1
             detail = ", ".join("%s %d" % (study.TYPE_LABEL[k], v) for k, v in sorted(kinds.items()))
-            print("✔ %s %s — 퀴즈 %d문항, 코드 %d문제(%s), 총 %d점" % (
+            print("✔ %s %s: 퀴즈 %d문항, 코드 %d문제(%s), 총 %d점" % (
                 sid, study.set_title(s), len(s["questions"]), len(s["problems"]), detail or "-", points))
     if failed:
         sys.exit(1)
-    print("OK — %d개 세트 검사 통과" % len(set_ids))
+    print("OK: %d개 세트가 검사를 통과했습니다." % len(set_ids))
 
 
 if __name__ == "__main__":

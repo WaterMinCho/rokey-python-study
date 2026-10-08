@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""적응형 학습 엔진 — 진단 → 약점 분석 → 맞춤 라운드 → 채점·가이드 → 모의고사.
+"""적응형 학습 엔진. 진단 → 약점 분석 → 맞춤 라운드 → 채점·가이드 → 모의고사 순으로 진행함.
 
-사람마다 결과가 다르니 받는 문항도 다르다. 상태는 submissions/<ID>/profile.json 한 파일에만 기록되고,
-PR 로 올라가면 CI 와 스터디장이 같은 기준으로 분석한다. (study.py 가 불러 쓰는 모듈)
+결과가 사람마다 달라서 받는 문항도 달라짐. 상태는 submissions/<ID>/profile.json 에만 기록하고,
+PR 로 올라가면 CI 와 스터디장이 같은 기준으로 분석함. study.py 가 불러 쓰는 모듈임.
 """
 import datetime
 import json
@@ -15,8 +15,8 @@ import unicodedata
 
 import study
 
-ROUND_MIN, ROUND_MAX = 8, 18  # 회차 문항 수 범위 — 실제 수는 그 사람의 필요(보강할 단원 수·직전 성적)로 정한다
-CODE_RATIO = 0.4  # 회차 안의 코드 문제 비율(나머지는 퀴즈) — 실제 평가 비율에 맞춤
+ROUND_MIN, ROUND_MAX = 8, 18  # 회차 문항 수 범위. 실제 수는 보강할 단원 수와 직전 성적으로 정함
+CODE_RATIO = 0.4  # 회차의 코드 문제 비율. 실제 평가 비율에 맞춤
 FOCUS_UNITS = 3  # 가이드에서 보여 주는 집중 단원 수
 DIAG_PER_UNIT = 2  # 진단에서 단원당 문항 수
 WINDOW = 4  # 레벨 통과 판정에 보는 최근 시도 수
@@ -29,9 +29,9 @@ def now():
     return datetime.datetime.now().isoformat(timespec="seconds")
 
 
-# ───────────────────────── 문항 목록 ─────────────────────────
+# 문항 목록
 
-_UNITS = None  # 문제 은행은 실행 중에 바뀌지 않으므로 한 번만 읽는다(바뀌면 clear_cache)
+_UNITS = None  # 문제 은행은 실행 중에 바뀌지 않아서 한 번만 읽음. 바뀌었으면 clear_cache 로 비움
 
 
 def clear_cache():
@@ -57,7 +57,7 @@ def short_title(s):
 
 
 def unit_priority():
-    """단원 중요도(meta.json 의 priority, 기본 1.0). 시험 비중이 큰 단원을 더 자주, 준비도 계산에도 더 무겁게."""
+    """단원 중요도(meta.json 의 priority, 기본 1.0). 시험 비중이 큰 단원은 더 자주 나오고 준비도 계산에서도 비중이 커짐."""
     return {s["id"]: float(s["meta"].get("priority", 1.0)) for s in units()}
 
 
@@ -78,7 +78,7 @@ def catalog():
     return items
 
 
-# ───────────────────────── 프로필 ─────────────────────────
+# 프로필
 
 def profile_path(user):
     return os.path.join(study.SUBMISSIONS_DIR, user, "profile.json")
@@ -103,7 +103,7 @@ def find_round(prof, rid):
     return next((r for r in prof["rounds"] if r["id"] == rid), None)
 
 
-# ───────────────────────── 숙달도 ─────────────────────────
+# 숙달도
 
 def level_passed(results):
     """최근 시도(첫 시도만)로 레벨 통과 판정: 2문항 이상 전부 정답, 또는 4문항 이상에서 75% 이상."""
@@ -120,7 +120,7 @@ def unit_state(prof, cat, unit_id):
     available = {L: sum(1 for it in cat.values() if it["unit"] == unit_id and it["level"] == L) for L in (1, 2, 3)}
     passed = {}
     for L in (1, 2, 3):
-        passed[L] = True if available[L] == 0 else level_passed(by_level[L])  # 문항이 없는 레벨은 건너뛴다
+        passed[L] = True if available[L] == 0 else level_passed(by_level[L])  # 문항이 없는 레벨은 건너뜀
     level = next((L for L in (1, 2, 3) if not passed[L]), 3)
     recent = by_level[level][-WINDOW:]
     retry = len(recent) >= 3 and sum(1 for ok in recent if ok) / len(recent) < 0.5
@@ -138,7 +138,7 @@ def all_states(prof, cat):
 
 
 def unit_score(st):
-    """단원 준비도 0~100. 숙달 85, 심화까지 100, 진행 중은 레벨과 정답률로."""
+    """단원 준비도 0~100. 숙달이면 85, 심화까지 끝내면 100, 진행 중이면 레벨과 정답률로 계산함."""
     if st["done"]:
         return 100
     if st["mastered"]:
@@ -150,7 +150,7 @@ def unit_score(st):
 
 
 def readiness(states):
-    """시험 준비도 0~100 — 단원 준비도의 중요도 가중 평균."""
+    """시험 준비도 0~100. 단원 준비도를 중요도로 가중 평균함."""
     priority = unit_priority()
     total = sum(priority.get(st["unit"], 1.0) for st in states)
     return round(sum(unit_score(st) * priority.get(st["unit"], 1.0) for st in states) / total) if total else 0
@@ -176,7 +176,7 @@ def state_label(st):
     return "레벨%d 진행" % st["level"]
 
 
-# ───────────────────────── 라운드 만들기 ─────────────────────────
+# 라운드 만들기
 
 def completed_rounds(prof):
     return [r for r in prof["rounds"] if r["kind"] != "diag" and r.get("completed_at")]
@@ -185,7 +185,7 @@ def completed_rounds(prof):
 def last_ratio(prof):
     """직전에 끝낸 회차의 득점률(없으면 None)."""
     done = completed_rounds(prof)
-    score = (done[-1].get("first_score") or done[-1].get("score")) if done else None  # 고쳐서 다시 채점한 점수는 쓰지 않는다
+    score = (done[-1].get("first_score") or done[-1].get("score")) if done else None  # 고쳐서 다시 채점한 점수는 쓰지 않음
     if not score:
         return None
     earned, total = score.split("/")
@@ -193,9 +193,9 @@ def last_ratio(prof):
 
 
 def round_size(prof, states):
-    """필요에 따라 정하는 문항 수.
-    보강할 단원이 많을수록 길게(단원당 1.5~2.5문항), 숙달 단원은 복습 0.25~0.5문항.
-    직전 회차 득점률이 50% 미만이면 짧게 끊어 자주 피드백하고, 90% 이상이면 조금 더 밀어붙인다."""
+    """회차 문항 수와 그 이유를 정함.
+    보강할 단원은 단원당 1.5~2.5문항, 숙달 단원은 복습으로 0.25~0.5문항씩 더함.
+    직전 회차 득점률이 50% 미만이면 문항을 줄이고, 90% 이상이면 2문항을 더 냄."""
     need = 0.0
     weak = 0
     for st in states:
@@ -226,7 +226,7 @@ def round_size(prof, states):
 
 
 def deep_review(states):
-    """숙달 단원이 절반을 넘으면 숙달 단원 복습을 심화(레벨3)로 올린다."""
+    """숙달 단원이 절반 이상이면 숙달 단원 복습을 심화(레벨3)로 올림."""
     return sum(1 for st in states if st["mastered"]) * 2 >= len(states)
 
 
@@ -242,7 +242,7 @@ def rounds_since_seen(prof, cat):
 
 
 def unit_weight(st, since=0):
-    """약한 단원일수록 자주 뽑힌다. 숙달 단원은 오래 안 볼수록 복습 가중치가 커진다(간격 반복)."""
+    """약한 단원일수록 자주 뽑힘. 숙달 단원은 오래 안 볼수록 복습 가중치가 커짐(간격 반복)."""
     if not st["tested"]:
         return 3.0
     if st["done"]:
@@ -259,7 +259,7 @@ def target_level(st, deep):
     if st["done"]:
         return 3
     if st["mastered"]:
-        return 3 if deep else MASTER_LEVEL  # 숙달 단원이 늘면 복습도 심화 문항으로
+        return 3 if deep else MASTER_LEVEL  # 숙달 단원이 늘면 복습도 심화 문항으로 냄
     return st["level"]
 
 
@@ -278,7 +278,7 @@ def pick_one(prof, cat, unit_id, level, exclude, rng, prefer):
     return None
 
 
-RETEST_GAP = 2  # 틀린 문항은 최소 이만큼 회차가 지난 뒤 다시 낸다
+RETEST_GAP = 2  # 틀린 문항은 이만큼 회차가 지난 뒤에 다시 냄
 RETEST_SLOTS = 2  # 한 회차에 다시 내는 오답 문항 수 상한
 
 
@@ -312,7 +312,7 @@ def weighted_choice(rng, weights):
 
 
 def build_diagnostic(prof, cat):
-    """단원마다 레벨1 퀴즈 2문항(부족하면 아무 퀴즈)으로 출발점을 정한다."""
+    """진단 회차를 만듦. 단원마다 레벨1 퀴즈 2문항을 내고, 레벨1 이 모자라면 그 단원 퀴즈 전체에서 뽑음."""
     rng = random.Random(prof["seed"])
     items = []
     for s in units():
@@ -327,7 +327,7 @@ def build_diagnostic(prof, cat):
 
 
 def build_round(prof, cat):
-    """전 단원을 섞은 미니 모의고사. 약한 단원이 더 많이 나오고, 단원별 레벨이 오르며 회차가 갈수록 길고 어려워진다.
+    """전 단원을 섞은 미니 모의고사를 만듦. 약한 단원 문항을 더 많이 넣고, 문항 레벨은 단원별 레벨을 따름.
     전 단원이 심화까지 끝나면 None."""
     states = all_states(prof, cat)
     if all(st["done"] for st in states):
@@ -336,7 +336,7 @@ def build_round(prof, cat):
     deep = deep_review(states)
     size, reason = round_size(prof, states)
     rng = random.Random(prof["seed"] * 1000 + len(prof["rounds"]))
-    cap = max(2, size // 4)  # 한 단원이 회차를 독차지하지 않게
+    cap = max(2, size // 4)  # 한 단원이 회차를 독차지하지 않게 함
     since = rounds_since_seen(prof, cat)
     priority = unit_priority()
     weights = {st["unit"]: unit_weight(st, since.get(st["unit"], 9)) * priority.get(st["unit"], 1.0) for st in states}
@@ -344,7 +344,7 @@ def build_round(prof, cat):
     items, shortages = [], {}
     code_target = round(size * CODE_RATIO)
     code_n = 0
-    # 오답 재출제: 예전에 틀린 문항을 간격을 두고 다시 낸다
+    # 오답 재출제. 예전에 틀린 문항을 간격을 두고 다시 냄
     retest = retest_pool(prof, cat)
     rng.shuffle(retest)
     for key in retest[:min(RETEST_SLOTS, size // 4)]:
@@ -362,7 +362,7 @@ def build_round(prof, cat):
         level = target_level(by_unit[unit_id], deep)
         prefer = "code" if code_n < code_target else "quiz"
         key = pick_one(prof, cat, unit_id, level, set(items), rng, prefer)
-        if key is None:  # 이 단원·레벨엔 더 낼 문항이 없다
+        if key is None:  # 이 단원·레벨엔 더 낼 문항이 없음
             shortages[(unit_id, level)] = shortages.get((unit_id, level), 0) + 1
             weights[unit_id] = 0
             continue
@@ -394,7 +394,7 @@ def fname_of(key):
 
 
 def quiz_section(s, qid):
-    """세트 quiz.md 에서 해당 문항 본문(제목 줄 제외)을 꺼낸다."""
+    """세트 quiz.md 에서 문항 본문을 꺼냄(제목 줄 제외)."""
     text = study.read_text(os.path.join(s["dir"], "quiz.md"))
     m = re.search(r"^## %s\b[^\n]*\n(.*?)(?=^## Q\d+\b|\Z)" % re.escape(qid), text, flags=re.M | re.S)
     return m.group(1).strip() if m else "(문제지를 찾지 못했습니다: problems/%s/quiz.md %s)" % (s["id"], qid)
@@ -406,7 +406,7 @@ def problem_body(spec):
 
 
 def write_round(user, rnd, cat):
-    """라운드 폴더에 문제지(README.md), 퀴즈 답안지(quiz.py), 코드 문제 시작 파일을 만든다."""
+    """라운드 폴더에 문제지(README.md), 퀴즈 답안지(quiz.py), 코드 문제 시작 파일을 만듦."""
     folder = os.path.join(study.SUBMISSIONS_DIR, user, rnd["id"])
     os.makedirs(folder, exist_ok=True)
     title = round_title(rnd)
@@ -416,7 +416,7 @@ def write_round(user, rnd, cat):
         readme.append("문항 %d개(%s) · 평균 레벨 %.1f · 단원: %s" % (len(rnd["items"]), rnd.get("size_reason", ""), rnd.get("avg_level", 0), ", ".join(
             "%s %d" % (f["unit"], f["count"]) for f in rnd["focus"])))
         readme.append("")
-    quiz_lines = ["# %s — 퀴즈 답안지. 문제는 같은 폴더의 README.md" % title,
+    quiz_lines = ["# %s 퀴즈 답안지입니다. 문제는 같은 폴더의 README.md 에 있습니다." % title,
                   "# 객관식: 번호(복수 정답은 [1, 3]) / 출력 예측·단답: 문자열(여러 줄은 \"\"\" 사용) / 안 푼 문제는 None", ""]
     for key in rnd["items"]:
         if key not in cat:  # 은행에서 사라진 문항
@@ -447,10 +447,10 @@ def cat_unit_title(cat, unit_id):
     return unit_id
 
 
-# ───────────────────────── 채점 · 기록 ─────────────────────────
+# 채점 · 기록
 
 def grade_round(user, rnd, cat):
-    """라운드 채점. 세트 채점과 같은 항목 형식을 돌려준다."""
+    """라운드 채점. 세트 채점과 같은 항목 형식으로 돌려줌."""
     folder = os.path.join(study.SUBMISSIONS_DIR, user, rnd["id"])
     answers, error = {}, None
     if os.path.isfile(os.path.join(folder, "quiz.py")):
@@ -473,10 +473,10 @@ def grade_round(user, rnd, cat):
 
 
 def record(prof, rnd, items, finalize=False):
-    """답한 문항만 시도로 기록한다(빈 문항은 나중에 답했을 때 첫 시도가 된다).
-    finalize=True 면 시험처럼 미응답도 오답으로 확정해 기록하고 회차를 끝낼 수 있게 한다."""
+    """답한 문항만 시도로 기록함. 빈 문항은 나중에 답했을 때 첫 시도가 됨.
+    finalize=True 면 시험처럼 미응답도 오답으로 확정해 기록하므로 회차를 끝낼 수 있음."""
     stamp = now()
-    results = rnd.setdefault("results", {})  # 문항별 마지막 결과 — 같은 결과를 다시 채점해도 중복 기록하지 않는다
+    results = rnd.setdefault("results", {})  # 문항별 마지막 결과. 결과가 같으면 다시 채점해도 기록을 늘리지 않음
     blanks = 0
     for it in items:
         state = it["state"]
@@ -500,10 +500,10 @@ def record(prof, rnd, items, finalize=False):
     rnd["unanswered"] = blanks
 
 
-# ───────────────────────── 가이드 ─────────────────────────
+# 가이드
 
 def pad(text, width):
-    """한글(전각)을 2칸으로 세어 폭을 맞춘다."""
+    """한글(전각)을 2칸으로 세어 폭을 맞춤."""
     w = sum(2 if unicodedata.east_asian_width(ch) in "WF" else 1 for ch in text)
     return text + " " * max(0, width - w)
 
@@ -519,7 +519,7 @@ def mastery_lines(states, cat):
 
 
 def weak_tags(prof, cat, limit=6):
-    """최근 틀린 문항의 개념 태그를 모아 약한 개념을 추린다(태그가 있는 문항만)."""
+    """첫 시도에 틀린 문항의 개념 태그를 세어 많이 틀린 개념을 추림(태그가 있는 문항만)."""
     count = {}
     for a in first_attempts(prof):
         if a["ok"] or a["item"] not in cat:
@@ -570,12 +570,12 @@ def guide_text(prof, cat, rnd=None, show_next=False):
     if rnd and rnd.get("retest"):
         lines.append("  다시 낸 오답 문항: " + ", ".join(fname_of(k) for k in rnd["retest"]))
     if rnd and rnd.get("unanswered"):
-        lines.append("  아직 답하지 않은 문항 %d개 — 마저 풀고 다시 채점하면 기록됩니다." % rnd["unanswered"])
+        lines.append("  아직 답하지 않은 문항이 %d개 있습니다. 마저 풀고 다시 채점하면 기록됩니다." % rnd["unanswered"])
     lines.append("")
     if not prof["rounds"]:
         lines.append("아직 진단 전입니다. 프로그램을 실행하면 진단 테스트부터 시작합니다.")
     elif all(st["mastered"] for st in states):
-        lines.append("전 단원을 숙달했습니다. 실전 모의고사(120분): python study.py start m1  — 계속하면 심화(레벨3) 회차가 이어집니다.")
+        lines.append("전 단원을 숙달했습니다. python study.py start m1 로 실전 모의고사(120분)를 볼 수 있고, 계속 풀면 심화(레벨3) 회차가 나옵니다.")
     else:
         ranked = [st for st in rank_units(states) if not st["mastered"]][:FOCUS_UNITS]
         size, reason = round_size(prof, states)
@@ -586,11 +586,11 @@ def guide_text(prof, cat, rnd=None, show_next=False):
     shortages = (rnd or {}).get("shortages") or []
     if shortages:
         lines.append("문항이 바닥난 단원·레벨: " + ", ".join("%s 레벨%d" % (x["unit"], x["level"]) for x in shortages)
-                     + " — PR 로 올리면 스터디장에게 출제 요청이 갑니다.")
+                     + ". PR 로 올리면 스터디장에게 출제 요청이 갑니다.")
     return "\n".join(lines)
 
 
-# ───────────────────────── 분석(CI · 스터디장) ─────────────────────────
+# 분석(CI · 스터디장)
 
 def users_with_profile():
     return [u for u in study.all_users() if os.path.isfile(profile_path(u))]
@@ -616,7 +616,7 @@ def user_analysis_markdown(user, cat):
 
 
 def collect_shortages(profiles):
-    """최근 라운드들에 기록된 부족 문항을 (단원, 레벨) 별로 합산."""
+    """최근 3개 라운드에 기록된 부족 문항 수를 (단원, 레벨)별 최댓값으로 모음."""
     total = {}
     for prof in profiles:
         for rnd in prof["rounds"][-3:]:

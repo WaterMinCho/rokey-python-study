@@ -13,7 +13,7 @@ INDENT = 4
 
 
 class CodeEditor(QPlainTextEdit):
-    """시험 화면과 같은 편집기: 고정폭, 자동완성·문법 강조 없음. 들여쓰기만 돕는다(탭 문자는 넣지 않는다)."""
+    """시험 화면과 같은 편집기. 고정폭이고 자동완성·문법 강조가 없음. 들여쓰기만 돕고 탭 문자는 넣지 않음."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -68,7 +68,7 @@ class CodeEditor(QPlainTextEdit):
                 edit.removeSelectedText()
         cur.endEditBlock()
 
-    def insertFromMimeData(self, source):  # 붙여넣기: 서식 없이, 탭은 공백 4칸으로
+    def insertFromMimeData(self, source):  # 붙여넣기는 서식 없이, 탭은 공백 4칸으로 넣음
         if source.hasText():
             self.insertPlainText(source.text().replace("\r\n", "\n").replace("\r", "\n").replace("\t", " " * INDENT))
 
@@ -120,7 +120,7 @@ class ChoicePanel(QWidget):
             self.buttons.append(button)
 
     def _clicked(self, number, checked):
-        if checked and not self.multi:  # 단일 정답: 하나만 남긴다
+        if checked and not self.multi:  # 단일 정답이면 방금 누른 것만 남김
             for other, button in enumerate(self.buttons, 1):
                 if other != number:
                     button.setChecked(False)
@@ -131,7 +131,7 @@ class ChoicePanel(QWidget):
 
 
 class TextPanel(QWidget):
-    """출력 예측(여러 줄) · 단답(한 줄). 고정폭이라 공백과 줄바꿈이 보이는 그대로 저장된다."""
+    """출력 예측(여러 줄) · 단답(한 줄). 고정폭이라 화면에 보이는 공백과 줄바꿈이 똑같이 저장됨."""
     changed = pyqtSignal(object)
 
     def __init__(self, parent=None):
@@ -215,7 +215,7 @@ class CodePanel(QWidget):
 
 
 class UnitStrip(QWidget):
-    """차시별 칸 하나씩. 색으로 상태를 보이고, 마우스를 올리면 단원 이름과 상태가 나온다."""
+    """차시마다 칸 하나. 색으로 상태를 보이고, 마우스를 올리면 단원 이름과 상태가 나옴."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -255,7 +255,7 @@ class UnitStrip(QWidget):
         for unit in units:
             number = unit["unit"][1:]
             cell = QLabel(str(int(number)) if number.isdigit() else unit["unit"])
-            cell.setObjectName("unit_" + self.state_of(unit))  # 색은 theme.STYLE 에서(위젯에 직접 주면 툴팁까지 물든다)
+            cell.setObjectName("unit_" + self.state_of(unit))  # 색을 위젯에 직접 주면 툴팁까지 물들어서 theme.STYLE 에서 줌
             cell.setAlignment(Qt.AlignmentFlag.AlignCenter)
             cell.setMinimumHeight(38)
             accuracy = "" if unit["accuracy"] is None else " · 정답률 %d%% (%d문항)" % (round(unit["accuracy"] * 100), unit["attempted"])

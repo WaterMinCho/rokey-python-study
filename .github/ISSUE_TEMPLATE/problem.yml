@@ -1,4 +1,4 @@
-name: 문제나 정답이 이상해요
+name: 문제나 정답이 이상합니다
 description: 문제 설명이 모호하거나 정답·해설이 틀린 것 같을 때 알려 주세요.
 title: "[문제 오류] "
 labels: ["문제 오류"]
@@ -14,7 +14,7 @@ body:
     id: issue
     attributes:
       label: 무엇이 이상한가요
-      placeholder: 예) 보기 2번도 맞는 것 같아요 / 출력 형식이 설명과 달라요
+      placeholder: 예) 보기 2번도 맞는 것 같습니다 / 출력 형식이 설명과 다릅니다
     validations:
       required: true
   - type: textarea

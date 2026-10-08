@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""학습 현황판 생성 — dashboard.svg 와 DASHBOARD.md 를 만든다.
+"""학습 현황판(dashboard.svg, DASHBOARD.md)을 만듦.
 
-main 에 풀이(profile.json)가 올라올 때마다 CI 가 실행해 `dashboard` 브랜치에 커밋한다(main 은 PR 로만 바뀌므로).
-README 는 그 브랜치의 이미지를 가리킨다. 로컬에서는 `python tools/dashboard.py` 로 out/ 에 생성해 볼 수 있다.
+main 에 풀이(profile.json)가 올라올 때마다 CI 가 실행해 `dashboard` 브랜치에 커밋함. main 은 PR 로만 바뀌어서 거기에는 커밋하지 못함.
+README 는 `dashboard` 브랜치의 이미지를 보여 줌. 로컬에서는 `python tools/dashboard.py` 로 out/ 에 만들어 볼 수 있음.
 """
 import datetime
 import os
@@ -83,7 +83,7 @@ def render_svg(rows, cat, unit_ids):
         for j, u in enumerate(unit_ids):
             kind = cell_kind(r["states"][u])
             x = x0 + j * 22
-            out.append('<rect x="%d" y="%d" width="18" height="18" rx="4" fill="%s"><title>%s %s — %s</title></rect>' % (
+            out.append('<rect x="%d" y="%d" width="18" height="18" rx="4" fill="%s"><title>%s %s: %s</title></rect>' % (
                 x, y + 22, COLORS[kind], u, esc(adaptive.cat_unit_title(cat, u)), esc(adaptive.state_label(r["states"][u]))))
             out.append('<text x="%d" y="%d" font-size="9" fill="#6b7280" text-anchor="middle">%s</text>' % (x + 9, y + 54, u[1:]))
         weak = ", ".join(r["weak"]) or "-"

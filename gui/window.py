@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""창 하나: 시작 순서(ID → 새 문제 받기 → 풀이 기록 열기)와 화면 전환, 워커, 제출 흐름."""
+"""메인 창. 시작 순서(ID → 새 문제 받기 → 풀이 기록 열기), 화면 전환, 워커, 제출 흐름을 맡음."""
 from PyQt6.QtCore import Qt, QUrl
 from PyQt6.QtGui import QDesktopServices, QKeySequence, QShortcut
 from PyQt6.QtWidgets import QLabel, QMainWindow, QProgressBar, QPushButton, QStackedWidget, QVBoxLayout, QWidget
@@ -16,7 +16,7 @@ from session import SessionError
 
 
 def load_gitflow(root, user):
-    """제출 모듈을 불러온다. (GitFlow | None, 못 쓰는 이유) — 모듈이 없거나 깨져 있어도 풀이와 채점은 돼야 한다."""
+    """제출 모듈을 불러와 (GitFlow | None, 못 쓰는 이유)를 돌려줌. 모듈이 없거나 깨져도 풀이와 채점은 돼야 해서 예외를 삼킴."""
     try:
         import gitflow
         return gitflow.GitFlow(root, user), ""
@@ -25,7 +25,7 @@ def load_gitflow(root, user):
 
 
 class StartPage(QWidget):
-    """시작 화면: 새 문제를 확인하는 동안, 그리고 풀이 기록을 열지 못했을 때 보인다."""
+    """시작 화면. 새 문제를 확인하는 동안과 풀이 기록을 열지 못했을 때 보임."""
 
     def __init__(self, win):
         super().__init__()
@@ -69,7 +69,7 @@ class MainWindow(QMainWindow):
         self.settings, self.gitflow_factory = settings, gitflow_factory
         self.user, self.session, self.gitflow, self.git_reason = None, None, None, ""
         self.job = None  # 도는 중인 워커 (Job, 잠근 화면, 끝났을 때, 실패했을 때)
-        self.dialog = None  # 마지막으로 띄운 대화상자
+        self.dialog = None  # 가장 최근에 띄운 대화상자
         self.notice = None  # 홈 위쪽에 한 줄로 보여 줄 제출 모듈의 결과
         self.restart, self.close_pending = False, False
         self.open_url = lambda url: QDesktopServices.openUrl(QUrl(url))
@@ -80,7 +80,7 @@ class MainWindow(QMainWindow):
         for page in (self.start, self.home, self.round_page, self.result_page):
             self.pages.addWidget(page)
         self.setCentralWidget(self.pages)
-        self.round_page.apply_zoom()  # 글꼴은 창에 붙인 뒤에 준다(스타일시트가 있으면 부모가 바뀔 때 위젯 글꼴이 초기화된다)
+        self.round_page.apply_zoom()  # 스타일시트가 있으면 부모가 바뀔 때 위젯 글꼴이 초기화되므로 창에 붙인 뒤에 글꼴을 줌
         self.result_page.apply_zoom()
         room = self.screen().availableGeometry()  # 작은 노트북 화면에서 아래쪽 버튼이 화면 밖으로 나가지 않게
         self.resize(min(1280, room.width() - 40), min(800, room.height() - 60))
@@ -90,7 +90,7 @@ class MainWindow(QMainWindow):
             QShortcut(QKeySequence(keys), self, lambda step=step: self.set_zoom(self.zoom + step))
         QShortcut(QKeySequence("Ctrl+0"), self, lambda: self.set_zoom(0))
 
-    # ── 시작 순서 ──
+    # 시작 순서
 
     def boot(self):
         user = session.saved_user()
@@ -98,11 +98,11 @@ class MainWindow(QMainWindow):
             self.sync_first(user)
             return
         self.dialog = IdDialog(self, self.sync_first)
-        self.dialog.rejected.connect(self.close)  # ID 없이는 진행할 수 없다
+        self.dialog.rejected.connect(self.close)  # ID 없이는 진행할 수 없음
         self.dialog.show()
 
     def sync_first(self, user):
-        """풀이 기록을 열기 전에 새 문제부터 받는다(새 컴퓨터에서 빈 기록이 먼저 생기지 않게)."""
+        """새 컴퓨터에서 빈 기록이 먼저 생기지 않게, 풀이 기록을 열기 전에 새 문제부터 받음."""
         self.user = user
         self.gitflow, self.git_reason = self.gitflow_factory(study.ROOT, user)
         if self.gitflow is None:
@@ -116,12 +116,12 @@ class MainWindow(QMainWindow):
             return
         diverged = result.get("status") == "diverged"
         if not diverged and (result.get("status") not in ("ok", "nothing") or result.get("changed") or result.get("backup")):
-            self.notice = result  # 오프라인·git 없음 등은 한 줄로만 알리고 계속 진행한다
+            self.notice = result  # 오프라인·git 없음 같은 결과는 홈에 한 줄로만 알리고 계속 진행함
         if self.open_session() and diverged:
             self._git_done("문제 받기", dict(result, changed=False))
 
     def open_session(self):
-        """풀이 기록과 문제 은행을 (다시) 읽고 홈으로 간다. 읽지 못하면 시작 화면에 이유를 보여 주고 False."""
+        """풀이 기록과 문제 은행을 새로 읽고 홈으로 감. 읽지 못하면 시작 화면에 이유를 보여 주고 False 를 돌려줌."""
         try:
             self.session = session.Session(self.user)
         except SessionError as error:
@@ -132,7 +132,7 @@ class MainWindow(QMainWindow):
         self.go_home()
         return True
 
-    # ── 화면 전환 ──
+    # 화면 전환
 
     def go_home(self):
         self.round_page.flush()
@@ -150,7 +150,7 @@ class MainWindow(QMainWindow):
         try:
             pending = self.session.pending(current["id"])
             written = pending["total"] - len(pending["blank"])
-        except SessionError:  # 답안지를 읽을 수 없다 — 열 때 복구를 제안한다
+        except SessionError:  # 답안지를 읽지 못한 경우. 회차를 열 때 복구를 제안함
             written = 1
         desc = "%s · %d문항" % (current["title"], current["size"])
         if written:
@@ -160,7 +160,7 @@ class MainWindow(QMainWindow):
         return "%s %s" % (name, "이어 풀기" if written else "시작"), desc
 
     def start_next(self):
-        """풀던 회차를 열거나 다음 회차(처음이면 진단)를 만들어 연다."""
+        """풀던 회차가 있으면 그 회차를, 없으면 다음 회차(처음이면 진단)를 만들어 띄움."""
         try:
             rnd, _ = self.session.ensure_round()
         except SessionError as error:
@@ -187,10 +187,10 @@ class MainWindow(QMainWindow):
             return
         self.pages.setCurrentWidget(self.result_page)
 
-    # ── 대화상자 ──
+    # 대화상자
 
     def ask(self, title, text, buttons=(("확인", "ok"),), on_choice=None, detail="", link=""):
-        """대화상자를 띄운다. 빈 키("")가 아닌 버튼을 고르면 on_choice(키)를 부른다."""
+        """대화상자를 띄움. 빈 키("")가 아닌 버튼을 고르면 on_choice(키)를 부름."""
         if self.dialog is not None and not self.dialog.isVisible():
             self.dialog.deleteLater()  # 닫힌 대화상자가 창에 쌓이지 않게
         self.dialog = MessageDialog(self, title, text, buttons, lambda key: key and on_choice and on_choice(key), detail, link)
@@ -201,14 +201,14 @@ class MainWindow(QMainWindow):
         self.ask("자세히", self.notice.get("message") or "", detail=self.notice.get("detail") or "")
 
     def _session_error(self, error, rid, retry):
-        """SessionError 는 문구를 그대로 보여 준다. 답안지가 깨진 경우에는 복구를 제안한다."""
+        """SessionError 의 문구를 대화상자로 보여 줌. 답안지가 깨진 경우에는 복구를 제안함."""
         if self.session.quiz_problem(rid):
             self.offer_repair(rid, retry)
         else:
             self.ask("알림", str(error))
 
     def offer_repair(self, rid, then):
-        """깨진 답안지(quiz.py)의 복구를 제안하고, 복구한 뒤 then() 을 부른다."""
+        """깨진 답안지(quiz.py)의 복구를 제안하고, 복구한 뒤 then() 을 부름."""
         if self.dialog is not None and self.dialog.isVisible():  # 자동 저장이 거듭 실패해도 대화상자는 하나만
             return
         problem = self.session.quiz_problem(rid)
@@ -223,10 +223,10 @@ class MainWindow(QMainWindow):
         self.ask("답안지 복구", "%s\n\n복구하면 읽을 수 있는 답만 남기고 답안지를 새로 씁니다. 원본은 같은 폴더에 quiz.py.bak 으로 보관합니다." % problem,
                  (("답안지 복구", "repair"), ("닫기", "")), repair)
 
-    # ── 워커 ──
+    # 워커
 
     def run_job(self, text, fn, on_done, on_fail=None):
-        """fn 을 워커 스레드에서 돌리고, 끝나면 화면 스레드에서 on_done(결과)을 부른다. 도는 동안 지금 화면을 잠근다."""
+        """fn 을 워커 스레드에서 돌리고, 끝나면 화면 스레드에서 on_done(결과)을 부름. 도는 동안 지금 화면을 잠금."""
         if self.job is not None:
             return
         page = self.pages.currentWidget()
@@ -261,7 +261,7 @@ class MainWindow(QMainWindow):
         if self.close_pending:
             self.close()
 
-    # ── 제출 · 문제 받기 ──
+    # 제출 · 문제 받기
 
     def submit_pr(self):
         if self.round_page.flush():  # 쓰다 만 답이 빠진 채 올라가지 않게
@@ -272,7 +272,7 @@ class MainWindow(QMainWindow):
             self.run_job("새 문제 확인 중입니다.", self.gitflow.sync, self._fetched)
 
     def _fetched(self, result):
-        self.notice = None  # 시작할 때 받지 못했다는 알림은 방금 결과로 갈음한다
+        self.notice = None  # 시작할 때 받지 못했다는 알림은 방금 결과가 대신함
         self.home.refresh()
         self._git_done("문제 받기", result)
 
@@ -280,7 +280,7 @@ class MainWindow(QMainWindow):
         if result.get("restart"):
             self._restart(result)
             return
-        if result.get("changed") and not self.open_session():  # 문제나 내 풀이 폴더가 바뀌었으면 새로 읽는다
+        if result.get("changed") and not self.open_session():  # 문제나 내 풀이 폴더가 바뀌었으면 새로 읽음
             return
         message = result.get("message") or "(안내 문구가 없습니다)"
         if result.get("backup"):
@@ -298,7 +298,7 @@ class MainWindow(QMainWindow):
         self.ask(title, message, detail=detail, link=url or "")
 
     def _resolve(self, title, choice):
-        """갈라진 풀이를 정한 뒤, 문제 받기 도중이었으면 받기를 마저 한다(그 전에는 새 문제가 들어오지 않았다)."""
+        """갈라진 풀이를 정함. 문제 받기 도중이었으면 그 전에는 새 문제가 들어오지 않았으므로 받기를 마저 함."""
         done = self.gitflow.resolve(choice)
         if title == "문제 받기" and done.get("status") in ("ok", "nothing"):
             again = self.gitflow.sync()
@@ -308,7 +308,7 @@ class MainWindow(QMainWindow):
         return done
 
     def _restart(self, result):
-        """도구 파일이 바뀌었다. 옛 코드로 새 파일을 다루지 않게, 대화상자를 어떻게 닫든 다시 시작한다."""
+        """도구 파일이 바뀌었으면 옛 코드로 새 파일을 다루지 않게, 대화상자를 어떻게 닫든 다시 시작함."""
         dialog = self.ask("프로그램 갱신", result.get("message") or "프로그램이 새 버전으로 바뀌었습니다. 다시 시작합니다.", (("다시 시작", "ok"),))
         dialog.finished.connect(self._quit_for_restart)
 
@@ -316,7 +316,7 @@ class MainWindow(QMainWindow):
         self.restart = True
         self.close()
 
-    # ── 글자 크기 · 닫기 ──
+    # 글자 크기 · 닫기
 
     def set_zoom(self, zoom):
         low, high = theme.ZOOM_RANGE
@@ -326,7 +326,7 @@ class MainWindow(QMainWindow):
         self.result_page.apply_zoom()
 
     def closeEvent(self, event):
-        if self.job is not None:  # 채점·제출이 도는 중에는 끝난 뒤에 닫는다(스레드를 도중에 버리면 프로세스가 죽는다)
+        if self.job is not None:  # 스레드를 도중에 버리면 프로세스가 죽으므로 채점·제출이 끝난 뒤에 닫음
             self.close_pending = True
             self.job[1].set_busy(True, "하던 작업이 끝나면 창을 닫습니다.")
             event.ignore()

@@ -1,4 +1,4 @@
-name: 사용이 불편하거나 오류가 나요
+name: 사용이 불편하거나 오류가 납니다
 description: 명령이 안 되거나, 설명이 헷갈리거나, 쓰기 불편한 점을 알려 주세요.
 title: "[불편] "
 labels: ["불편"]
@@ -7,7 +7,7 @@ body:
     id: what
     attributes:
       label: 무엇을 하려고 했나요
-      placeholder: 예) python study.py 를 실행해서 라운드를 받으려고 했어요
+      placeholder: 예) python study.py 를 실행해서 라운드를 받으려고 했습니다
     validations:
       required: true
   - type: textarea

@@ -2,9 +2,8 @@
 # -*- coding: utf-8 -*-
 """GitHub Actions 용 채점 리포트.
 
-- PR: 이 PR 에서 풀이가 바뀐 사람만 채점해 report.md 로 남긴다.
-      풀이 PR 은 자기 폴더(submissions/<ID>/)만 건드려야 한다(규칙 위반 시 실패).
-- main 푸시: 전체 현황판을 남긴다.
+PR 에서는 풀이가 바뀐 사람만 채점해 report.md 로 남김. 풀이 PR 이 자기 폴더(submissions/<ID>/) 밖을 건드리면 실패함.
+main 푸시에서는 전체 현황판을 남김.
 """
 import os
 import subprocess
@@ -24,7 +23,7 @@ def changed_files(base_ref):
 
 
 def main():
-    # PR 이면 GITHUB_BASE_REF, [제출] 버튼이 올린 study/<ID> 브랜치면 워크플로가 STUDY_BASE_REF 를 준다
+    # PR 이면 GITHUB_BASE_REF, [제출] 버튼이 올린 study/<ID> 브랜치면 워크플로가 STUDY_BASE_REF 를 줌
     base_ref = os.environ.get("GITHUB_BASE_REF") or os.environ.get("STUDY_BASE_REF")
     cat = adaptive.catalog()
     problems = []
@@ -50,7 +49,7 @@ def main():
     else:
         analysis, shortages = adaptive.team_analysis_markdown(cat)
         report = analysis + "\n### 세트 현황판\n\n" + study.render_board()
-        if shortages:  # 출제 요청 이슈 본문 — 워크플로가 이슈를 만들거나 갱신한다
+        if shortages:  # 워크플로가 shortage.md 로 출제 요청 이슈를 만들거나 갱신함
             study.write_text(os.path.join(study.ROOT, "shortage.md"), adaptive.shortage_request_markdown(shortages, cat))
 
     if problems:

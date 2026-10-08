@@ -19,7 +19,7 @@ SAVE_DELAY_MS = 400  # 입력이 멈춘 뒤 자동 저장까지
 
 
 def split_input(text):
-    """study 가 만든 입력 표시('입력:\\n    3', '테스트 코드:\\n    f()', 'f(1)')를 (이름, 내용)으로 나눈다."""
+    """study 가 만든 입력 표시('입력:\\n    3', '테스트 코드:\\n    f()', 'f(1)')를 (이름, 내용)으로 나눔."""
     for head in ("입력", "테스트 코드"):
         if text.startswith(head + ":"):
             return head, textwrap.dedent(text[len(head) + 1:].strip("\n")).strip()
@@ -27,7 +27,7 @@ def split_input(text):
 
 
 def run_html(run):
-    """'코드 실행' 결과(session.try_run)를 예시별 표로 그린다."""
+    """'코드 실행' 결과(session.try_run)를 예시별 표로 만듦."""
     note = '<span style="color:%s;">예시만 실행하며 기록되지 않습니다.</span>' % theme.MUTED
     cases = run["cases"]
     if cases:
@@ -75,7 +75,7 @@ class RoundPage(QWidget):
         head.addWidget(self.progress)
         head.addWidget(self.back_btn)
         root.addLayout(head)
-        self.banner = QLabel("연습입니다. 숙달 판정에는 첫 제출만 반영됩니다. 고친 뒤 '다시 채점'을 누르면 점수만 다시 계산합니다.")
+        self.banner = QLabel("다시 풀기는 연습이라 숙달 판정에는 첫 제출만 반영됩니다. 고친 뒤 '다시 채점'을 누르면 점수만 다시 계산합니다.")
         self.banner.setObjectName("notice")
         root.addWidget(self.banner)
 
@@ -143,7 +143,7 @@ class RoundPage(QWidget):
         self.save_timer = QTimer(self)
         self.save_timer.setSingleShot(True)
         self.save_timer.setInterval(SAVE_DELAY_MS)
-        self.save_timer.timeout.connect(lambda: self.flush(commit=False))  # 타이머로는 조합 중인 한글을 끊지 않는다
+        self.save_timer.timeout.connect(lambda: self.flush(commit=False))  # 타이머 저장은 조합 중인 한글을 끊지 않음
         self.listw.currentRowChanged.connect(self.show_item)
         self.prev_btn.clicked.connect(lambda: self.listw.setCurrentRow(self.listw.currentRow() - 1))
         self.next_btn.clicked.connect(lambda: self.listw.setCurrentRow(self.listw.currentRow() + 1))
@@ -153,10 +153,10 @@ class RoundPage(QWidget):
         self.home_btn.clicked.connect(win.go_home)
         self.back_btn.clicked.connect(lambda: win.show_result(self.view["id"]))
 
-    # ── 불러오기 ──
+    # 불러오기
 
     def load(self, rid, review=False, select=None):
-        """회차를 화면에 올린다. 답안지를 읽을 수 없으면 SessionError 를 올리고 화면은 그대로 둔다."""
+        """회차를 화면에 올림. 답안지를 읽을 수 없으면 화면을 바꾸지 않고 SessionError 를 냄."""
         if self.view:
             self.flush()  # 앞에 보던 회차에 남은 입력부터 저장
         view = self.win.session.open_round(rid)
@@ -195,7 +195,7 @@ class RoundPage(QWidget):
         item = self.current = self.view["items"][row]
         label = "%s · %s · %d점" % (item["type_label"], item["unit_title"], item["points"])
         if item["kind"] == "code":
-            label = "%s — %s" % (item["title"], label)
+            label = "%s · %s" % (item["title"], label)
         self.item_title.setText("%d. %s%s" % (item["no"], label, " · 지난번에 틀린 문항" if item["retest"] else ""))
         self.body.setHtml(mdlite.to_html(item["body_md"]))
         if item["kind"] == "code":
@@ -217,11 +217,11 @@ class RoundPage(QWidget):
             browser.document().setDefaultStyleSheet(css)
         for widget in (self.code_panel.editor, self.text_panel.multi, self.text_panel.single, self.choice_panel.entry):
             widget.setFont(font)
-        if self.current:  # 스타일은 다음에 넣는 HTML 부터 적용되므로 다시 그린다
+        if self.current:  # 스타일은 다음에 넣는 HTML 부터 적용되므로 본문을 다시 넣음
             self.body.setHtml(mdlite.to_html(self.current["body_md"]))
             self.code_panel.show_console(self.code_panel.console_html)
 
-    # ── 자동 저장 ──
+    # 자동 저장
 
     def on_answer_changed(self, value):
         item = self.current
@@ -238,7 +238,7 @@ class RoundPage(QWidget):
         self._update_progress()
 
     def flush(self, commit=True):
-        """대기 중인 답을 파일에 쓴다. 다 썼으면 True. commit=True 면 조합 중인 한글부터 확정한다."""
+        """대기 중인 답을 파일에 쓰고, 다 썼으면 True 를 돌려줌. commit=True 면 조합 중인 한글부터 확정함."""
         if commit:
             QGuiApplication.inputMethod().commit()
         self.save_timer.stop()
@@ -252,18 +252,18 @@ class RoundPage(QWidget):
                 self.win.offer_repair(self.view["id"], self.reload)
                 return False
             del self.dirty[item_id]
-        self.status.setText("자동 저장됨 %s" % datetime.datetime.now().strftime("%H:%M:%S"))
+        self.status.setText("%s 에 자동 저장했습니다." % datetime.datetime.now().strftime("%H:%M:%S"))
         return True
 
     def reload(self):
-        """답안지를 복구한 뒤: 못 쓴 답을 마저 쓰고 파일에 남은 답으로 화면을 다시 맞춘다."""
+        """답안지를 복구한 뒤에 부름. 못 쓴 답을 마저 쓰고 파일에 남은 답으로 화면을 다시 맞춤."""
         self.flush()
         self.load(self.view["id"], self.review, self.current["id"] if self.current else None)
 
-    # ── 실행 · 제출 ──
+    # 실행 · 제출
 
     def set_busy(self, busy, text=""):
-        """실행·채점 중에는 입력을 잠근다(채점하는 파일과 화면이 어긋나지 않게)."""
+        """채점하는 파일과 화면이 어긋나지 않게 실행·채점 중에는 입력을 잠금."""
         for widget in (self.listw, self.stack, self.prev_btn, self.next_btn, self.run_btn, self.submit_btn, self.home_btn, self.back_btn):
             widget.setEnabled(not busy)
         self.busy_bar.setVisible(busy)
@@ -295,7 +295,7 @@ class RoundPage(QWidget):
     def _reset(self):
         cur = self.code_panel.editor.textCursor()
         cur.select(QTextCursor.SelectionType.Document)
-        cur.insertText(self.current["starter"])  # 편집으로 넣어 자동 저장 경로를 타게 하고, 되돌리기(Ctrl+Z)도 남긴다
+        cur.insertText(self.current["starter"])  # 편집으로 넣어야 자동 저장이 돌고 되돌리기(Ctrl+Z)가 남음
         self.flush()
 
     def submit(self):

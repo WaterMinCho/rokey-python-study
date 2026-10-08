@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-"""제출(git) 테스트 — 임시 폴더에 bare 원격, GitHub 역할 클론, 스터디원 클론을 만들어 시나리오를 돌린다.
+"""제출(git) 테스트. 임시 폴더에 bare 원격, GitHub 역할 클론, 스터디원 클론을 만들어 시나리오를 돌림.
 
-실제 저장소와 GitHub 에는 아무것도 보내지 않는다. 클론의 origin 주소는 가짜 GitHub 주소이고, git 의 insteadOf 설정이
-그것을 임시 폴더의 bare 저장소로 돌린다. 풀이는 실제 session.Session 으로 임시 클론 안에 만든다(진짜 profile.json).
-동작마다 "로컬 풀이가 바이트 그대로인가", "PR 변경 범위가 submissions/<ID> 뿐인가"를 보고,
-끝날 때 금지 명령(push --force, reset --hard, clean, stash)을 쓰지 않았는지 명령 기록으로 확인한다.
-git 이 없거나 2.38 보다 오래됐으면(검사에 쓰는 merge-tree --write-tree 미지원) 건너뛴다.
+실제 저장소와 GitHub 에는 아무것도 보내지 않음. 클론의 origin 주소는 가짜 GitHub 주소이고, git 의 insteadOf 설정이
+그것을 임시 폴더의 bare 저장소로 돌림. 풀이는 실제 session.Session 으로 임시 클론 안에 만들어서 profile.json 도 진짜와 같음.
+동작마다 "로컬 풀이가 바이트 단위로 같은가", "PR 변경 범위가 submissions/<ID> 뿐인가"를 보고,
+끝날 때 금지 명령(push --force, reset --hard, clean, stash)을 쓰지 않았는지 명령 기록으로 확인함.
+git 이 없거나 2.38 보다 오래됐으면 검사에 쓰는 merge-tree --write-tree 가 없어서 건너뜀.
 
 실행: python -m unittest discover -s tests
 """
@@ -68,12 +68,12 @@ def blob_sha(data):
 
 
 def digest(files):
-    """{경로: 내용} 을 git 의 blob 해시로 바꾼다(원격의 트리와 비교하고, 실패 메시지를 짧게 하려고)."""
+    """{경로: 내용} 을 git 의 blob 해시로 바꿈. 원격의 트리와 비교할 수 있고 실패 메시지도 짧아짐."""
     return {rel: blob_sha(data) for rel, data in files.items()}
 
 
 class Server:
-    """GitHub 역할: main 에 문제를 올리고 PR(study/* 브랜치)을 머지한다."""
+    """GitHub 역할: main 에 문제를 올리고 PR(study/* 브랜치)을 머지함."""
 
     def __init__(self, tmp, origin):
         self.origin, self.dir = origin, os.path.join(tmp, "github")
@@ -87,7 +87,7 @@ class Server:
         git(self.dir, "checkout", "-q", "-B", "main", "origin/main")
 
     def add_problems(self, sid, tool=True):
-        """새 문제 세트와 기존 문제의 오타 수정을 main 에 올린다. tool 이면 도구 파일도 바꾼다."""
+        """새 문제 세트와 기존 문제의 오타 수정을 main 에 올림. tool 이면 도구 파일도 바꿈."""
         self._main()
         write(os.path.join(self.dir, "problems", sid, "quiz.md"), "# %s\n" % sid)
         write(os.path.join(self.dir, "problems", "s01", "quiz.md"), "오타 수정 %s\n" % sid, "a")
@@ -109,7 +109,7 @@ class Server:
             git(self.dir, "push", "-q", "origin", "--delete", branch)
 
     def other_user(self, name):
-        """다른 스터디원의 PR 이 먼저 머지된다."""
+        """다른 스터디원의 PR 이 먼저 머지됨."""
         self._main()
         git(self.dir, "checkout", "-q", "-B", "study/" + name, "origin/main")
         write(os.path.join(self.dir, "submissions", name, "profile.json"), '{"user": "%s", "rounds": [], "attempts": []}\n' % name)
@@ -119,14 +119,14 @@ class Server:
         self.merge("study/" + name, delete=True)
 
     def update_branch(self, branch):
-        """PR 화면의 Update branch 버튼: main 을 PR 브랜치에 병합한 커밋이 원격에 생긴다(이미 최신이면 빈 커밋)."""
+        """PR 화면의 Update branch 버튼. main 을 PR 브랜치에 병합한 커밋이 원격에 생기고, 이미 최신이면 빈 커밋이 생김."""
         self.refresh()
         git(self.dir, "checkout", "-q", "-B", "_update", "origin/" + branch)
         git(self.dir, "merge", "-q", "--no-ff", "--no-edit", "origin/main")
         git(self.dir, "commit", "-q", "--allow-empty", "-m", "Update branch")
         git(self.dir, "push", "-q", "origin", "_update:refs/heads/" + branch)
 
-    # 아래 조회는 bare 원격을 직접 본다
+    # 아래 조회는 bare 원격을 직접 봄
 
     def rev(self, branch):
         """원격 브랜치의 커밋. 없으면 ""."""
@@ -142,7 +142,7 @@ class Server:
         return found
 
     def pr_files(self, branch):
-        """CI 가 보는 목록: main 과 'PR 을 main 에 합친 결과'의 차이. 충돌 없이 합쳐져야 한다(충돌이면 git 이 실패한다)."""
+        """CI 가 보는 목록: main 과 'PR 을 main 에 합친 결과'의 차이. 충돌이 나면 git 이 실패해서 테스트도 실패함."""
         tree = git(self.origin, "merge-tree", "--write-tree", "main", branch).stdout.split()[0]
         return [name for name in git(self.origin, "diff", "--name-only", "-z", "main", tree).stdout.split("\0") if name]
 
@@ -165,7 +165,7 @@ class PC:
         self.folder = os.path.join(self.path, "submissions", user)
         self.flow = gitflow.GitFlow(self.path, user)
         self.flow.find_pr = self.find_pr
-        self.flow.pr_wait = 0  # 자동으로 만들어지는 PR 을 기다리지 않는다(기다리는 경우는 따로 테스트)
+        self.flow.pr_wait = 0  # 자동으로 만들어지는 PR 을 기다리지 않음. 기다리는 경우는 따로 테스트함
         self.open_pr, self.lookups = None, []
 
     def find_pr(self, owner, repo, branch):
@@ -178,8 +178,8 @@ class PC:
         return session.Session(self.user)
 
     def solve(self, correct=False, grade=True):
-        """지금 회차의 퀴즈 세 문항에 답하고 회차를 제출한다(시도 기록이 늘고 다음 회차가 생긴다).
-        grade=False 면 답만 적어 둔다(화면의 자동 저장: 풀던 중)."""
+        """지금 회차의 퀴즈 세 문항에 답하고 회차를 제출함. 시도 기록이 늘고 다음 회차가 생김.
+        grade=False 면 풀던 중에 화면이 자동 저장한 것처럼 답만 적어 둠."""
         sess = self.session()
         rnd, _ = sess.ensure_round()
         for view in [v for v in sess.open_round(rnd["id"])["items"] if v["kind"] == "quiz"][:3]:
@@ -211,7 +211,7 @@ class PC:
             return len(json.load(f)["attempts"])
 
     def state(self):
-        """브랜치·커밋·작업 폴더 상태(원격을 얼마나 따라갔는지는 뺀다) — 제출이 이 컴퓨터를 바꾸지 않았는지 볼 때 쓴다."""
+        """브랜치·커밋·작업 폴더 상태. 원격을 얼마나 따라갔는지는 뺌. 제출이 이 컴퓨터를 바꾸지 않았는지 볼 때 씀."""
         lines = git(self.path, "status", "--porcelain=v2", "--branch").stdout.splitlines()
         return [line for line in lines if not line.startswith(("# branch.upstream", "# branch.ab"))]
 
@@ -269,7 +269,7 @@ class GitFlowTest(unittest.TestCase):
         self.tmp = tempfile.mkdtemp(prefix="run_", dir=self.base)
         self.origin = os.path.join(self.tmp, "origin.git")
         git(self.tmp, "clone", "-q", "--bare", self.seed, self.origin)
-        git(self.origin, "config", "receive.denyNonFastForwards", "true")  # 강제 푸시는 서버가 거부한다
+        git(self.origin, "config", "receive.denyNonFastForwards", "true")  # 강제 푸시는 서버가 거부함
         self.server = Server(self.tmp, self.origin)
         self.pcs = []
         self.pc = self.new_pc("pc1")
@@ -286,10 +286,10 @@ class GitFlowTest(unittest.TestCase):
         self.pcs.append(pc)
         return pc
 
-    # ── 동작 + 검사 ──
+    # 동작 + 검사
 
     def call(self, pc, what, expect, after=None, *args):
-        """GitFlow 를 부르고 상태를 확인한다. 내 폴더는 after(없으면 부르기 전 내용)와 바이트 단위로 같아야 한다."""
+        """GitFlow 를 부르고 상태를 확인함. 내 폴더는 after(없으면 부르기 전 내용)와 바이트 단위로 같아야 함."""
         before = pc.read()
         result = getattr(pc.flow, what)(*args)
         self.assertEqual(set(result), KEYS)
@@ -303,7 +303,7 @@ class GitFlowTest(unittest.TestCase):
     def sync(self, pc=None, expect="ok", after=None):
         pc = pc or self.pc
         result = self.call(pc, "sync", expect, after)
-        if expect == "ok":  # 내 폴더 밖 = 원격의 최신 main(받지 못했으면 git 이 그 커밋을 몰라 실패한다), 브랜치 = study/<ID>
+        if expect == "ok":  # 내 폴더 밖 = 원격의 최신 main, 브랜치 = study/<ID>. 받지 못했으면 git 이 그 커밋을 몰라 diff 가 실패함
             outside = git(pc.path, "diff", "--name-only", self.server.rev("main"), "--", ".", ":(exclude)submissions/" + pc.user)
             self.assertEqual(outside.stdout, "")
             self.assertIn("# branch.head study/" + pc.user, pc.state())
@@ -328,14 +328,14 @@ class GitFlowTest(unittest.TestCase):
         self.assertEqual([f for f in files if not f.startswith("submissions/%s/" % pc.user)], [])
 
     def merge(self, pc=None, method="squash", delete=False):
-        """PR 을 머지한다. main 에 들어간 내 폴더는 마지막으로 제출한 것과 같아야 한다."""
+        """PR 을 머지함. main 에 들어간 내 폴더는 마지막으로 제출한 것과 같아야 함."""
         pc = pc or self.pc
         submitted = self.server.folder("study/" + pc.user, pc.user)
         self.server.merge("study/" + pc.user, method, delete)
         self.assertEqual(self.server.folder("main", pc.user), submitted)
 
     def cycle(self, method, delete):
-        """제출 → 머지 → 계속 풀기를 세 번. 두 번째 머지는 '리뷰를 기다리는 동안 더 풀어 둔 상태'에서 일어난다."""
+        """제출 → 머지 → 계속 풀기를 세 번 함. 두 번째 머지는 리뷰를 기다리는 동안 더 풀어 둔 상태에서 일어남."""
         pc = self.pc
         pc.solve(); self.submit()
         self.merge(method=method, delete=delete)
@@ -350,13 +350,13 @@ class GitFlowTest(unittest.TestCase):
         self.sync()  # 머지 직후 받기
         self.submit(expect="nothing")
 
-    # ── 제출 ──
+    # 제출
 
     def test_first_submit(self):
         pc = self.pc
         self.assertEqual(self.sync()["message"], gitflow.M_LATEST)  # 받자마자(내 폴더도 없음)
         self.assertEqual(self.submit(expect="nothing")["message"], gitflow.M_EMPTY)
-        os.makedirs(pc.folder)  # 화면이 ID 를 저장하면 빈 폴더가 생긴다
+        os.makedirs(pc.folder)  # 화면이 ID 를 저장하면 빈 폴더가 생김
         self.submit(expect="nothing")
         pc.solve()
         result = self.submit()
@@ -365,7 +365,7 @@ class GitFlowTest(unittest.TestCase):
         self.assertEqual(self.server.pr_commits("study/alice"), 1)
         tip = self.server.rev("study/alice")
         pc.open_pr = OPEN_PR
-        result = self.submit()  # 바뀐 것 없이 한 번 더 눌러도 그대로
+        result = self.submit()  # 바뀐 것 없이 한 번 더 누르면 원격 브랜치가 안 움직임
         self.assertEqual((result["pr_url"], result["message"]), (OPEN_PR, gitflow.M_SAME))
         self.assertEqual(self.server.rev("study/alice"), tip)
         self.merge()
@@ -383,7 +383,7 @@ class GitFlowTest(unittest.TestCase):
         self.assertTrue(self.server.is_ancestor(first, "study/alice"))  # fast-forward 로 이어짐
         self.assertEqual(self.server.pr_commits("study/alice"), 2)
         pc.solve(grade=False); self.submit()
-        self.sync()  # 받을 것이 없어도 문제없어야
+        self.sync()  # 받을 것이 없을 때도 ok 여야 함
         pc.solve(); self.submit()
         self.merge()
 
@@ -400,9 +400,9 @@ class GitFlowTest(unittest.TestCase):
     def test_nothing_to_submit_keeps_remote_untouched(self):
         self.pc.solve(); self.submit(); self.merge(delete=True)
         self.assertEqual(self.submit(expect="nothing")["pr_url"], None)
-        self.assertEqual(self.server.rev("study/alice"), "")  # 올릴 것이 없으면 브랜치도 만들지 않는다
+        self.assertEqual(self.server.rev("study/alice"), "")  # 올릴 것이 없으면 브랜치도 만들지 않음
 
-    # ── 문제 받기 ──
+    # 문제 받기
 
     def test_new_problems_on_main(self):
         pc = self.pc
@@ -427,7 +427,7 @@ class GitFlowTest(unittest.TestCase):
         write(os.path.join(pc.path, "problems", "s01", "quiz.md"), "실수로 고친 줄\n", "a")
         git(pc.path, "add", "-A"); git(pc.path, "commit", "-q", "-m", "내 풀이")  # 문제 파일까지 main 에 커밋
         self.server.add_problems("s17")  # main 도 같은 파일을 고침
-        self.submit()  # PR 에는 내 폴더만 실린다
+        self.submit()  # PR 에는 내 폴더만 실림
         pc.solve()
         result = self.sync()
         self.assertIn("실수로 고친 줄", pc.backup_text(result))
@@ -444,7 +444,7 @@ class GitFlowTest(unittest.TestCase):
         write(os.path.join(pc.path, "새 파일.md"), "올려 두기만 한 파일\n")
         git(pc.path, "add", "새 파일.md")
         os.remove(os.path.join(pc.path, "problems", "s02", "quiz.md"))  # 문제 파일을 지움
-        self.submit()  # 제출은 밖 파일을 건드리지도 싣지도 않는다
+        self.submit()  # 제출은 밖 파일을 건드리지도 싣지도 않음
         self.server.add_problems("s17")
         result = self.sync()
         self.assertEqual((result["changed"], result["restart"]), (True, True))
@@ -465,11 +465,11 @@ class GitFlowTest(unittest.TestCase):
         self.merge()
 
     def test_waits_for_the_pull_request_the_repository_opens_by_itself(self):
-        """올린 뒤 저장소의 Actions 가 만든 PR(refs/pull/N/head)을 기다려 그 주소를 돌려준다."""
+        """올린 뒤 저장소의 Actions 가 만든 PR(refs/pull/N/head)을 기다려 그 주소를 돌려줌."""
         self.pc.solve()
         flow, waits = self.pc.flow, []
 
-        def robot_opens_pr(seconds):  # 두 번째 확인 직전에 PR 이 생긴다
+        def robot_opens_pr(seconds):  # 두 번째 확인 직전에 PR 이 생김
             waits.append(seconds)
             if len(waits) == 2:
                 tip = git(self.pc.origin, "rev-parse", "refs/heads/study/alice").stdout.strip()
@@ -480,14 +480,14 @@ class GitFlowTest(unittest.TestCase):
         self.assertEqual((result["status"], result["message"]), ("ok", gitflow.M_CREATED))
         self.assertEqual(result["pr_url"], "https://github.com/%s/%s/pull/12" % (OWNER, REPO))
         self.assertEqual(len(waits), 2)
-        # PR 이 끝내 만들어지지 않으면 기다린 뒤 '직접 만들기' 화면 주소로 대신한다
+        # PR 이 끝내 만들어지지 않으면 기다린 뒤 '직접 만들기' 화면 주소로 대신함
         self.pc.solve()
         waits.clear()
         flow.sleep = waits.append
         result = flow.submit()
         self.assertEqual((result["status"], result["message"], result["pr_url"]), ("ok", gitflow.M_OPEN_PR, NEW_PR))
         self.assertEqual(sum(waits), gitflow.PR_WAIT)
-        # 올릴 것이 없을 때는 기다리지 않는다
+        # 올릴 것이 없을 때는 기다리지 않음
         waits.clear()
         self.assertEqual(flow.submit()["status"], "ok")
         self.assertEqual(waits, [])
@@ -521,7 +521,7 @@ class GitFlowTest(unittest.TestCase):
 
         def racing_push(commit):
             if not calls:
-                self.server.update_branch("study/alice")  # 받아 온 직후 원격의 내 브랜치가 바뀐다
+                self.server.update_branch("study/alice")  # 받아 온 직후 원격의 내 브랜치가 바뀜
             calls.append(commit)
             return push(commit)
         pc.flow._push = racing_push
@@ -529,7 +529,7 @@ class GitFlowTest(unittest.TestCase):
         self.assertEqual(len(calls), 2)  # 거부 → 다시 받고 한 번만 재시도
 
         def losing_push(commit):
-            self.server.update_branch("study/alice")  # 올릴 때마다 원격이 먼저 바뀐다
+            self.server.update_branch("study/alice")  # 올릴 때마다 원격이 먼저 바뀜
             calls.append(commit)
             return push(commit)
         pc.flow._push = losing_push
@@ -539,23 +539,23 @@ class GitFlowTest(unittest.TestCase):
         pc.flow._push = push
         self.submit()
 
-    # ── 다른 컴퓨터 ──
+    # 다른 컴퓨터
 
     def test_new_computer_continues_remote_work(self):
         pc = self.pc
         pc.solve(); self.submit()
         mine = pc.solve(); self.submit()  # PR 이 열린 채(아직 main 에 없음)
         pc2 = self.new_pc("pc2")
-        result = self.sync(pc2, after=mine)  # 앱을 켜면 먼저 받기 → 원격의 내 풀이를 이어받는다
+        result = self.sync(pc2, after=mine)  # 앱을 켜면 먼저 받기 → 원격의 내 풀이를 이어받음
         self.assertEqual((result["changed"], result["backup"], result["message"]), (True, None, gitflow.M_TOOK + " " + gitflow.M_LATEST))
         pc2.solve(); self.submit(pc2)
         self.merge(pc2)
 
     def test_new_computer_that_already_made_an_empty_profile(self):
         pc, pc2 = self.pc, self.new_pc("pc2")
-        mine = pc.solve(); self.submit(); self.merge(delete=True)  # 풀이는 main 에만 있다
-        pc2.solve(grade=False)  # 받기 전에 진단 회차가 먼저 만들어졌다
-        result = self.submit(pc2, expect="nothing", after=mine)  # 제출부터 눌러도 옛 풀이를 덮어쓰지 않는다
+        mine = pc.solve(); self.submit(); self.merge(delete=True)  # 풀이는 main 에만 있음
+        pc2.solve(grade=False)  # 받기 전에 진단 회차가 먼저 만들어짐
+        result = self.submit(pc2, expect="nothing", after=mine)  # 제출부터 눌러도 옛 풀이를 덮어쓰지 않음
         self.assertEqual(result["changed"], True)
         self.assertIn('"attempts": []', pc2.backup_text(result))
 
@@ -569,8 +569,8 @@ class GitFlowTest(unittest.TestCase):
         pc2.solve(); self.sync(pc2); self.submit(pc2)
 
     def diverge(self, merged=False, theirs=1, mine=2):
-        """두 컴퓨터가 같은 회차부터 따로 푼다(pc2 는 theirs 회차, pc1 은 mine 회차). pc2 가 먼저 제출했고
-        (merged 면 머지·브랜치 삭제까지) pc1 은 그것을 모른다."""
+        """두 컴퓨터가 같은 회차부터 따로 풂(pc2 는 theirs 회차, pc1 은 mine 회차). pc2 가 먼저 제출했고
+        (merged 면 머지·브랜치 삭제까지) pc1 은 그것을 모름."""
         pc = self.pc
         pc.solve(); self.submit()
         pc2 = self.new_pc("pc2")
@@ -584,20 +584,20 @@ class GitFlowTest(unittest.TestCase):
             pc.solve()
         ref = "main" if merged else "study/alice"
         remote = self.server.folder(ref, "alice")
-        self.assertIn("이어지지 않습니다", self.submit(expect="diverged")["message"])  # 덮어쓰지 않고 멈춘다
+        self.assertIn("이어지지 않습니다", self.submit(expect="diverged")["message"])  # 덮어쓰지 않고 멈춤
         self.sync(expect="diverged")
         self.assertEqual(self.server.folder(ref, "alice"), remote)
         return pc, pc2
 
     def test_diverged_take_remote(self):
-        pc, pc2 = self.diverge()  # pc1 에는 원격에 없는 회차 폴더까지 있다
+        pc, pc2 = self.diverge()  # pc1 에는 원격에 없는 회차 폴더까지 있음
         mine = pc.read()
-        result = self.call(pc, "resolve", "ok", pc2.read(), "remote")  # 원격에 없는 파일까지 치워 원격과 똑같이
+        result = self.call(pc, "resolve", "ok", pc2.read(), "remote")  # 원격에 없는 파일까지 지워 원격과 같게 만듦
         self.assertEqual((result["changed"], result["message"]), (True, gitflow.M_TOOK_OVER))
         with open(os.path.join(result["backup"], "replaced", "profile.json"), "rb") as f:
             self.assertEqual(f.read(), mine["submissions/alice/profile.json"])
         self.sync()
-        self.assertEqual(self.submit()["message"], gitflow.M_OPEN_PR)  # 원격과 같으므로 새로 올리지 않는다
+        self.assertEqual(self.submit()["message"], gitflow.M_OPEN_PR)  # 원격과 같으므로 새로 올리지 않음
         pc.solve(); self.submit()
         self.merge()
 
@@ -612,11 +612,11 @@ class GitFlowTest(unittest.TestCase):
         self.merge()
 
     def test_diverged_from_main_keep_local(self):
-        pc, pc2 = self.diverge(merged=True, theirs=3, mine=1)  # main 에 들어간 쪽의 기록이 더 길다
+        pc, pc2 = self.diverge(merged=True, theirs=3, mine=1)  # main 에 들어간 쪽의 기록이 더 많음
         self.assertGreater(pc2.attempts(), pc.attempts())
         self.call(pc, "resolve", "ok", None, "local")
         self.check_remote(pc)
-        self.sync()  # 올린 뒤에는 main 에 있는 다른 판과 다시 비교하지 않는다(아니면 머지될 때까지 계속 멈춘다)
+        self.sync()  # 올린 뒤에는 main 에 있는 다른 판과 다시 비교하지 않음. 비교하면 머지될 때까지 계속 멈춤
         pc.solve(); self.submit()
         self.merge()
 
@@ -625,16 +625,16 @@ class GitFlowTest(unittest.TestCase):
         self.assertEqual(self.call(self.pc, "resolve", "nothing", mine, "remote")["backup"], None)
         self.assertEqual(self.call(self.pc, "resolve", "error", mine, "theirs")["pr_url"], None)
 
-    # ── 손으로 git 을 쓴 폴더 ──
+    # 손으로 git 을 쓴 폴더
 
     def stalled_pull(self, *options):
-        """PR 이 squash 머지된 뒤 예전 안내대로 손으로 커밋하고 git pull → 충돌로 멈춘다. 멈추기 전의 내 폴더를 돌려준다."""
+        """PR 이 squash 머지된 뒤 예전 안내대로 손으로 커밋하고 git pull 해서 충돌로 멈추게 함. 멈추기 전의 내 폴더를 돌려줌."""
         pc = self.pc
         pc.solve(); self.submit(); self.merge()
         mine = pc.solve()
         git(pc.path, "add", "-A"); git(pc.path, "commit", "-q", "-m", "2회차")
         self.assertNotEqual(git(pc.path, "pull", *options, "origin", "main", check=False).returncode, 0)
-        self.assertNotEqual(pc.read(), mine)  # 충돌 표시가 들어갔다
+        self.assertNotEqual(pc.read(), mine)  # 충돌 표시가 들어감
         return mine
 
     def test_stalled_merge_from_manual_pull(self):
@@ -651,7 +651,7 @@ class GitFlowTest(unittest.TestCase):
     def test_stalled_rebase_from_manual_pull(self):
         mine = self.stalled_pull("--rebase")
         self.assertTrue(os.path.exists(self.pc.gitdir("rebase-merge")))
-        result = self.submit(after=mine)  # 받기를 거치지 않고 제출부터 눌러도 된다
+        result = self.submit(after=mine)  # 받기를 거치지 않고 제출부터 눌러도 됨
         self.assertIn(gitflow.M_UNSTALLED_KEPT, result["message"])
         self.sync(); self.merge()
 
@@ -661,8 +661,8 @@ class GitFlowTest(unittest.TestCase):
         mine = pc.solve(); self.sync(); self.submit()  # 2차 풀이는 PR 로 열려 있음
         git(pc.path, "switch", "-q", "main")  # 예전 안내 습관: git switch main → git pull
         git(pc.path, "pull", "-q", "--ff-only", "origin", "main")
-        self.assertNotEqual(pc.read(), mine)  # 내 폴더가 옛 상태로 바뀌었다
-        result = self.sync(after=mine)  # 2차 풀이가 돌아온다
+        self.assertNotEqual(pc.read(), mine)  # 내 폴더가 옛 상태로 바뀜
+        result = self.sync(after=mine)  # 2차 풀이가 돌아옴
         self.assertEqual(result["changed"], True)
         pc.solve(); self.submit()
         self.merge()
@@ -684,8 +684,8 @@ class GitFlowTest(unittest.TestCase):
         git(pc.path, "commit", "-q", "-am", "GUI 개발")
         write(os.path.join(pc.path, "gui", "app.py"), "# 개발 중(커밋 안 함)\n", "a")
         state = pc.state()
-        self.submit()  # 제출은 이 컴퓨터를 바꾸지 않으므로 개발 브랜치에서도 된다(내 폴더만 올라감)
-        result = self.sync(expect="blocked")  # 받기는 문제·도구 파일을 바꾸므로 멈춘다
+        self.submit()  # 제출은 이 컴퓨터를 바꾸지 않으므로 개발 브랜치에서도 됨(내 폴더만 올라감)
+        result = self.sync(expect="blocked")  # 받기는 문제·도구 파일을 바꾸므로 멈춤
         self.assertEqual(result["message"], gitflow.M_DEV % "feature/gui")
         self.assertEqual(pc.state(), state)
         self.merge()
@@ -699,7 +699,7 @@ class GitFlowTest(unittest.TestCase):
         self.server.add_problems("s17")
         self.assertNotEqual(git(pc.path, "pull", "--no-rebase", "origin", "main", check=False).returncode, 0)
         state = pc.state()
-        result = pc.flow.submit()  # 스터디장이 충돌을 풀던 중이다
+        result = pc.flow.submit()  # 스터디장이 충돌을 풀던 중
         self.assertEqual((result["status"], result["backup"]), ("ok", None))
         self.assertEqual(pc.flow.sync()["status"], "blocked")
         self.assertEqual(pc.state(), state)
@@ -707,7 +707,7 @@ class GitFlowTest(unittest.TestCase):
         git(pc.path, "merge", "--abort")
         self.check_remote(pc)
 
-    # ── 올리지 못하는 경우 ──
+    # 올리지 못하는 경우
 
     def test_offline(self):
         pc = self.pc
@@ -718,7 +718,7 @@ class GitFlowTest(unittest.TestCase):
         self.assertEqual(self.submit(expect="offline")["message"], gitflow.M_OFFLINE["submit"])
         pc.solve()
         self.submit(expect="offline")
-        self.server.add_problems("s17"); self.merge()  # 오프라인인 동안에도 원격은 움직인다
+        self.server.add_problems("s17"); self.merge()  # 오프라인인 동안에도 원격은 움직임
         pc.offline(False)
         self.submit()
         self.merge()
@@ -731,7 +731,7 @@ class GitFlowTest(unittest.TestCase):
         os.environ["GIT_CONFIG_GLOBAL"] = self.config
         author = git(self.origin, "log", "-1", "--format=%an <%ae> / %cn <%ce>", "study/alice").stdout.strip()
         self.assertEqual(author, "alice <alice@users.noreply.github.com> / alice <alice@users.noreply.github.com>")
-        self.assertEqual(git(pc.path, "config", "--local", "user.name", check=False).stdout, "")  # 설정은 건드리지 않는다
+        self.assertEqual(git(pc.path, "config", "--local", "user.name", check=False).stdout, "")  # 설정은 건드리지 않음
 
     def test_broken_files_are_not_uploaded(self):
         pc = self.pc
@@ -758,7 +758,7 @@ class GitFlowTest(unittest.TestCase):
         pc.solve()
 
         class Handler(http.server.BaseHTTPRequestHandler):
-            def do_GET(self):  # push 가 처음 보내는 요청(info/refs)에 GitHub 처럼 답한다
+            def do_GET(self):  # push 가 처음 보내는 요청(info/refs)에 GitHub 처럼 답함
                 if self.server.code is None:
                     self.server.release.wait(30)
                     return
@@ -799,13 +799,13 @@ class GitFlowTest(unittest.TestCase):
         self.server.add_problems("s17")
         pc.solve()
         write(pc.gitdir("index.lock"), "")  # 다른 git 프로그램이 돌고 있거나 비정상 종료로 남은 잠금
-        self.submit()  # 제출은 진짜 인덱스를 쓰지 않는다
-        result = self.sync(expect="error")  # 받기는 멈추되 풀이는 그대로
+        self.submit()  # 제출은 진짜 인덱스를 쓰지 않음
+        result = self.sync(expect="error")  # 받기는 멈추지만 풀이는 안 바뀜
         self.assertIn("index.lock", result["detail"])
         os.remove(pc.gitdir("index.lock"))
         self.sync()
 
-    @unittest.skipIf(os.name == "nt" or (hasattr(os, "geteuid") and os.geteuid() == 0), "읽기 전용 폴더로 파일 잠금을 흉내 낼 수 없는 환경")
+    @unittest.skipIf(os.name == "nt" or (hasattr(os, "geteuid") and os.geteuid() == 0), "읽기 전용 폴더로 파일 잠금을 흉내 낼 수 없는 환경입니다")
     def test_file_that_cannot_be_replaced(self):
         pc = self.pc
         pc.solve(); self.submit()
@@ -817,19 +817,19 @@ class GitFlowTest(unittest.TestCase):
         finally:
             os.chmod(locked, stat.S_IRWXU)
         self.assertIn("problems/s01/quiz.md", result["message"])
-        self.assertEqual((result["restart"], result["changed"]), (True, True))  # 도구 파일은 이미 새 버전으로 바뀌었다
-        pc.solve()  # 사용자는 그냥 계속 푼다
+        self.assertEqual((result["restart"], result["changed"]), (True, True))  # 도구 파일은 이미 새 버전으로 바뀜
+        pc.solve()  # 사용자는 계속 풂
         self.sync()  # 다시 누르면 회복
         self.assertTrue(os.path.isfile(os.path.join(pc.path, "problems", "s17", "quiz.md")))
         self.submit()
 
-    # ── 환경 점검 ──
+    # 환경 점검
 
     def test_doctor(self):
         pc = self.pc
         self.assertEqual(pc.flow.doctor(), {"ok": True, "git": True, "repo": True, "remote": "%s/%s" % (OWNER, REPO),
                                             "branch": "main", "problems": []})
-        git(pc.path, "config", "remote.origin.url", self.origin)  # GitHub 가 아닌 원격: 올릴 수는 있지만 PR 주소가 없다
+        git(pc.path, "config", "remote.origin.url", self.origin)  # GitHub 가 아닌 원격: 올릴 수는 있지만 PR 주소가 없음
         doctor = pc.flow.doctor()
         self.assertEqual((doctor["ok"], doctor["remote"], len(doctor["problems"])), (True, None, 1))
         pc.solve()
@@ -866,7 +866,7 @@ class HelperTest(unittest.TestCase):
     def test_new_pr_url(self):
         self.assertEqual(gitflow.new_pr_url(OWNER, REPO, "study/alice", "alice 풀이"), NEW_PR)
         long_title = gitflow.new_pr_url(OWNER, REPO, "study/alice", "가" * 300)
-        self.assertEqual(long_title, NEW_PR.split("&")[0])  # 2,000자를 넘기면 제목을 뺀다
+        self.assertEqual(long_title, NEW_PR.split("&")[0])  # 2,000자를 넘기면 제목을 뺌
 
     def test_remote_problem(self):
         for kind, text in (

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""밝은 테마 · 글꼴 · 색. 운영체제가 다크 모드여도 시험 화면처럼 밝게 고정한다."""
+"""밝은 테마 · 글꼴 · 색. 운영체제가 다크 모드여도 시험 화면처럼 밝게 고정함."""
 import re
 import sys
 
@@ -18,7 +18,7 @@ RESULT = {"ok": ("정답", GREEN), "wrong": ("오답", RED), "blank": ("미응�
 
 
 def result_label(state):
-    """채점 결과(ok·wrong·blank, 기록에는 skipped·None 도 있다) → (이름, 색)."""
+    """채점 결과를 (이름, 색)으로 바꿈. 기록에 남은 skipped·None 은 미응답으로 봄."""
     return RESULT.get(state, RESULT["blank"])
 
 
@@ -97,7 +97,7 @@ def apply(app):
 
 
 def code_families():
-    """고정폭 글꼴 하나 + 한글 대체 글꼴. 플랫폼 기본 고정폭이 고정폭이 아닌 환경이 있어 설치된 것 중에서 이름으로 고른다."""
+    """고정폭 글꼴 하나와 한글 대체 글꼴. 플랫폼 기본 고정폭이 실제로는 고정폭이 아닌 환경이 있어 설치된 글꼴에서 이름으로 고름."""
     mono = _installed(CODE_FONTS)[:1] or [QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont).family()]
     return mono + _installed(UI_FONTS)[:1]
 
@@ -112,7 +112,7 @@ def code_font(zoom=0):
 
 
 def doc_css(zoom=0):
-    """문제 본문용 CSS: mdlite.CSS 의 글자 크기를 확대 단계만큼 키우고 코드 글꼴을 설치된 글꼴로 바꾼다."""
+    """문제 본문용 CSS. mdlite.CSS 의 글자 크기를 확대 단계만큼 키우고 코드 글꼴을 설치된 글꼴로 바꿈."""
     css = re.sub(r"font-size: (\d+)px", lambda m: "font-size: %dpx" % (int(m.group(1)) + zoom), mdlite.CSS)
     families = ", ".join("'%s'" % name for name in code_families())
     return re.sub(r"font-family: [^;]+;", "font-family: %s;" % families, css)

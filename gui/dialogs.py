@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""대화상자. 모두 exec() 없이 show() 로 띄우고 고른 결과를 콜백으로 넘긴다(화면이 멈추지 않고 시험하기 쉽다)."""
+"""대화상자. 화면이 멈추지 않고 시험하기 쉽게, 모두 exec() 없이 show() 로 띄우고 고른 결과를 콜백으로 넘김."""
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtWidgets import QDialog, QHBoxLayout, QLabel, QLineEdit, QPlainTextEdit, QPushButton, QVBoxLayout
@@ -8,7 +8,7 @@ import session
 
 
 class MessageDialog(QDialog):
-    """안내·확인. buttons 는 (글자, 키) 목록이고 첫 번째를 강조한다. 창을 그냥 닫으면 고른 키는 "" 이다."""
+    """안내·확인. buttons 는 (글자, 키) 목록이고 첫 번째를 강조함. 창을 그냥 닫으면 고른 키는 "" 임."""
 
     def __init__(self, parent, title, text, buttons=(("확인", "ok"),), on_choice=None, detail="", link=""):
         super().__init__(parent)
@@ -54,12 +54,12 @@ class MessageDialog(QDialog):
             self.buttons[key] = button
         first = self.buttons[buttons[0][1]]
         first.setObjectName("primary")
-        first.setDefault(len(buttons) == 1)  # 고를 것이 있는 대화상자는 Enter 로 넘어가지 않게 한다(실수로 회차를 제출하지 않게)
+        first.setDefault(len(buttons) == 1)  # 실수로 회차를 제출하지 않게, 고를 것이 있는 대화상자는 Enter 로 넘어가지 않게 함
         box.addLayout(row)
         self.fit()
 
     def fit(self):
-        """글이 줄바꿈되는 폭에 맞춰 높이를 잡는다(줄바꿈하는 QLabel 의 크기 추정은 좁고 길게 나와 빈 줄이 생긴다)."""
+        """글이 줄바꿈되는 폭에 맞춰 높이를 잡음. 줄바꿈하는 QLabel 의 크기 추정을 쓰면 좁고 길게 나와 빈 줄이 생김."""
         width = max(480, self.layout().minimumSize().width())
         self.resize(width, self.layout().totalHeightForWidth(width))
 
@@ -71,11 +71,11 @@ class MessageDialog(QDialog):
 
 
 class IdDialog(QDialog):
-    """첫 실행: 깃허브 ID 를 받아 저장한다."""
+    """첫 실행 때 깃허브 ID 를 받아 저장함."""
 
     def __init__(self, parent, on_saved):
         super().__init__(parent)
-        self.setWindowTitle("처음 오셨네요")
+        self.setWindowTitle("처음 실행")
         self.setModal(True)
         self.setMinimumWidth(480)
         self.on_saved = on_saved
@@ -124,7 +124,7 @@ class IdDialog(QDialog):
 
 
 class ErrorDialog(QDialog):
-    """예상하지 못한 오류. 풀이는 자동 저장돼 있으므로 창은 계속 쓸 수 있다."""
+    """예상하지 못한 오류를 보여 줌. 풀이는 자동 저장돼 있어 창은 계속 쓸 수 있음."""
 
     def __init__(self, text, log_path, issue_url):
         super().__init__()
