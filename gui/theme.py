@@ -8,7 +8,8 @@ from PyQt6.QtGui import QColor, QFont, QFontDatabase, QPalette
 
 import mdlite
 
-UI_FONTS = ("Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans CJK KR", "NanumGothic")  # 한글이 있는 글꼴
+CLEAR_FONTS = ("NanumGothic", "Nanum Gothic", "Noto Sans KR", "Noto Sans CJK KR")  # 설치돼 있으면 화면 글꼴로 먼저 씀
+UI_FONTS = CLEAR_FONTS + ("Malgun Gothic", "Apple SD Gothic Neo")  # 한글이 있는 글꼴
 CODE_FONTS = ("D2Coding", "Consolas", "Menlo", "Cascadia Mono", "DejaVu Sans Mono", "Courier New")
 CODE_PX = 14  # 편집기 글자 크기(확대 0 일 때)
 ZOOM_RANGE = (-3, 10)
@@ -89,9 +90,10 @@ def apply(app):
                         (QPalette.ColorRole.Link, BLUE)):
         palette.setColor(role, QColor(color))
     app.setPalette(palette)
-    if sys.platform == "win32" and _installed(("Malgun Gothic",)):  # 굴림이 없는 Windows 에서 한글이 네모로 나오지 않게
+    family = _installed(CLEAR_FONTS) or (_installed(("Malgun Gothic",)) if sys.platform == "win32" else [])
+    if family:  # 또렷한 글꼴이 있으면 그것을 쓰고, Windows 에서는 굴림 대신 맑은 고딕을 씀
         font = app.font()
-        font.setFamily("Malgun Gothic")
+        font.setFamily(family[0])
         app.setFont(font)
     app.setStyleSheet(STYLE)
 

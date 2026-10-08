@@ -4,10 +4,10 @@ import datetime
 import html
 import textwrap
 
-from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QGuiApplication, QTextCursor
-from PyQt6.QtWidgets import (QFrame, QHBoxLayout, QLabel, QListWidget, QProgressBar, QPushButton, QSplitter, QStackedWidget,
-                             QTextBrowser, QVBoxLayout, QWidget)
+from PyQt6.QtCore import QRectF, QSize, Qt, QTimer
+from PyQt6.QtGui import QColor, QGuiApplication, QIcon, QPainter, QPen, QPixmap, QTextCursor
+from PyQt6.QtWidgets import (QFrame, QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QProgressBar, QPushButton, QSplitter,
+                             QStackedWidget, QTextBrowser, QVBoxLayout, QWidget)
 
 import mdlite
 import study
@@ -16,6 +16,27 @@ from gui.widgets import ChoicePanel, CodePanel, TextPanel
 from session import SessionError
 
 SAVE_DELAY_MS = 400  # 입력이 멈춘 뒤 자동 저장까지
+DOT_PX = 12
+_dots = {}
+
+
+def dot(color, filled):
+    """문항 목록의 상태 동그라미. filled 면 색을 채우고 아니면 테두리만 그림."""
+    if (color, filled) not in _dots:
+        pixmap = QPixmap(DOT_PX * 2, DOT_PX * 2)  # 고해상도 화면에서도 매끈하게 두 배로 그림
+        pixmap.setDevicePixelRatio(2)
+        pixmap.fill(Qt.GlobalColor.transparent)
+        painter = QPainter(pixmap)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setPen(QPen(QColor(color), 1.5))
+        painter.setBrush(QColor(color) if filled else Qt.BrushStyle.NoBrush)
+        painter.drawEllipse(QRectF(1.5, 1.5, DOT_PX - 3, DOT_PX - 3))
+        painter.end()
+        icon = QIcon()
+        for mode in (QIcon.Mode.Normal, QIcon.Mode.Selected):  # 선택된 줄에서도 색이 바뀌지 않게 함
+            icon.addPixmap(pixmap, mode)
+        _dots[color, filled] = icon
+    return _dots[color, filled]
 
 
 def split_input(text):
@@ -82,6 +103,7 @@ class RoundPage(QWidget):
         split = QSplitter(Qt.Orientation.Horizontal)
         self.listw = QListWidget()
         self.listw.setMinimumWidth(200)
+        self.listw.setIconSize(QSize(DOT_PX, DOT_PX))
         self.listw.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         mid = QWidget()
         mid_box = QVBoxLayout(mid)
@@ -131,12 +153,13 @@ class RoundPage(QWidget):
         self.run_btn = QPushButton("코드 실행")
         self.submit_btn = QPushButton("회차 제출")
         self.submit_btn.setObjectName("primary")
-        bar_box.addWidget(self.prev_btn)
-        bar_box.addWidget(self.next_btn)
-        bar_box.addSpacing(8)
         bar_box.addWidget(self.status, 1)
         bar_box.addWidget(self.busy_bar)
         bar_box.addWidget(self.run_btn)
+        bar_box.addSpacing(16)
+        bar_box.addWidget(self.prev_btn)  # 답 칸 가까이에 둠. 코드 실행 버튼이 숨어도 자리가 움직이지 않게 그 오른쪽에 놓음
+        bar_box.addWidget(self.next_btn)
+        bar_box.addSpacing(16)  # 문항 이동과 제출을 떼어 놓아 잘못 누르지 않게 함
         bar_box.addWidget(self.submit_btn)
         root.addWidget(bar)
 
@@ -171,18 +194,24 @@ class RoundPage(QWidget):
         self.listw.blockSignals(True)
         self.listw.clear()
         for item in view["items"]:
-            self.listw.addItem(self._row_text(item))
+            self.listw.addItem(QListWidgetItem())
+            self._fill_row(item)
         self.listw.setCurrentRow(row)
         self.listw.blockSignals(False)
         self._update_progress()
         self.show_item(row)
 
-    def _row_text(self, item):
+    def _fill_row(self, item):
+        """목록의 한 줄. 답을 적은 문항은 초록 동그라미, 아직이면 빈 동그라미. 다시 풀기에서는 채점 결과의 색과 이름을 씀."""
+        row = self.listw.item(item["no"] - 1)
         if self.review:
-            state = theme.result_label(item["result"])[0]
+            state, color = theme.result_label(item["result"])
+            row.setText("%d. %s · %s\n%s" % (item["no"], item["type_label"], state, item["unit_title"]))
+            row.setIcon(dot(color, color != theme.GRAY))
         else:
-            state = "작성함" if item["answered"] else "안 풂"
-        return "%s %d. %s · %s\n     %s" % ("●" if item["answered"] else "○", item["no"], item["type_label"], state, item["unit_title"])
+            row.setText("%d. %s\n%s" % (item["no"], item["type_label"], item["unit_title"]))
+            row.setIcon(dot(theme.GREEN if item["answered"] else theme.GRAY, item["answered"]))
+        row.setData(Qt.ItemDataRole.UserRole, bool(item["answered"]))
 
     def _update_progress(self):
         items = self.view["items"]
@@ -235,7 +264,7 @@ class RoundPage(QWidget):
             item["answered"] = bool(value if item["type"] == "choice" else value.strip())
         self.dirty[item["id"]] = value
         self.save_timer.start()
-        self.listw.item(item["no"] - 1).setText(self._row_text(item))
+        self._fill_row(item)
         self._update_progress()
 
     def flush(self, commit=True, offer=True):
