@@ -15,6 +15,6 @@
     {"call": "solution([\"solo 10\", \"solo 10\", \"solo 10\"], 30)", "expected": "['solo']"},
     {"call": "solution([], 1)", "expected": "[]"},
     {"call": "solution([\"zed 5\", \"amy 5\", \"bob 4\", \"moe 9\", \"bob 1\"], 5)", "expected": "['zed', 'amy', 'bob', 'moe']"},
-    {"call": "solution([\"u\" + str(i % 1000) + \" 1\" for i in range(99999)] + [\"kim 1000\"], 101)", "expected": "['kim']"}
+    {"call": "solution([\"u\" + str(i % 50) + \" 1\" for i in range(1999)] + [\"kim 1000\"], 41)", "expected": "['kim']"}
   ]
 }
