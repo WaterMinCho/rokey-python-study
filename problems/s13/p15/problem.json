@@ -1,0 +1,16 @@
+{
+  "title": "이름 목록 다듬기",
+  "type": "fill",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["split·strip·join", "람다", "map"],
+  "examples": 3,
+  "cases": [
+    {"call": "solution(\" kim, lee ,park \")", "expected": "'kim/lee/park'"},
+    {"call": "solution(\"robot\")", "expected": "'robot'"},
+    {"call": "solution(\"  doosan robotics ,rokey  \")", "expected": "'doosan robotics/rokey'"},
+    {"call": "solution(\"a,b\")", "expected": "'a/b'"},
+    {"call": "solution(\"x , y , z,w\")", "expected": "'x/y/z/w'"}
+  ]
+}

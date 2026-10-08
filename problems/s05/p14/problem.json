@@ -1,0 +1,16 @@
+{
+  "title": "로그인 확인",
+  "type": "print",
+  "level": 3,
+  "points": 8,
+  "tags": ["continue", "break", "while 조건"],
+  "mode": "io",
+  "examples": 2,
+  "cases": [
+    {"stdin": "guest\nrokey\n1234\nrokey\nros2\n", "stdout": "없는 아이디\n비밀번호 오류\n로그인 성공\n시도 횟수: 3\n"},
+    {"stdin": "rokey\nros2\n", "stdout": "로그인 성공\n시도 횟수: 1\n"},
+    {"stdin": "rokey\nrokey\nguest\nrokey\nros2\n", "stdout": "비밀번호 오류\n없는 아이디\n로그인 성공\n시도 횟수: 3\n"},
+    {"stdin": "ros2\nRokey\nrokey\nROS2\nrokey\nros2\nrokey\n", "stdout": "없는 아이디\n없는 아이디\n비밀번호 오류\n로그인 성공\n시도 횟수: 4\n"},
+    {"stdin": "guest\nros2\nrokey\nros2\n", "stdout": "없는 아이디\n없는 아이디\n로그인 성공\n시도 횟수: 3\n"}
+  ]
+}

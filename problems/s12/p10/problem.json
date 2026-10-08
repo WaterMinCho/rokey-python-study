@@ -1,0 +1,18 @@
+{
+  "title": "예산 안의 메뉴 고르기",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["읽기 메서드", "형 변환", "리스트 누적"],
+  "examples": 3,
+  "cases": [
+    {"files": {"menu.txt": "김밥 3500\n라면 4500\n돈가스 9000\n우동 5000\n"}, "call": "solution(\"menu.txt\", 5000)", "expected": "['김밥', '라면', '우동']"},
+    {"files": {"menu.txt": "김밥 3500\n라면 4500\n돈가스 9000\n우동 5000\n"}, "call": "solution(\"menu.txt\", 3000)", "expected": "[]"},
+    {"files": {"menu.txt": "김밥 3500\n라면 4500\n돈가스 9000\n우동 5000\n"}, "call": "solution(\"menu.txt\", 10000)", "expected": "['김밥', '라면', '돈가스', '우동']"},
+    {"files": {"snack.txt": "떡볶이 4000\n피자 12000\n"}, "call": "solution(\"snack.txt\", 5000)", "expected": "['떡볶이']"},
+    {"files": {"cafe.txt": "케이크 6500\n쿠키 2000\n라떼 4800"}, "call": "solution(\"cafe.txt\", 4800)", "expected": "['쿠키', '라떼']"},
+    {"files": {"empty.txt": ""}, "call": "solution(\"empty.txt\", 9999)", "expected": "[]"},
+    {"files": {"free.txt": "물 0\n콜라 2000\n"}, "call": "solution(\"free.txt\", 0)", "expected": "['물']"}
+  ]
+}

@@ -5,14 +5,14 @@
   "points": 6,
   "mode": "call",
   "tags": ["스택", "리스트 pop", "문자열 join"],
-  "examples": 3,
+  "examples": 4,
   "cases": [
     {"call": "solution([\"type h\", \"type i\", \"undo\", \"type !\", \"redo\"])", "expected": "'h!'"},
     {"call": "solution([\"type a\", \"type b\", \"type c\", \"undo\", \"undo\", \"redo\"])", "expected": "'ab'"},
     {"call": "solution([\"undo\", \"redo\", \"type x\"])", "expected": "'x'"},
+    {"call": "solution([\"type 7\", \"undo\"])", "expected": "''"},
     {"call": "solution([\"type a\", \"type b\", \"undo\", \"undo\", \"undo\", \"redo\", \"redo\", \"redo\"])", "expected": "'ab'"},
     {"call": "solution([])", "expected": "''"},
-    {"call": "solution([\"type 7\", \"undo\"])", "expected": "''"},
     {"call": "solution([\"type a\", \"type b\", \"type c\", \"undo\", \"undo\", \"redo\", \"type d\", \"redo\"])", "expected": "'abd'"},
     {"call": "solution([\"type a\", \"type b\"] * 10000 + [\"undo\"] * 19999)", "expected": "'a'"},
     {"call": "solution([\"type a\"] * 10000 + [\"undo\"] * 10000 + [\"redo\"] * 10000 + [\"undo\"] * 9998)", "expected": "'aa'"}

@@ -5,9 +5,9 @@
   "points": 6,
   "mode": "exec",
   "tags": [
-    "__init__ 과 self",
-    "디폴트 매개변수",
-    "메서드의 반환값"
+    "__init__",
+    "self",
+    "메서드 반환값"
   ],
   "examples": 2,
   "cases": [

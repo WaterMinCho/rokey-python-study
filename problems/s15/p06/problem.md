@@ -17,5 +17,6 @@
 |---|---|
 | `list(solution([1, 2, 3]))` | `[1, 3, 6]` |
 | `list(solution([5]))` | `[5]` |
+| `list(solution([]))` | `[]` |
 | `next(solution([10, 20]))` | `10` |
 | `type(solution([1])).__name__` | `'generator'` |

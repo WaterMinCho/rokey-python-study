@@ -1,0 +1,17 @@
+{
+  "title": "총점과 평균 문장",
+  "type": "return",
+  "level": 3,
+  "points": 8,
+  "mode": "call",
+  "tags": ["자료형 변환", "자료형", "문자열 이어 붙이기"],
+  "examples": 3,
+  "cases": [
+    {"call": "solution(\"84\", \"91\")", "expected": "'총점 175점, 평균 87.5점'"},
+    {"call": "solution(\"90\", \"90\")", "expected": "'총점 180점, 평균 90.0점'"},
+    {"call": "solution(\"5\", \"50\")", "expected": "'총점 55점, 평균 27.5점'"},
+    {"call": "solution(\"100\", \"99\")", "expected": "'총점 199점, 평균 99.5점'"},
+    {"call": "solution(\"0\", \"0\")", "expected": "'총점 0점, 평균 0.0점'"},
+    {"call": "solution(\"7\", \"8\")", "expected": "'총점 15점, 평균 7.5점'"}
+  ]
+}

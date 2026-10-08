@@ -1,0 +1,16 @@
+{
+  "title": "걸음 수 기록하기",
+  "type": "print",
+  "level": 2,
+  "points": 6,
+  "mode": "io",
+  "tags": ["write 규칙", "형 변환", "포맷 문자열"],
+  "examples": 2,
+  "cases": [
+    {"stdin": "3\n4200\n6100\n3200\n", "stdout": "1일차 4200\n2일차 6100\n3일차 3200\n합계 13500\n", "expect_files": {"steps.txt": "1일차 4200\n2일차 6100\n3일차 3200\n합계 13500\n"}},
+    {"stdin": "1\n0\n", "stdout": "1일차 0\n합계 0\n", "expect_files": {"steps.txt": "1일차 0\n합계 0\n"}},
+    {"files": {"steps.txt": "1일차 9999\n합계 9999\n"}, "stdin": "2\n10\n20\n", "stdout": "1일차 10\n2일차 20\n합계 30\n", "expect_files": {"steps.txt": "1일차 10\n2일차 20\n합계 30\n"}},
+    {"stdin": "5\n1000\n0\n25000\n7\n993\n", "stdout": "1일차 1000\n2일차 0\n3일차 25000\n4일차 7\n5일차 993\n합계 27000\n", "expect_files": {"steps.txt": "1일차 1000\n2일차 0\n3일차 25000\n4일차 7\n5일차 993\n합계 27000\n"}},
+    {"stdin": "11\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n", "stdout": "1일차 1\n2일차 2\n3일차 3\n4일차 4\n5일차 5\n6일차 6\n7일차 7\n8일차 8\n9일차 9\n10일차 10\n11일차 11\n합계 66\n", "expect_files": {"steps.txt": "1일차 1\n2일차 2\n3일차 3\n4일차 4\n5일차 5\n6일차 6\n7일차 7\n8일차 8\n9일차 9\n10일차 10\n11일차 11\n합계 66\n"}}
+  ]
+}

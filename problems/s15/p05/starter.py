@@ -11,6 +11,7 @@ print(next(gen))
 print(next(gen))
 
 squares = ____
+print(type(squares))
 print(next(squares))
 for s in squares:
     print(s)

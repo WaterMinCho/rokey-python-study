@@ -1,4 +1,4 @@
-# 10차시 퀴즈 — 클래스(2)
+# 10차시 퀴즈: 클래스(2)
 
 > 코드를 실행하지 말고 눈으로 풀어 보세요. 답은 `submissions/<내 ID>/s10/quiz.py` 에 적습니다.
 
@@ -8,7 +8,7 @@
 
 1. 모듈은 클래스, 함수, 변수 등을 모아 둔 파이썬 파일(`.py`)이다.
 2. 패키지는 여러 모듈을 묶어 놓은 디렉터리이다.
-3. `mycalc.py` 라는 파일을 만들면 다른 파일에서 `import mycalc` 로 불러올 수 있다.
+3. `mycalc.py` 라는 파일을 만들면 같은 폴더의 다른 파일에서 `import mycalc` 로 불러올 수 있다.
 4. 모듈을 불러올 때는 확장자까지 적어 `import mycalc.py` 라고 써야 한다.
 
 ## Q2 (객관식 · 2점)
@@ -411,7 +411,7 @@ b.info()
 
 ## Q21 (출력 예측 · 3점)
 
-다음 코드의 출력 결과를 그대로 적으세요.
+다음 코드의 출력 결과를 그대로 적으세요. (`pass` 는 아무 일도 하지 않는 자리 채움 문장입니다)
 
 ```python
 class Staff:
@@ -482,4 +482,111 @@ class SalesReport(Report):
 
 Report().show()
 SalesReport().show()
+```
+
+## Q24 (객관식 · 2점)
+
+다음 코드를 설명한 문장 중 옳지 **않은** 것은?
+
+```python
+class Tool:
+    def use(self):
+        print("도구 사용")
+
+
+class Drill(Tool):
+    def use(self):
+        print("구멍 뚫기")
+```
+
+1. `Tool` 은 부모 클래스(super class), `Drill` 은 자식 클래스(sub class)이다.
+2. `Drill` 이 `Tool` 의 멤버를 물려받는 것을 상속(inheritance)이라고 한다.
+3. `Drill` 이 `use` 를 같은 이름으로 다시 정의한 것을 오버로딩(overloading)이라고 한다.
+4. `Drill()` 객체로 `use()` 를 호출하면 `구멍 뚫기` 가 출력된다.
+
+## Q25 (객관식 · 2점)
+
+같은 폴더에 다음 두 파일이 있습니다.
+
+```python
+# unit.py
+print("unit:", __name__)
+
+
+def double(x):
+    return x * 2
+```
+
+```python
+# main.py
+from unit import double
+
+print("main:", __name__)
+print(double(4))
+```
+
+`python main.py` 로 **main.py 를 실행**했을 때 화면에 출력되는 것은?
+
+1. `unit: unit` → `main: __main__` → `8`
+2. `unit: __main__` → `main: __main__` → `8`
+3. `main: __main__` → `8`
+4. `unit: unit` → `main: main` → `8`
+
+## Q26 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요. (여러 줄이면 `"""` 로 감싸서 줄을 나눠 적습니다)
+
+```python
+class Part:
+    def __init__(self):
+        print("Part 준비")
+        self.tags = ["부품"]
+
+
+class Motor(Part):
+    def __init__(self, watt):
+        super().__init__()
+        self.watt = watt
+        self.tags.append("모터")
+        print("Motor 준비")
+
+
+class Servo(Motor):
+    def __init__(self, watt, angle):
+        print("Servo 시작")
+        super().__init__(watt * 2)
+        self.angle = angle
+        self.tags.append("서보")
+
+
+s = Servo(50, 90)
+print(s.watt, s.angle)
+print(s.tags)
+```
+
+## Q27 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+class Delivery:
+    def fee(self):
+        return 3000
+
+    def total(self, price):
+        return price + self.fee()
+
+
+class Express(Delivery):
+    def fee(self):
+        return super().fee() + 2000
+
+    def total(self, price):
+        print("기본 배송비", super().fee())
+        return super().total(price)
+
+
+e = Express()
+print(e.total(10000))
+print(Delivery().total(10000))
 ```

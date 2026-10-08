@@ -1,0 +1,18 @@
+{
+  "title": "큰 값부터 놓는 선택 정렬",
+  "type": "fill",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["선택 정렬", "맞바꾸기"],
+  "examples": 3,
+  "cases": [
+    {"call": "sort_desc([3, 8, 5])", "expected": "[8, 5, 3]"},
+    {"call": "sort_desc([30, 10, 40, 20, 15])", "expected": "[40, 30, 20, 15, 10]"},
+    {"call": "sort_desc([-2, -7, 0])", "expected": "[0, -2, -7]"},
+    {"call": "sort_desc([1, 2, 3, 4, 5, 6])", "expected": "[6, 5, 4, 3, 2, 1]"},
+    {"call": "sort_desc([4, 4, 9, 1, 9])", "expected": "[9, 9, 4, 4, 1]"},
+    {"call": "sort_desc([7, 5, 2])", "expected": "[7, 5, 2]"},
+    {"call": "sort_desc([6])", "expected": "[6]"}
+  ]
+}

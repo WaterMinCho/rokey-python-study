@@ -1,0 +1,18 @@
+{
+  "title": "수강생 합격 판정",
+  "type": "print",
+  "level": 3,
+  "points": 8,
+  "mode": "exec",
+  "tags": ["클래스 변수와 인스턴스 변수", "메서드 반환값", "경계값"],
+  "examples": 3,
+  "cases": [
+    {"code": "s = Student(\"Mina\")\ns.add(70)\ns.add(55)\nprint(s.average())\nprint(s.passed())", "stdout": "62\nTrue\n"},
+    {"code": "a = Student(\"A\")\nb = Student(\"B\")\nc = Student(\"C\")\na.add(60)\nb.add(59)\nprint(a.passed(), b.passed())\nprint(a.scores, b.scores)\nprint(c.average(), c.passed())", "stdout": "True False\n[60] [59]\n0 False\n"},
+    {"code": "a = Student(\"A\")\na.add(75)\nprint(Student.cut, a.passed())\nStudent.cut = 80\nb = Student(\"B\")\nb.add(90)\nprint(a.passed(), b.passed())", "stdout": "60 True\nFalse True\n"},
+    {"code": "s = Student(\"D\")\ns.add(1)\ns.add(1)\ns.add(0)\nprint(s.average())\ns.add(100)\nprint(s.average())\nprint(s.scores)", "stdout": "0\n25\n[1, 1, 0, 100]\n"},
+    {"code": "Student.cut = 30\ns = Student(\"E\")\ns.add(30)\nprint(s.passed())\nt = Student(\"F\")\nt.add(29)\nprint(t.passed(), Student.cut)", "stdout": "True\nFalse 30\n"},
+    {"code": "a = Student(\"A\")\na.add(100)\na.add(40)\nprint(a.name, a.average(), a.passed())\nStudent.cut = 71\nprint(a.passed())\nStudent.cut = 70\nprint(a.passed())", "stdout": "A 70 True\nFalse\nTrue\n"},
+    {"code": "s = Student(\"G\")\ns.add(10)\nif s.passed():\n    print(\"합격\")\nelse:\n    print(\"불합격\")\nprint(not s.passed())", "stdout": "불합격\nTrue\n"}
+  ]
+}

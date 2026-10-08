@@ -1,4 +1,4 @@
-# 5차시 퀴즈 — 반복문
+# 5차시 퀴즈: 반복문
 
 > 코드를 실행하지 말고 눈으로 풀어 보세요. 답은 `submissions/<내 ID>/s05/quiz.py` 에 적습니다.
 > 출력 예측 문제의 답이 여러 줄이면 `"""` 로 감싸서 줄을 나눠 적습니다.
@@ -195,3 +195,63 @@ print(count)
 
 `total = total + price` 를 복합 대입 연산자를 사용해 `total ____ price` 로 줄여 쓰려고 합니다.
 빈칸(`____`)에 들어갈 연산자를 적으세요.
+
+## Q16 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+for n in range(0, 31, 5):
+    if n % 3 == 0:
+        print(n, end=" ")
+print("끝")
+```
+
+## Q17 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요. (줄 끝에 남는 공백은 적지 않아도 됩니다.)
+
+```python
+for i in range(1, 4):
+    for j in range(1, 4):
+        if j > i:
+            break
+        print(i * j, end=" ")
+    print()
+```
+
+## Q18 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+signals = [7, 15, 0, 4]
+i = 0
+value = 1
+count = 0
+while value != 0:
+    value = signals[i]
+    i += 1
+    if value > 10:
+        continue
+    count += 1
+print(i, count)
+```
+
+## Q19 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+(리스트와 딕셔너리를 통째로 출력할 때의 모양은 4차시에서 배운 대로 적습니다.)
+
+```python
+stock = {"pen": 2, "note": 0}
+orders = ["pen", "note", "pen", "pen"]
+sold = []
+for item in orders:
+    if stock[item] == 0:
+        continue
+    stock[item] -= 1
+    sold.append(item)
+print(sold)
+print(stock)
+```

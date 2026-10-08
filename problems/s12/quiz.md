@@ -1,4 +1,4 @@
-# 12차시 퀴즈 — 파일 처리
+# 12차시 퀴즈: 파일 처리
 
 > 코드를 실행하지 말고 눈으로 풀어 보세요. 답은 `submissions/<내 ID>/s12/quiz.py` 에 적습니다.
 > 출력 예측 문항은 실제로 파일을 만들고 다시 읽는 코드입니다. 파일에 무엇이 남는지부터 따라가 보세요.
@@ -171,4 +171,74 @@ f.close()
 with open("t.txt", "w") as f:
     n = f.write("rokey")
 print(n)
+```
+
+## Q15 (객관식 · 2점)
+
+`with open("memo.txt", "w") as f:` 구문에 대한 설명으로 옳은 것은?
+
+1. 블록이 끝나면 파일이 자동으로 닫히므로 `f.close()` 를 따로 쓰지 않아도 된다.
+2. 블록 안에서 `print(f.closed)` 를 실행하면 `True` 가 출력된다.
+3. `with` 로 연 파일에는 `write()` 를 쓸 수 없고 읽기만 할 수 있다.
+4. `with` 로 열면 `"w"` 모드여도 `memo.txt` 의 기존 내용이 지워지지 않는다.
+
+## Q16 (객관식 · 2점)
+
+현재 작업 디렉터리가 `D:/study/week4` 일 때, `open("./log/run.txt", "r")` 이 여는 파일의 절대 경로는?
+
+1. `D:/log/run.txt`
+2. `D:/study/log/run.txt`
+3. `D:/study/week4/log/run.txt`
+4. `D:/study/week4/run.txt`
+
+## Q17 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+with open("word.txt", "w") as f:
+    f.write("go\nstop\nwait")
+
+with open("word.txt", "r") as f:
+    first = f.readline()
+    second = f.readline()
+    rest = f.readlines()
+    last = f.readline()
+
+print(len(first), len(second), len(rest), len(last))
+```
+
+## Q18 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요. 실행 전에는 `n.txt` 와 `j.txt` 가 없습니다. (여러 줄이면 `"""` 로 감싸서 줄을 나눠 적습니다)
+
+```python
+class Note:
+    def __init__(self, path):
+        self.path = path
+        self.save("start")
+
+    def save(self, text):
+        f = open(self.path, "w")
+        f.write(text + "\n")
+        f.close()
+
+
+class Journal(Note):
+    def save(self, text):
+        f = open(self.path, "a")
+        f.write(text + "\n")
+        f.close()
+
+
+n = Note("n.txt")
+j = Journal("j.txt")
+for word in ["one", "two"]:
+    n.save(word)
+    j.save(word)
+
+with open("n.txt", "r") as f:
+    print(f.read(), end="")
+with open("j.txt", "r") as f:
+    print(f.read(), end="")
 ```

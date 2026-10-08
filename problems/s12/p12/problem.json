@@ -1,0 +1,19 @@
+{
+  "title": "일지와 번호 일지",
+  "type": "print",
+  "level": 3,
+  "points": 8,
+  "mode": "exec",
+  "tags": ["덮어쓰기와 이어 쓰기", "오버라이딩", "super()"],
+  "examples": 3,
+  "cases": [
+    {"code": "j = Journal(\"day.txt\")\nj.add(\"운동\")\nj.add(\"독서\")\nj.show()\nprint(j.count())", "stdout": "운동\n독서\n2\n", "expect_files": {"day.txt": "운동\n독서\n"}},
+    {"code": "n = NumberedJournal(\"todo.txt\")\nn.add(\"장보기\")\nn.add(\"청소\")\nn.add(\"빨래\")\nn.show()", "stdout": "1. 장보기\n2. 청소\n3. 빨래\n", "expect_files": {"todo.txt": "1. 장보기\n2. 청소\n3. 빨래\n"}},
+    {"files": {"old.txt": "지난 기록\n"}, "code": "j = Journal(\"old.txt\")\nprint(j.count())\nj.add(\"새 기록\")\nj.show()", "stdout": "0\n새 기록\n", "expect_files": {"old.txt": "새 기록\n"}},
+    {"code": "j = Journal(\"empty.txt\")\nj.show()\nprint(j.count())\nprint(j.path)", "stdout": "0\nempty.txt\n", "expect_files": {"empty.txt": ""}},
+    {"code": "a = Journal(\"a.txt\")\nb = NumberedJournal(\"b.txt\")\na.add(\"x\")\nb.add(\"y\")\na.add(\"z\")\nb.add(\"w\")\nprint(a.count(), b.count())\na.show()\nb.show()\nprint(b.path)", "stdout": "2 2\nx\nz\n1. y\n2. w\nb.txt\n", "expect_files": {"a.txt": "x\nz\n", "b.txt": "1. y\n2. w\n"}},
+    {"files": {"log.txt": "a\nb\nc\n"}, "code": "n = NumberedJournal(\"log.txt\")\nprint(n.count())\nn.add(\"first\")\nn.add(\"second\")\nn.show()\nprint(n.count())", "stdout": "0\n1. first\n2. second\n2\n", "expect_files": {"log.txt": "1. first\n2. second\n"}},
+    {"code": "n = NumberedJournal(\"k.txt\")\nfor word in [\"가\", \"나\", \"다\", \"라\", \"마\", \"바\", \"사\", \"아\", \"자\", \"차\"]:\n    n.add(word)\nprint(n.count())\nn.show()", "stdout": "10\n1. 가\n2. 나\n3. 다\n4. 라\n5. 마\n6. 바\n7. 사\n8. 아\n9. 자\n10. 차\n"},
+    {"code": "p = NumberedJournal(\"p.txt\")\nq = NumberedJournal(\"q.txt\")\np.add(\"회의\")\nq.add(\"점심\")\nq.add(\"산책\")\np.add(\"보고\")\np.show()\nq.show()", "stdout": "1. 회의\n2. 보고\n1. 점심\n2. 산책\n", "expect_files": {"p.txt": "1. 회의\n2. 보고\n", "q.txt": "1. 점심\n2. 산책\n"}}
+  ]
+}

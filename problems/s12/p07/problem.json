@@ -7,6 +7,7 @@
   "tags": ["write 규칙", "줄바꿈 처리"],
   "examples": 1,
   "cases": [
-    {"stdout": "연필\n지우개\n공책\n", "expect_files": {"items.txt": "연필\n지우개\n공책\n"}}
+    {"stdout": "연필\n지우개\n공책\n", "expect_files": {"items.txt": "연필\n지우개\n공책\n"}},
+    {"files": {"items.txt": "가위\n풀\n"}, "stdout": "연필\n지우개\n공책\n", "expect_files": {"items.txt": "연필\n지우개\n공책\n"}}
   ]
 }

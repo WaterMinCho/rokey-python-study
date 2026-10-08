@@ -1,0 +1,17 @@
+{
+  "title": "합격 부품 세기",
+  "type": "fill",
+  "level": 3,
+  "points": 8,
+  "mode": "io",
+  "tags": ["함수 호출", "return", "매개변수와 인수"],
+  "examples": 2,
+  "cases": [
+    {"stdin": "95\n105\n", "stdout": "합격: 4 개\n"},
+    {"stdin": "100\n100\n", "stdout": "합격: 1 개\n"},
+    {"stdin": "0\n90\n", "stdout": "합격: 0 개\n"},
+    {"stdin": "94\n110\n", "stdout": "합격: 6 개\n"},
+    {"stdin": "96\n104\n", "stdout": "합격: 2 개\n"},
+    {"stdin": "106\n200\n", "stdout": "합격: 1 개\n"}
+  ]
+}

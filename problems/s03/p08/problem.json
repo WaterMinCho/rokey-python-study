@@ -5,7 +5,7 @@
   "points": 8,
   "mode": "io",
   "tags": ["논리 연산자", "연산자 우선순위"],
-  "examples": 3,
+  "examples": 4,
   "cases": [
     {"stdin": "2024\n", "stdout": "2024 윤년\n"},
     {"stdin": "2023\n", "stdout": "2023 평년\n"},

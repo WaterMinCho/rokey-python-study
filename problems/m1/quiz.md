@@ -1,4 +1,4 @@
-# 모의고사 1회 (1~16차시) — 퀴즈
+# 모의고사 1회 (1~16차시) 퀴즈
 
 > 코드를 실행하지 말고 눈으로 풀어 보세요. 답은 `submissions/<내 ID>/m1/quiz.py` 에 적습니다.
 > 출력 예측 문항은 여러 줄이면 `"""` 로 감싸서 줄을 나눠 적고, 띄어쓰기와 따옴표까지 정확히 적습니다.
@@ -49,7 +49,7 @@ print(price // n, price % n)
 a = 12
 b = 5
 print(a // b == 2 and a % b != 2)
-print(not a > b or b * 3 > a)
+print(not a < b or b * 3 < a)
 ```
 
 1. `False`, `True`
@@ -173,7 +173,7 @@ print(a == b, a == c)
 1. `__init__()` 은 객체를 만들 때 자동으로 호출되어 멤버를 초기화한다.
 2. `self` 는 메서드를 호출한 객체 자신을 가리키며, 메서드를 정의할 때 첫 번째 매개변수로 적고 호출할 때는 적지 않는다.
 3. 인스턴스 변수는 `클래스이름.변수` 로 객체를 만들지 않고도 읽을 수 있다.
-4. 클래스 변수는 클래스 안, 메서드 밖에 선언하며 클래스에 하나만 있다.
+4. 클래스 변수는 클래스 안, 메서드 밖에 선언하며, 객체마다 따로 만들어지지 않고 모든 객체가 함께 쓴다.
 
 ## Q12 (출력 예측 · 3점)
 
@@ -209,12 +209,12 @@ print(c.battery + r.battery)
 
 ## Q13 (객관식 · 2점)
 
-PyQt6 에서 버튼 `btn` 을 클릭할 때마다 함수 `order` 가 실행되도록 연결하는 코드로 옳은 것은?
+PyQt6 에서 버튼 `save_btn` 을 클릭할 때마다 함수 `save_memo` 가 실행되도록 연결하는 코드로 옳은 것은?
 
-1. `btn.clicked.connect(order)`
-2. `btn.clicked.connect(order())`
-3. `btn.clicked().connect(order)`
-4. `btn.connect(clicked, order)`
+1. `save_btn.clicked.connect(save_memo)`
+2. `save_btn.clicked.connect(save_memo())`
+3. `save_btn.clicked().connect(save_memo)`
+4. `save_btn.connect(clicked, save_memo)`
 
 ## Q14 (객관식 · 2점)
 

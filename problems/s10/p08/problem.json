@@ -8,7 +8,7 @@
     "오버라이딩",
     "자식 __init__"
   ],
-  "examples": 3,
+  "examples": 7,
   "cases": [
     {
       "call": "solution([[\"일반\", 10000]])",
@@ -31,20 +31,20 @@
       "expected": "0"
     },
     {
-      "call": "solution([[\"학생\", 9999], [\"학생\", 1]])",
+      "call": "StudentTicket(9999).cost()",
       "expected": "4999"
     },
     {
-      "call": "StudentTicket(9999).cost()",
+      "call": "SeniorTicket(5000).price",
+      "expected": "5000"
+    },
+    {
+      "call": "solution([[\"학생\", 9999], [\"학생\", 1]])",
       "expected": "4999"
     },
     {
       "call": "SeniorTicket(5000).cost()",
       "expected": "3500"
-    },
-    {
-      "call": "SeniorTicket(5000).price",
-      "expected": "5000"
     },
     {
       "call": "Ticket(1234).cost()",
@@ -53,6 +53,18 @@
     {
       "call": "solution([[\"경로\", 0], [\"일반\", 0]])",
       "expected": "0"
+    },
+    {
+      "call": "SeniorTicket(700).cost()",
+      "expected": "490"
+    },
+    {
+      "call": "solution([[\"경로\", 5500], [\"학생\", 5500]])",
+      "expected": "6600"
+    },
+    {
+      "call": "SeniorTicket(9999).cost()",
+      "expected": "6999"
     }
   ]
 }

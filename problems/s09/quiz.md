@@ -1,4 +1,4 @@
-# 9차시 퀴즈 — 클래스(1)
+# 9차시 퀴즈: 클래스(1)
 
 > 코드를 실행하지 말고 눈으로 풀어 보세요. 답은 `submissions/<내 ID>/s09/quiz.py` 에 적습니다.
 
@@ -239,7 +239,7 @@ print(b.w, b.h, b.area)
 
 ## Q15 (단답 · 3점)
 
-다음 코드가 끝까지 실행되는 동안 `__init__` 메서드는 모두 몇 번 호출될까요? 숫자만 적으세요.
+다음 코드가 끝까지 실행되는 동안 `__init__` 메서드가 호출되는 횟수를 숫자만 적으세요.
 
 ```python
 class Dot:
@@ -350,3 +350,91 @@ t.tick()
 2. 이어서 `print(t.sec)` 을 실행하면 `1` 이 출력된다.
 3. `tick()` 을 호출할 때마다 `t.sec` 이 1 씩 늘어난다.
 4. 이어서 `t.show()` 를 실행하면 `1` 이 출력된다.
+
+## Q20 (객관식 · 2점)
+
+다음 코드를 실행했을 때의 결과로 옳은 것은?
+
+```python
+class Fan:
+    def __init__(self, speed):
+        self.speed = speed
+
+    def up(self):
+        self.speed = self.speed + 1
+
+    def show():
+        print("speed:", self.speed)
+
+f = Fan(1)
+f.up()
+print(f.speed)
+f.show()
+```
+
+1. `def show():` 줄에서 오류가 발생해 아무것도 출력되지 않는다.
+2. `2` 를 출력한 뒤 `f.show()` 에서 오류가 발생한다.
+3. `2` 와 `speed: 2` 를 차례로 출력한다.
+4. `1` 을 출력한 뒤 `f.show()` 에서 오류가 발생한다.
+
+## Q21 (객관식 · 2점)
+
+다음 코드를 실행한 뒤 변수 `a` ~ `d` 가 가리키는 객체에 대한 설명으로 옳지 **않은** 것은?
+
+```python
+class Tag:
+    def __init__(self, text):
+        self.text = text
+
+a = 10
+b = str(3.5)
+c = Tag("new")
+d = [a, b]
+```
+
+1. `a` 는 내장 클래스 `int` 의 객체이다.
+2. `b` 는 내장 클래스 `float` 의 객체이다.
+3. `c` 는 사용자 정의 클래스 `Tag` 의 객체이다.
+4. `d` 는 내장 클래스 `list` 의 객체이다.
+
+## Q22 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+class Robot:
+    count = 0
+
+    def __init__(self, name):
+        self.name = name
+        Robot.count = Robot.count + 1
+        self.number = Robot.count
+
+a = Robot("A")
+b = Robot("B")
+c = b
+print(a.number, b.number, c.number)
+print(Robot.count, a.count, c.count)
+```
+
+## Q23 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+class Meter:
+    def __init__(self):
+        self.value = 0
+
+    def up(self, n):
+        self.value = self.value + n
+
+    def read(self):
+        return self.value
+
+m = Meter()
+print(m.up(3))
+m.read()
+x = m.up(2)
+print(x, m.read())
+```

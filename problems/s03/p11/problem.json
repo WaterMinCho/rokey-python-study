@@ -1,0 +1,21 @@
+{
+  "title": "놀이기구 탑승",
+  "type": "fill",
+  "level": 2,
+  "points": 6,
+  "mode": "io",
+  "tags": ["중첩 if", "논리 연산자", "경계값"],
+  "examples": 3,
+  "cases": [
+    {"stdin": "130\n6\n", "stdout": "보호자 동반 탑승\n"},
+    {"stdin": "150\n20\n", "stdout": "단독 탑승\n"},
+    {"stdin": "100\n10\n", "stdout": "탑승 불가\n"},
+    {"stdin": "110\n7\n", "stdout": "보호자 동반 탑승\n"},
+    {"stdin": "190\n8\n", "stdout": "단독 탑승\n"},
+    {"stdin": "109\n5\n", "stdout": "탑승 불가\n"},
+    {"stdin": "191\n30\n", "stdout": "탑승 불가\n"},
+    {"stdin": "200\n6\n", "stdout": "탑승 불가\n"},
+    {"stdin": "110\n8\n", "stdout": "단독 탑승\n"},
+    {"stdin": "190\n1\n", "stdout": "보호자 동반 탑승\n"}
+  ]
+}

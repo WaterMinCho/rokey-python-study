@@ -9,8 +9,8 @@
   "cases": [
     {"stdin": "4\n", "stdout": "10\n"},
     {"stdin": "0\n", "stdout": "0\n"},
-    {"stdin": "1\n", "stdout": "1\n"},
     {"stdin": "10\n", "stdout": "55\n"},
+    {"stdin": "1\n", "stdout": "1\n"},
     {"stdin": "100\n", "stdout": "5050\n"}
   ]
 }

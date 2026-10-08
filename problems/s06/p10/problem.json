@@ -1,0 +1,19 @@
+{
+  "title": "처음 나오는 위치",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": ["반복문 안의 return", "return"],
+  "examples": 3,
+  "cases": [
+    {"call": "solution([5, 3, 7, 3], 3)", "expected": "1"},
+    {"call": "solution([5, 3, 7, 3], 5)", "expected": "0"},
+    {"call": "solution([5, 3, 7, 3], 9)", "expected": "-1"},
+    {"call": "solution([], 4)", "expected": "-1"},
+    {"call": "solution([8, 6, 2], 2)", "expected": "2"},
+    {"call": "solution([0, -1, -1], -1)", "expected": "1"},
+    {"call": "solution([4, 4, 4], 4)", "expected": "0"},
+    {"call": "solution([1, 2, 3, 4, 5, 6, 7], 7)", "expected": "6"}
+  ]
+}

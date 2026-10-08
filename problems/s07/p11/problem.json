@@ -1,0 +1,15 @@
+{
+  "title": "함수 안에서 전역 변수 만들기",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": ["global", "실행 순서"],
+  "examples": 2,
+  "cases": [
+    {"stdin": "3\n", "stdout": "설정 완료\nlevel 값은 3\n"},
+    {"stdin": "12\n", "stdout": "설정 완료\nlevel 값은 12\n"},
+    {"stdin": "0\n", "stdout": "설정 완료\nlevel 값은 0\n"},
+    {"stdin": "-7\n", "stdout": "설정 완료\nlevel 값은 -7\n"}
+  ]
+}

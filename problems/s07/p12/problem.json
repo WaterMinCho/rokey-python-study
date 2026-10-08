@@ -1,0 +1,18 @@
+{
+  "title": "간격을 두고 더하는 재귀 함수",
+  "type": "fill",
+  "level": 3,
+  "points": 8,
+  "mode": "io",
+  "tags": ["재귀 함수", "디폴트 매개변수"],
+  "examples": 2,
+  "cases": [
+    {"stdin": "7\n3\n", "stdout": "28\n12\n"},
+    {"stdin": "5\n2\n", "stdout": "15\n9\n"},
+    {"stdin": "6\n3\n", "stdout": "21\n9\n"},
+    {"stdin": "10\n4\n", "stdout": "55\n18\n"},
+    {"stdin": "0\n5\n", "stdout": "0\n0\n"},
+    {"stdin": "3\n8\n", "stdout": "6\n3\n"},
+    {"stdin": "100\n1\n", "stdout": "5050\n5050\n"}
+  ]
+}

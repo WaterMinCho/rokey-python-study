@@ -1,0 +1,19 @@
+{
+  "title": "처음 과속한 차",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "tags": ["break", "인덱스"],
+  "mode": "call",
+  "examples": 3,
+  "cases": [
+    {"call": "solution([48, 50, 63, 45, 71], 50)", "expected": "3"},
+    {"call": "solution([30, 28, 30], 30)", "expected": "0"},
+    {"call": "solution([95, 60], 80)", "expected": "1"},
+    {"call": "solution([60, 60, 60, 61], 60)", "expected": "4"},
+    {"call": "solution([100], 100)", "expected": "0"},
+    {"call": "solution([101], 100)", "expected": "1"},
+    {"call": "solution([70, 90, 90, 120], 80)", "expected": "2"},
+    {"call": "solution([55, 40, 70, 20, 80], 50)", "expected": "1"}
+  ]
+}

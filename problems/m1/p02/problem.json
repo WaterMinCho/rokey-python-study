@@ -15,11 +15,11 @@
       "expected": "['사과', '감']"
     },
     {
-      "call": "in_stock({})",
+      "call": "in_stock({\"a\": 0, \"b\": 0})",
       "expected": "[]"
     },
     {
-      "call": "in_stock({\"a\": 0, \"b\": 0})",
+      "call": "in_stock({})",
       "expected": "[]"
     },
     {

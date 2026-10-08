@@ -1,0 +1,12 @@
+{
+  "title": "연산자 채워 넣기",
+  "type": "fill",
+  "level": 2,
+  "points": 6,
+  "mode": "io",
+  "tags": ["연산자 우선순위", "산술 연산자", "몫과 나머지"],
+  "examples": 1,
+  "cases": [
+    {"stdout": "13\n2\n"}
+  ]
+}

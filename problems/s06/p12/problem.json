@@ -1,0 +1,19 @@
+{
+  "title": "합격자 수와 평균",
+  "type": "return",
+  "level": 3,
+  "points": 8,
+  "mode": "call",
+  "tags": ["튜플 반환", "return"],
+  "examples": 3,
+  "cases": [
+    {"call": "solution([70, 50, 90], 60)", "expected": "(2, 80.0)"},
+    {"call": "solution([60, 59, 61], 60)", "expected": "(2, 60.5)"},
+    {"call": "solution([10, 20], 60)", "expected": "(0, 0)"},
+    {"call": "solution([], 50)", "expected": "(0, 0)"},
+    {"call": "solution([100], 100)", "expected": "(1, 100.0)"},
+    {"call": "solution([80, 80, 80, 20], 80)", "expected": "(3, 80.0)"},
+    {"call": "solution([55, 45, 65, 75], 50)", "expected": "(3, 65.0)"},
+    {"call": "solution([0, 0], 0)", "expected": "(2, 0.0)"}
+  ]
+}

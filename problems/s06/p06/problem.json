@@ -5,7 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["return", "매개변수와 인수"],
-  "examples": 3,
+  "examples": 4,
   "cases": [
     {"call": "solution(3, 10)", "expected": "18"},
     {"call": "solution(5, 5)", "expected": "5"},

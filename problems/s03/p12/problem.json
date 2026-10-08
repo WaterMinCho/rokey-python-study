@@ -1,0 +1,23 @@
+{
+  "title": "다음 버스",
+  "type": "print",
+  "level": 2,
+  "points": 6,
+  "mode": "io",
+  "tags": ["if 문법", "비교 연산자", "출력 형식"],
+  "examples": 3,
+  "cases": [
+    {"stdin": "7\n", "stdout": "8분 뒤 도착\n"},
+    {"stdin": "30\n", "stdout": "버스 도착\n"},
+    {"stdin": "46\n", "stdout": "14분 뒤 도착\n"},
+    {"stdin": "0\n", "stdout": "버스 도착\n"},
+    {"stdin": "15\n", "stdout": "버스 도착\n"},
+    {"stdin": "45\n", "stdout": "버스 도착\n"},
+    {"stdin": "1\n", "stdout": "14분 뒤 도착\n"},
+    {"stdin": "14\n", "stdout": "1분 뒤 도착\n"},
+    {"stdin": "16\n", "stdout": "14분 뒤 도착\n"},
+    {"stdin": "29\n", "stdout": "1분 뒤 도착\n"},
+    {"stdin": "38\n", "stdout": "7분 뒤 도착\n"},
+    {"stdin": "59\n", "stdout": "1분 뒤 도착\n"}
+  ]
+}

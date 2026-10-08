@@ -9,7 +9,7 @@
     "오버라이딩",
     "자식 __init__"
   ],
-  "examples": 3,
+  "examples": 5,
   "cases": [
     {
       "call": "Manager(\"Kim\", 3000, 500).pay()",
@@ -24,6 +24,14 @@
       "expected": "'Kim'"
     },
     {
+      "call": "Employee(\"Lee\", 2000).pay()",
+      "expected": "2000"
+    },
+    {
+      "call": "Employee(\"Lee\", 2000).tag()",
+      "expected": "'Lee(사원)'"
+    },
+    {
       "call": "Manager(\"Park\", 2500, 0).pay()",
       "expected": "2500"
     },
@@ -34,14 +42,6 @@
     {
       "call": "Manager(\"Choi\", 4000, 1000).bonus",
       "expected": "1000"
-    },
-    {
-      "call": "Employee(\"Lee\", 2000).pay()",
-      "expected": "2000"
-    },
-    {
-      "call": "Employee(\"Lee\", 2000).tag()",
-      "expected": "'Lee(사원)'"
     }
   ]
 }

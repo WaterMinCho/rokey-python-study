@@ -1,11 +1,11 @@
 {
   "title": "변환 가능한 값의 합",
   "type": "return",
-  "level": 3,
-  "points": 8,
+  "level": 2,
+  "points": 6,
   "mode": "call",
   "tags": ["try-except 흐름"],
-  "examples": 3,
+  "examples": 4,
   "cases": [
     {"call": "solution([\"10\", \"x\", \"25\", \"3.5\"])", "expected": "[35, ['x', '3.5']]"},
     {"call": "solution([\"1\", \"2\", \"3\"])", "expected": "[6, []]"},

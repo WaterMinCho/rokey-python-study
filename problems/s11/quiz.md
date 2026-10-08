@@ -1,4 +1,4 @@
-# 11차시 퀴즈 — GUI 프로그래밍(PyQt6 · tkinter)
+# 11차시 퀴즈: GUI 프로그래밍(PyQt6 · tkinter)
 
 > 코드를 실행하지 말고 눈으로 풀어 보세요. 답은 `submissions/<내 ID>/s11/quiz.py` 에 적습니다.
 > PyQt6 코드가 나오는 문항은 `import sys` 와 필요한 `from PyQt6.QtWidgets import ...` 가 이미 되어 있다고 가정합니다.
@@ -451,3 +451,63 @@ btn.click()
 ## Q29 (단답 · 3점)
 
 tkinter 로 버튼을 만들 때, 클릭하면 실행할 함수를 지정하는 옵션(키워드 인수)의 이름을 적으세요. (`tk.Button(root, text="주문", ____=order)` 의 빈칸)
+
+## Q30 (단답 · 3점)
+
+tkinter 에서 여러 항목 가운데 하나만 고르게 할 때 쓰는 위젯의 클래스 이름을 적으세요. 같은 `variable` 을 넘겨 만든 것들 가운데 하나만 선택되고, 선택하면 그 위젯의 `value` 가 `variable` 에 저장됩니다. (`tk.____(root, text="포장", variable=choice, value=1)` 의 빈칸. 대소문자까지 정확히 적습니다)
+
+## Q31 (객관식 · 2점)
+
+`저장` 버튼을 누를 때마다 알림 창이 뜨는 tkinter 프로그램입니다. (가), (나), (다)에 들어갈 것을 순서대로 적은 것은?
+
+```python
+import tkinter as tk
+from tkinter import messagebox
+
+def notify():
+    messagebox.(가)("안내", "저장했습니다")
+
+root = tk.Tk()
+root.title("메모장")
+btn = tk.Button(root, text="저장", command=(나))
+btn.pack()
+root.(다)()
+```
+
+1. `showinfo` · `notify` · `mainloop`
+2. `showinfo` · `notify()` · `mainloop`
+3. `print` · `notify` · `exec`
+4. `show` · `notify()` · `show`
+
+## Q32 (객관식 · 2점)
+
+다음 코드로 만든 창에서 위젯 세 개의 배치로 옳은 것은?
+
+```python
+label = QLabel("수량을 고르세요")
+btn_ok = QPushButton("확인")
+btn_cancel = QPushButton("취소")
+
+row = QHBoxLayout()
+row.addWidget(btn_cancel)
+row.addWidget(btn_ok)
+
+layout = QVBoxLayout()
+layout.addLayout(row)
+layout.addWidget(label)
+window.setLayout(layout)
+```
+
+1. 윗줄에 왼쪽부터 `취소`, `확인` 이 나란히 놓이고, 그 아래에 라벨이 놓인다.
+2. 맨 위에 라벨이 놓이고, 그 아래 줄에 왼쪽부터 `확인`, `취소` 가 나란히 놓인다.
+3. 윗줄에 왼쪽부터 `확인`, `취소` 가 나란히 놓이고, 그 아래에 라벨이 놓인다.
+4. `취소`, `확인`, 라벨이 위에서 아래로 한 줄에 하나씩 세로로 쌓인다.
+
+## Q33 (객관식 · 2점)
+
+버튼과 레이블을 설정하는 코드에 대한 설명으로 옳지 **않은** 것은?
+
+1. `btn.setEnabled(False)` 는 버튼을 비활성화 상태로 만든다.
+2. `label.setStyleSheet("background-color: blue; color: white;")` 는 레이블의 배경을 파란색, 글자를 흰색으로 지정한다.
+3. `QPixmap` 은 위젯 클래스들과 같은 모듈에 있어서 `from PyQt6.QtWidgets import QPixmap` 으로 가져온다.
+4. `btn.setFixedSize(120, 40)` 은 버튼의 폭을 120, 높이를 40 으로 지정한다.

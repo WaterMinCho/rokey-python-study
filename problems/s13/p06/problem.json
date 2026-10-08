@@ -5,7 +5,7 @@
   "points": 6,
   "mode": "io",
   "tags": ["try-except 흐름"],
-  "examples": 3,
+  "examples": 2,
   "cases": [
     {"stdin": "abc\n3.5\n7\n", "stdout": "정수를 입력하세요\n정수를 입력하세요\n49\n"},
     {"stdin": "-4\n", "stdout": "16\n"},

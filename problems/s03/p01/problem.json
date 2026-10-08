@@ -10,6 +10,8 @@
     {"stdin": "auto\n", "stdout": "로봇이 스스로 움직입니다.\n"},
     {"stdin": "manual\n", "stdout": "로봇을 직접 조종합니다.\n"},
     {"stdin": "AUTO\n", "stdout": "로봇을 직접 조종합니다.\n"},
-    {"stdin": "stop\n", "stdout": "로봇을 직접 조종합니다.\n"}
+    {"stdin": "stop\n", "stdout": "로봇을 직접 조종합니다.\n"},
+    {"stdin": "au\n", "stdout": "로봇을 직접 조종합니다.\n"},
+    {"stdin": "autopilot\n", "stdout": "로봇을 직접 조종합니다.\n"}
   ]
 }

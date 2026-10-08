@@ -12,6 +12,7 @@
     {"call": "solution(\"a b c\")", "expected": "'abc'"},
     {"call": "solution(\"rokey boot camp eleven\")", "expected": "'rbce'"},
     {"call": "solution(\"x y\")", "expected": "'xy'"},
-    {"call": "solution(\"deep learning robot arm control\")", "expected": "'dlrac'"}
+    {"call": "solution(\"deep learning robot arm control\")", "expected": "'dlrac'"},
+    {"call": "solution(\"red robot red rail\")", "expected": "'rrrr'"}
   ]
 }

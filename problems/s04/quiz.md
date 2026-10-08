@@ -1,4 +1,4 @@
-# 4차시 퀴즈 — 리스트와 딕셔너리
+# 4차시 퀴즈: 리스트와 딕셔너리
 
 > 코드를 실행하지 말고 눈으로 풀어 보세요. 답은 `submissions/<내 ID>/s04/quiz.py` 에 적습니다.
 
@@ -41,25 +41,25 @@
 
 ## Q5 (객관식 · 2점)
 
-`t = ('a', 'b', 'c')` 를 실행한 다음 아래 코드 중 하나를 실행했습니다.
-오류 없이 `('A', 'b', 'c')` 가 출력되는 것은?
+`t = ('x', 'y', 'z')` 를 실행한 다음 아래 코드 중 하나를 실행했습니다.
+오류 없이 `('X', 'y', 'z')` 가 출력되는 것은?
 
 1. ```python
-   t[0] = 'A'
+   t[0] = 'X'
    print(t)
    ```
 2. ```python
    t = list(t)
-   t[0] = 'A'
+   t[0] = 'X'
    print(t)
    ```
 3. ```python
-   t = ('A', 'b', 'c')
+   t = ('X', 'y', 'z')
    print(t)
    ```
 4. ```python
-   t.remove('a')
-   t.insert(0, 'A')
+   t.remove('x')
+   t.insert(0, 'X')
    print(t)
    ```
 
@@ -216,4 +216,76 @@ robot = 'ROKEY', 11, 2.5
 print(empty)
 print(robot)
 print(robot[0])
+```
+
+## Q19 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+slot = 'B'
+lockers = {'A': 10, 'B': 20, 'slot': 30}
+print(lockers[slot])
+print(lockers['slot'])
+lockers[slot] = lockers['A'] + lockers['slot']
+lockers['C'] = lockers.get(slot)
+print(lockers)
+print(len(lockers))
+```
+
+## Q20 (객관식 · 2점)
+
+다음 다섯 코드를 각각 따로 실행했을 때 **오류가 발생하는** 것을 **모두 고르세요**.
+
+**1번**
+
+```python
+t = (1, 2, 3)
+t = t[0], 9
+```
+
+**2번**
+
+```python
+a = [1, 2, 3]
+a[len(a)] = 4
+```
+
+**3번**
+
+```python
+d = {'x': 1}
+d['y'] = d.get('y')
+```
+
+**4번**
+
+```python
+d = {'x': 1}
+d['y'] = d['y'] + 1
+```
+
+**5번**
+
+```python
+t = (1, 2, 3)
+t[len(t) - 1] = 4
+```
+
+## Q21 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+tray = ['a', 'b']
+tray.append(['c', 'd'])
+tray.extend(['e', 'f'])
+print(len(tray))
+last = tray.pop()
+if len(tray) == 4:
+    tray[2] = last
+else:
+    tray.insert(0, last)
+print(tray)
+print(tray[2])
 ```

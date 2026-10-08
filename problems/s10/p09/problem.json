@@ -9,11 +9,15 @@
     "오버라이딩",
     "자식 __init__"
   ],
-  "examples": 1,
+  "examples": 2,
   "cases": [
     {
       "code": "u = Unit(\"병사\", 100)\nu.hit(30)\nu.status()",
       "stdout": "병사 피해 30\n이름: 병사\n체력: 70\n"
+    },
+    {
+      "code": "h = Healer(\"사제\", 80, 25)\nh.hit(10)\nh.heal(15)\nh.heal(15)\nh.heal(15)\nh.status()",
+      "stdout": "사제 피해 10\n사제 회복 15\n사제 회복 15\n마나 부족\n이름: 사제\n체력: 100\n마나: 5\n"
     },
     {
       "code": "u = Unit(\"병사\", 20)\nu.hit(50)\nu.status()",
@@ -22,10 +26,6 @@
     {
       "code": "h = Healer(\"사제\", 80, 25)\nh.status()",
       "stdout": "이름: 사제\n체력: 80\n마나: 25\n"
-    },
-    {
-      "code": "h = Healer(\"사제\", 80, 25)\nh.hit(10)\nh.heal(15)\nh.heal(15)\nh.heal(15)\nh.status()",
-      "stdout": "사제 피해 10\n사제 회복 15\n사제 회복 15\n마나 부족\n이름: 사제\n체력: 100\n마나: 5\n"
     },
     {
       "code": "h = Healer(\"힐러\", 50, 10)\nh.heal(5)\nh.heal(5)\nprint(h.hp, h.mana)",
