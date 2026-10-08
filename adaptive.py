@@ -690,7 +690,7 @@ def team_analysis_markdown(cat):
 
 
 def shortage_request_markdown(shortages, cat):
-    lines = ["문제 은행에 아래 문항이 모자랍니다. 스터디장이 `docs/AUTHORING.md` 규격대로 추가하면 다음 `git pull` 부터 회차에 포함됩니다.", "",
+    lines = ["문제 은행에 아래 문항이 모자랍니다. 스터디장이 `docs/AUTHORING.md` 규격대로 추가하면 다음에 프로그램을 켤 때부터 회차에 들어갑니다.", "",
              "| 단원 | 레벨 | 부족 수 |", "|---|---|---|"]
     for (u, L), n in sorted(shortages.items()):
         lines.append("| %s %s | %d | %d |" % (u, cat_unit_title(cat, u), L, n))

@@ -202,7 +202,7 @@ def set_title(s):
 # 퀴즈 채점
 
 UNPARSED = object()
-UNPARSED_NOTE = '답을 읽지 못했습니다. 글자로 된 답은 따옴표로 감싸 주세요. 예) %s = "답"'  # Q18 = key 처럼 따옴표 없이 적은 경우
+UNPARSED_NOTE = '답을 읽지 못했습니다. 글자로 된 답은 따옴표로 감싸 주세요. 예) %s = "답"'  # Q17 = 답 처럼 따옴표 없이 적은 경우
 
 
 def parse_quiz_answers(path):
