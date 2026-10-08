@@ -13,6 +13,7 @@
     {"call": "solution([\"치즈\", \"불고기\", \"페퍼로니\"], [3000, 3500, 4000], [True, True, True])", "expected": "'치즈, 불고기, 페퍼로니 = 10500원'"},
     {"call": "solution([\"콜라\"], [1500], [False])", "expected": "'선택된 메뉴가 없습니다.'"},
     {"call": "solution([\"콜라\"], [1500], [True])", "expected": "'콜라 = 1500원'"},
-    {"call": "solution([\"A\", \"B\", \"C\", \"D\"], [0, 100, 200, 300], [True, False, False, True])", "expected": "'A, D = 300원'"}
+    {"call": "solution([\"A\", \"B\", \"C\", \"D\"], [0, 100, 200, 300], [True, False, False, True])", "expected": "'A, D = 300원'"},
+    {"call": "solution([\"물\", \"콜라\"], [0, 1500], [True, False])", "expected": "'물 = 0원'"}
   ]
 }

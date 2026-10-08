@@ -1,0 +1,22 @@
+{
+  "title": "알파벳 밀기",
+  "type": "return",
+  "level": 3,
+  "points": 8,
+  "mode": "call",
+  "tags": ["ord·chr", "문자열 성질"],
+  "examples": 4,
+  "cases": [
+    {"call": "solution(\"abc\", 1)", "expected": "'bcd'"},
+    {"call": "solution(\"xyz\", 3)", "expected": "'abc'"},
+    {"call": "solution(\"hello world\", 5)", "expected": "'mjqqt btwqi'"},
+    {"call": "solution(\"abc\", 27)", "expected": "'bcd'"},
+    {"call": "solution(\"rokey\", 0)", "expected": "'rokey'"},
+    {"call": "solution(\"az\", 25)", "expected": "'zy'"},
+    {"call": "solution(\"z\", 100)", "expected": "'v'"},
+    {"call": "solution(\"\", 4)", "expected": "''"},
+    {"call": "solution(\"a b  c\", 26)", "expected": "'a b  c'"},
+    {"call": "solution(\"the quick brown fox\", 13)", "expected": "'gur dhvpx oebja sbk'"},
+    {"call": "solution(\"abc\", 52)", "expected": "'abc'"}
+  ]
+}

@@ -5,7 +5,7 @@
   "points": 4,
   "mode": "io",
   "tags": ["try-except 흐름", "예외의 종류"],
-  "examples": 3,
+  "examples": 4,
   "cases": [
     {"stdin": "21\n", "stdout": "42\n"},
     {"stdin": "abc\n", "stdout": "숫자가 아닙니다\n"},

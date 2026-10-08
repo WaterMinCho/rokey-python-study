@@ -5,7 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["문자열 순회", "자료형 변환", "경계값"],
-  "examples": 3,
+  "examples": 7,
   "cases": [
     {"call": "solution(\"3\")", "expected": "'수량: 3개'"},
     {"call": "solution(\"99\")", "expected": "'수량: 99개'"},
@@ -13,10 +13,10 @@
     {"call": "solution(\"0\")", "expected": "'1~99 사이의 숫자를 입력하세요.'"},
     {"call": "solution(\"\")", "expected": "'1~99 사이의 숫자를 입력하세요.'"},
     {"call": "solution(\"3.5\")", "expected": "'1~99 사이의 숫자를 입력하세요.'"},
+    {"call": "solution(\"007\")", "expected": "'수량: 7개'"},
     {"call": "solution(\"-5\")", "expected": "'1~99 사이의 숫자를 입력하세요.'"},
     {"call": "solution(\"12개\")", "expected": "'1~99 사이의 숫자를 입력하세요.'"},
     {"call": "solution(\" 5\")", "expected": "'1~99 사이의 숫자를 입력하세요.'"},
-    {"call": "solution(\"007\")", "expected": "'수량: 7개'"},
     {"call": "solution(\"1\")", "expected": "'수량: 1개'"},
     {"call": "solution(\"10\")", "expected": "'수량: 10개'"}
   ]

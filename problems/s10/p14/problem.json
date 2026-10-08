@@ -9,11 +9,19 @@
     "오버라이딩",
     "자식 __init__"
   ],
-  "examples": 1,
+  "examples": 3,
   "cases": [
     {
       "code": "s = Student(\"Mina\")\ns.add(\"수학\", 90)\ns.add(\"영어\", 80)\ns.report()",
       "stdout": "Mina 총점 170\n"
+    },
+    {
+      "code": "k = Scholar(\"Hana\", 180)\nk.add(\"수학\", 90)\nk.add(\"영어\", 90)\nk.report()",
+      "stdout": "Hana 총점 180\n장학금 대상\n"
+    },
+    {
+      "code": "k = Scholar(\"Yun\", 100)\nk.report()\nk.add(\"과학\", 100)\nk.report()\nprint(k.cutoff, k.name)",
+      "stdout": "Yun 총점 0\n장학금 제외\nYun 총점 100\n장학금 대상\n100 Yun\n"
     },
     {
       "code": "s = Student(\"Juho\")\ns.report()\nprint(s.total())",
@@ -24,16 +32,8 @@
       "stdout": "95\n1\n"
     },
     {
-      "code": "k = Scholar(\"Hana\", 180)\nk.add(\"수학\", 90)\nk.add(\"영어\", 90)\nk.report()",
-      "stdout": "Hana 총점 180\n장학금 대상\n"
-    },
-    {
       "code": "k = Scholar(\"Dong\", 180)\nk.add(\"수학\", 90)\nk.add(\"영어\", 89)\nk.report()",
       "stdout": "Dong 총점 179\n장학금 제외\n"
-    },
-    {
-      "code": "k = Scholar(\"Yun\", 100)\nk.report()\nk.add(\"과학\", 100)\nk.report()\nprint(k.cutoff, k.name)",
-      "stdout": "Yun 총점 0\n장학금 제외\nYun 총점 100\n장학금 대상\n100 Yun\n"
     },
     {
       "code": "a = Student(\"A\")\nb = Scholar(\"B\", 50)\na.add(\"수학\", 10)\nb.add(\"수학\", 60)\nprint(a.total(), b.total())\na.report()\nb.report()",

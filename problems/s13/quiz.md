@@ -1,4 +1,4 @@
-# 13차시 퀴즈 — 예외 처리·문자열·람다·map
+# 13차시 퀴즈: 예외 처리·문자열·람다·map
 
 > 코드를 실행하지 말고 눈으로 풀어 보세요. 답은 `submissions/<내 ID>/s13/quiz.py` 에 적습니다.
 
@@ -302,4 +302,41 @@ try:
     print("합계:", total)
 except ValueError:
     print("정수가 아닙니다")
+```
+
+## Q22 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+word = "camera"
+box = ["camera"]
+print(word[0], box[0])
+print(len(word), len(box))
+print(word[2:-1])
+print(word[:3] + word[-1])
+print(box[0][:])
+```
+
+## Q23 (객관식 · 2점)
+
+`name = "로키"`, `count = 3` 일 때, 출력 결과가 나머지 셋과 **다른** 것은?
+
+1. `print(name, "로봇", count, "대")`
+2. `print("%s 로봇 %d 대" % (name, count))`
+3. `print(f"{name} 로봇 {count} 대")`
+4. `print(name + " 로봇 " + str(count) + "대")`
+
+## Q24 (출력 예측 · 3점)
+
+`ord("a")` 의 값은 `97` 입니다. 다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+word = "bad"
+codes = list(map(ord, word))
+print(codes)
+moved = map(lambda n: chr(n + 2), codes)
+print("".join(moved))
+print("-".join(map(str, codes)))
+print(chr(max(codes)), len(codes))
 ```

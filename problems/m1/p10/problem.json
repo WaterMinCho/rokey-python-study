@@ -9,7 +9,7 @@
     "예외 처리",
     "딕셔너리 누적"
   ],
-  "examples": 1,
+  "examples": 4,
   "cases": [
     {
       "files": {
@@ -27,6 +27,13 @@
     },
     {
       "files": {
+        "ledger.txt": "간식,1200\n간식,-200\n간식,3.5\n간식,800\n"
+      },
+      "call": "solution(\"ledger.txt\")",
+      "expected": "{'간식': 1800}"
+    },
+    {
+      "files": {
         "ledger.txt": ""
       },
       "call": "solution(\"ledger.txt\")",
@@ -41,13 +48,6 @@
     },
     {
       "files": {
-        "ledger.txt": "간식,1200\n간식,-200\n간식,3.5\n간식,800\n"
-      },
-      "call": "solution(\"ledger.txt\")",
-      "expected": "{'간식': 1800}"
-    },
-    {
-      "files": {
         "may.txt": "교통,1250\n식비,7000\n교통,1250\n커피,4500\n식비,3000\n"
       },
       "call": "solution(\"may.txt\")",
@@ -59,6 +59,20 @@
       },
       "call": "solution(\"ledger.txt\")",
       "expected": "{'통신': 30000}"
+    },
+    {
+      "files": {
+        "ledger.txt": "환불,5000\n환불,-5000\n메모,없음\n"
+      },
+      "call": "solution(\"ledger.txt\")",
+      "expected": "{'환불': 0}"
+    },
+    {
+      "files": {
+        "ledger.txt": "통신,미정\n식비,100\n통신,200\n간식,50\n식비,25\n"
+      },
+      "call": "list(solution(\"ledger.txt\").items())",
+      "expected": "[('식비', 125), ('통신', 200), ('간식', 50)]"
     }
   ]
 }

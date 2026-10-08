@@ -1,0 +1,17 @@
+{
+  "title": "입력창과 라벨 연결 흉내",
+  "type": "print",
+  "level": 3,
+  "points": 8,
+  "mode": "exec",
+  "tags": ["시그널과 슬롯 연결", "super()", "자식 __init__"],
+  "examples": 2,
+  "cases": [
+    {"code": "entry = LineEdit()\nlabel = Label()\nentry.textChanged.connect(label.setText)\nprint(entry.text() == \"\", label.text() == \"\")\nentry.setText(\"RO\")\nprint(entry.text(), label.text())\nentry.setText(\"ROKEY\")\nprint(entry.text(), label.text())", "stdout": "True True\nRO RO\nROKEY ROKEY\n"},
+    {"code": "def report(s):\n    print(\"받은 글자:\", s, \"/ 입력창:\", entry.text())\n\nentry = LineEdit()\nentry.textChanged.connect(report)\nentry.setText(\"3\")\nentry.setText(\"3\")\nentry.setText(\"30\")", "stdout": "받은 글자: 3 / 입력창: 3\n받은 글자: 30 / 입력창: 30\n"},
+    {"code": "left = LineEdit()\nright = LineEdit()\nlabel_l = Label()\nlabel_r = Label()\nleft.textChanged.connect(label_l.setText)\nright.textChanged.connect(label_r.setText)\nleft.setText(\"왼쪽\")\nprint(label_l.text(), label_r.text() == \"\", right.text() == \"\")\nright.setText(\"오른쪽\")\nprint(left.text(), label_l.text(), label_r.text())", "stdout": "왼쪽 True True\n왼쪽 왼쪽 오른쪽\n"},
+    {"code": "entry = LineEdit()\nmirror = LineEdit()\nlabel = Label()\nentry.textChanged.connect(mirror.setText)\nmirror.textChanged.connect(label.setText)\nentry.setText(\"A\")\nprint(mirror.text(), label.text())\nmirror.setText(\"B\")\nprint(entry.text(), mirror.text(), label.text())", "stdout": "A A\nA B B\n"},
+    {"code": "def show(s):\n    print(\"[\" + s + \"]\")\n\nentry = LineEdit()\nentry.textChanged.connect(show)\nentry.setText(\"\")\nentry.setText(\"x\")\nentry.setText(\"\")\nentry.setText(\"\")\nprint(len(entry.text()))", "stdout": "[x]\n[]\n0\n"},
+    {"code": "def first(s):\n    print(\"1번 슬롯\", s)\n\ndef second(s):\n    print(\"2번 슬롯\", s)\n\nentry = LineEdit()\nentry.textChanged.connect(first)\nentry.textChanged.connect(second)\nentry.setText(\"go\")\nentry.setText(\"go\")\nentry.setText(\"stop\")", "stdout": "1번 슬롯 go\n2번 슬롯 go\n1번 슬롯 stop\n2번 슬롯 stop\n"}
+  ]
+}

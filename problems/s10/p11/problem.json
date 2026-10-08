@@ -9,19 +9,19 @@
     "자식 __init__",
     "클래스 변수 상속"
   ],
-  "examples": 1,
+  "examples": 2,
   "cases": [
     {
       "code": "s = Square(4)\ns.info()",
       "stdout": "도형 생성\n정사각형 16\n"
     },
     {
-      "code": "s = Square(3)\nprint(s.width, s.height)\nprint(s.area())",
-      "stdout": "도형 생성\n3 3\n9\n"
-    },
-    {
       "code": "r = Rect(2, 5)\nr.info()\ns = Square(5)\ns.info()\nprint(Rect.kind, Square.kind)",
       "stdout": "도형 생성\n직사각형 10\n도형 생성\n정사각형 25\n직사각형 정사각형\n"
+    },
+    {
+      "code": "s = Square(3)\nprint(s.width, s.height)\nprint(s.area())",
+      "stdout": "도형 생성\n3 3\n9\n"
     },
     {
       "code": "s = Square(1)\ns.width = 7\nprint(s.area())",

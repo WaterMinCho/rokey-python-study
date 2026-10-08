@@ -9,11 +9,15 @@
     "get()",
     "순서 유지"
   ],
-  "examples": 2,
+  "examples": 3,
   "cases": [
     {
       "call": "solution([\"A\", \"B\", \"A\", \"C\", \"A\"])",
       "expected": "{'A': 3, 'B': 1, 'C': 1}"
+    },
+    {
+      "call": "solution([\"b\", \"a\", \"b\", \"a\"])",
+      "expected": "{'b': 2, 'a': 2}"
     },
     {
       "call": "solution([])",
@@ -24,16 +28,20 @@
       "expected": "{'x': 1}"
     },
     {
-      "call": "solution([\"b\", \"a\", \"b\", \"a\"])",
-      "expected": "{'b': 2, 'a': 2}"
-    },
-    {
       "call": "solution([\"김\", \"이\", \"이\", \"박\", \"박\", \"박\"])",
       "expected": "{'김': 1, '이': 2, '박': 3}"
     },
     {
       "call": "solution([\"z\", \"z\", \"z\"])",
       "expected": "{'z': 3}"
+    },
+    {
+      "call": "list(solution([\"라\", \"가\", \"다\", \"가\", \"나\", \"라\", \"마\"]).items())",
+      "expected": "[('라', 2), ('가', 2), ('다', 1), ('나', 1), ('마', 1)]"
+    },
+    {
+      "call": "list(solution([\"c\", \"a\", \"a\", \"b\", \"b\", \"b\"]).items())",
+      "expected": "[('c', 1), ('a', 2), ('b', 3)]"
     }
   ]
 }

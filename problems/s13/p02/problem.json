@@ -5,7 +5,7 @@
   "points": 4,
   "mode": "call",
   "tags": ["split·strip·join"],
-  "examples": 3,
+  "examples": 4,
   "cases": [
     {"call": "solution(\"python is fun\")", "expected": "3"},
     {"call": "solution(\"  hello   world  \")", "expected": "2"},

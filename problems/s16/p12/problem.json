@@ -1,0 +1,27 @@
+{
+  "title": "여러 종류의 괄호 짝 검사",
+  "type": "return",
+  "level": 3,
+  "points": 8,
+  "mode": "call",
+  "tags": ["괄호 짝 검사", "스택 LIFO", "빈 자료구조 처리"],
+  "examples": 6,
+  "cases": [
+    {"call": "solution(\"([]{})\")", "expected": "True"},
+    {"call": "solution(\"([)]\")", "expected": "False"},
+    {"call": "solution(\"(]\")", "expected": "False"},
+    {"call": "solution(\"{[(\")", "expected": "False"},
+    {"call": "solution(\"a[0]+(b*{c})\")", "expected": "True"},
+    {"call": "solution(\"())\")", "expected": "False"},
+    {"call": "solution(\"\")", "expected": "True"},
+    {"call": "solution(\"]\")", "expected": "False"},
+    {"call": "solution(\"}{\")", "expected": "False"},
+    {"call": "solution(\"{(})\")", "expected": "False"},
+    {"call": "solution(\"[[[]]]{}()\")", "expected": "True"},
+    {"call": "solution(\"(()\")", "expected": "False"},
+    {"call": "solution(\"print(x[1])\")", "expected": "True"},
+    {"call": "solution(\"abc\")", "expected": "True"},
+    {"call": "solution(\"{[]}(\")", "expected": "False"},
+    {"call": "solution(\"[(])\")", "expected": "False"}
+  ]
+}

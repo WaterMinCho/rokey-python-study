@@ -5,16 +5,16 @@
   "points": 6,
   "mode": "io",
   "tags": ["elif 사슬", "경계값"],
-  "examples": 2,
+  "examples": 4,
   "cases": [
     {"stdin": "120000\n", "stdout": "VIP\n"},
-    {"stdin": "100000\n", "stdout": "VIP\n"},
-    {"stdin": "99999\n", "stdout": "GOLD\n"},
     {"stdin": "50000\n", "stdout": "GOLD\n"},
     {"stdin": "49999\n", "stdout": "SILVER\n"},
+    {"stdin": "3000\n", "stdout": "BRONZE\n"},
+    {"stdin": "100000\n", "stdout": "VIP\n"},
+    {"stdin": "99999\n", "stdout": "GOLD\n"},
     {"stdin": "10000\n", "stdout": "SILVER\n"},
     {"stdin": "9999\n", "stdout": "BRONZE\n"},
-    {"stdin": "3000\n", "stdout": "BRONZE\n"},
     {"stdin": "0\n", "stdout": "BRONZE\n"}
   ]
 }

@@ -1,0 +1,16 @@
+{
+  "title": "형식을 검사하는 클래스",
+  "type": "print",
+  "level": 3,
+  "points": 8,
+  "mode": "exec",
+  "tags": ["앵커 ^와 $", "클래스 변수 상속", "raise와 예외 메시지"],
+  "examples": 2,
+  "cases": [
+    {"code": "p = Phone(\"010-1234-5678\")\np.show()\nd = Date(\"2025-10-16\")\nd.show()\nprint(d.month())", "stdout": "전화 010-1234-5678\n날짜 2025-10-16\n10\n"},
+    {"code": "try:\n    Phone(\"010-1234-56789\")\nexcept FormatError as e:\n    print(e)\ntry:\n    Date(\"2025-1-5\")\nexcept FormatError as e:\n    print(e)", "stdout": "전화 형식 오류: 010-1234-56789\n날짜 형식 오류: 2025-1-5\n"},
+    {"code": "for t in [\"02-1234-5678\", \"010.1234.5678\", \"x010-1234-5678\", \"010-1234-567a\", \"010-0000-0000\"]:\n    try:\n        Phone(t).show()\n    except FormatError as e:\n        print(e)", "stdout": "전화 형식 오류: 02-1234-5678\n전화 형식 오류: 010.1234.5678\n전화 형식 오류: x010-1234-5678\n전화 형식 오류: 010-1234-567a\n전화 010-0000-0000\n"},
+    {"code": "for t in [\"2024-03-09\", \"2024-03-091\", \"20240309\", \"24-03-09\", \"2024/03/09\"]:\n    try:\n        d = Date(t)\n        print(d.month() + 1)\n    except FormatError as e:\n        print(e)", "stdout": "4\n날짜 형식 오류: 2024-03-091\n날짜 형식 오류: 20240309\n날짜 형식 오류: 24-03-09\n날짜 형식 오류: 2024/03/09\n"},
+    {"code": "f = Field(\"abc\")\nf.show()\nprint(Field.label, Phone.label, Date.label)\nprint(Date(\"1999-12-31\").month())", "stdout": "값 abc\n값 전화 날짜\n12\n"}
+  ]
+}

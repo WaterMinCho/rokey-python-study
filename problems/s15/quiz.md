@@ -1,4 +1,4 @@
-# 15차시 퀴즈 — 고급 함수
+# 15차시 퀴즈: 고급 함수
 
 > 코드를 실행하지 말고 눈으로 풀어 보세요. 답은 `submissions/<내 ID>/s15/quiz.py` 에 적습니다.
 
@@ -31,7 +31,7 @@ print(next(a))
 
 1. `__iter__` 메서드는 보통 자기 자신(`self`)을 반환한다.
 2. `__next__` 메서드는 for 문이 반복될 때나 `next()` 함수를 호출할 때 실행된다.
-3. `__iter__` 만 구현하고 `__next__` 는 생략해도 for 문에서 정상적으로 값을 꺼낼 수 있다.
+3. `__iter__` 가 `self` 를 반환하도록만 구현하고 `__next__` 는 생략해도 for 문에서 정상적으로 값을 꺼낼 수 있다.
 4. `__iter__` 와 `__next__` 는 `__init__` 처럼 파이썬에서 특별한 의미를 갖는 메서드이다.
 
 ## Q4 (객관식 · 2점)
@@ -167,3 +167,100 @@ print(len(a), len(b))
 ## Q14 (단답 · 3점)
 
 이터레이터에 더 이상 돌려줄 값이 없을 때 `next()` 가 발생시키는 예외의 이름을 적으세요. (대소문자 구분)
+
+## Q15 (객관식 · 2점)
+
+다음 클래스로 만든 객체를 for 문에 넣었을 때 나오는 값을 **같은 순서로** 만드는 제너레이터 표현식은?
+
+```python
+class Squares:
+    def __init__(self):
+        self.n = 2
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.n > 5:
+            raise StopIteration
+        value = self.n * self.n
+        self.n += 1
+        return value
+```
+
+1. `(i * i for i in range(2, 5))`
+2. `(i * i for i in range(2, 6))`
+3. `(i * i for i in range(1, 6))`
+4. `(i * 2 for i in range(2, 6))`
+
+## Q16 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+def letters():
+    yield "x"
+    yield "y"
+
+g = letters()
+h = (c for c in "xy")
+print(type(g))
+print(type(h))
+print(next(g), next(h))
+print(next(g) + next(h))
+```
+
+## Q17 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+def work(n):
+    print("work", n)
+    return n * 10
+
+jobs = (work(i) for i in range(1, 4))
+print("ready")
+print(next(jobs))
+print("check")
+for v in jobs:
+    print(v)
+```
+
+## Q18 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+nums = [10, 20, 30]
+a = iter(nums)
+b = iter(nums)
+c = iter(a)
+print(next(a))
+print(next(b))
+print(next(c))
+print(next(a))
+```
+
+## Q19 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+def pick():
+    yield "a"
+    print("between")
+    yield "b"
+    print("last")
+
+g = pick()
+try:
+    print(next(g))
+    print(next(g))
+    print(next(g))
+    print("after")
+except StopIteration:
+    print("stop")
+finally:
+    print("end")
+```

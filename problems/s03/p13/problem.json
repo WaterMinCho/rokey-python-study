@@ -1,0 +1,27 @@
+{
+  "title": "삼각형 분류",
+  "type": "print",
+  "level": 3,
+  "points": 8,
+  "mode": "io",
+  "tags": ["elif 순서", "논리 연산자", "연산자 우선순위"],
+  "examples": 4,
+  "cases": [
+    {"stdin": "3\n4\n5\n", "stdout": "부등변삼각형\n"},
+    {"stdin": "5\n5\n5\n", "stdout": "정삼각형\n"},
+    {"stdin": "5\n5\n8\n", "stdout": "이등변삼각형\n"},
+    {"stdin": "1\n2\n3\n", "stdout": "삼각형 아님\n"},
+    {"stdin": "2\n2\n5\n", "stdout": "삼각형 아님\n"},
+    {"stdin": "7\n3\n3\n", "stdout": "삼각형 아님\n"},
+    {"stdin": "3\n7\n3\n", "stdout": "삼각형 아님\n"},
+    {"stdin": "4\n6\n4\n", "stdout": "이등변삼각형\n"},
+    {"stdin": "6\n4\n4\n", "stdout": "이등변삼각형\n"},
+    {"stdin": "9\n4\n6\n", "stdout": "부등변삼각형\n"},
+    {"stdin": "4\n9\n6\n", "stdout": "부등변삼각형\n"},
+    {"stdin": "8\n3\n5\n", "stdout": "삼각형 아님\n"},
+    {"stdin": "5\n8\n3\n", "stdout": "삼각형 아님\n"},
+    {"stdin": "1\n1\n1\n", "stdout": "정삼각형\n"},
+    {"stdin": "1000\n1000\n1000\n", "stdout": "정삼각형\n"},
+    {"stdin": "2\n3\n4\n", "stdout": "부등변삼각형\n"}
+  ]
+}

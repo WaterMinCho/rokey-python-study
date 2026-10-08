@@ -1,0 +1,19 @@
+{
+  "title": "아이디 가리기",
+  "type": "print",
+  "level": 2,
+  "points": 6,
+  "mode": "io",
+  "tags": ["인덱싱·슬라이싱", "문자열 성질"],
+  "examples": 4,
+  "cases": [
+    {"stdin": "python\n", "stdout": "p****n\n"},
+    {"stdin": "abc\n", "stdout": "a*c\n"},
+    {"stdin": "ab\n", "stdout": "ab\n"},
+    {"stdin": "a\n", "stdout": "a\n"},
+    {"stdin": "robot2026\n", "stdout": "r*******6\n"},
+    {"stdin": "aaaa\n", "stdout": "a**a\n"},
+    {"stdin": "x7\n", "stdout": "x7\n"},
+    {"stdin": "abcdefghij0123456789\n", "stdout": "a******************9\n"}
+  ]
+}

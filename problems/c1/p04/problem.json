@@ -5,7 +5,7 @@
   "points": 4,
   "mode": "call",
   "tags": ["자릿수 분해", "나머지 연산", "짝수 판별"],
-  "examples": 3,
+  "examples": 4,
   "cases": [
     {"call": "solution(2024)", "expected": "4"},
     {"call": "solution(1357)", "expected": "0"},

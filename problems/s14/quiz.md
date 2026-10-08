@@ -1,4 +1,4 @@
-# 14차시 퀴즈 — 정규표현식
+# 14차시 퀴즈: 정규표현식
 
 > 코드를 실행하지 말고 눈으로 풀어 보세요. 답은 `submissions/<내 ID>/s14/quiz.py` 에 적습니다.
 > 출력 예측은 여러 줄이면 `"""` 로 감싸서 줄을 나눠 적고, 단답은 문자열로 적습니다(역슬래시가 들어가면 `r"..."` 로).
@@ -206,3 +206,49 @@ print(re.match("a1.b2", text, re.S).group())
 2. `A1b`
 3. `12 3`
 4. `x9`
+
+## Q20 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+import re
+p1 = re.compile(r"""
+    \d{2}   # 시
+    :       # 구분자
+    \d{2}   # 분
+""", re.VERBOSE)
+p2 = re.compile(r"\d \d", re.X)
+p3 = re.compile(r"\d[ ]\d", re.X)
+text = "at 09:30, room 4 2, code 77"
+print(p1.findall(text))
+print(p2.findall(text))
+print(p3.findall(text))
+```
+
+## Q21 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+import re
+text = r"\word lord sword"
+print(re.findall("\\word", text))
+print(len(re.findall("\\\\word", text)))
+print(len(re.findall(r"\\word", text)))
+print(re.search(r"\\word", text).span())
+```
+
+## Q22 (객관식 · 2점)
+
+다음 코드의 출력 결과는?
+
+```python
+import re
+print(re.findall(r"[a-c.+]+", "a+b.c=d-e"))
+```
+
+1. `['a+b.c']`
+2. `['a', 'b', 'c']`
+3. `['a+b.c=d-e']`
+4. `['a+b', 'c']`

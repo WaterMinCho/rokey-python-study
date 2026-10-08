@@ -5,12 +5,12 @@
   "points": 6,
   "mode": "call",
   "tags": ["읽기 메서드", "형 변환"],
-  "examples": 1,
+  "examples": 3,
   "cases": [
     {"files": {"n.txt": "10\n20\n30\n"}, "call": "solution(\"n.txt\")", "expected": "60"},
     {"files": {"n.txt": "5"}, "call": "solution(\"n.txt\")", "expected": "5"},
-    {"files": {"n.txt": "1\n2\n3\n4\n5\n"}, "call": "solution(\"n.txt\")", "expected": "15"},
     {"files": {"n.txt": "-3\n3\n"}, "call": "solution(\"n.txt\")", "expected": "0"},
+    {"files": {"n.txt": "1\n2\n3\n4\n5\n"}, "call": "solution(\"n.txt\")", "expected": "15"},
     {"files": {"score.txt": "100\n"}, "call": "solution(\"score.txt\")", "expected": "100"},
     {"files": {"empty.txt": ""}, "call": "solution(\"empty.txt\")", "expected": "0"},
     {"files": {"big.txt": "1000\n-1\n"}, "call": "solution(\"big.txt\")", "expected": "999"}

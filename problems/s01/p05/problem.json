@@ -4,7 +4,7 @@
   "level": 2,
   "points": 6,
   "mode": "io",
-  "tags": ["따옴표와 문자열", "대소문자 구분"],
+  "tags": ["따옴표와 문자열", "print 기초"],
   "examples": 1,
   "cases": [
     {"stdout": "print\nHello\n"}

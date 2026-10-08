@@ -1,0 +1,19 @@
+{
+  "title": "정수만 골라내는 제너레이터",
+  "type": "return",
+  "level": 3,
+  "points": 8,
+  "mode": "call",
+  "tags": ["제너레이터와 yield", "try-except 흐름", "형 변환"],
+  "examples": 4,
+  "cases": [
+    {"call": "list(solution([\"3\", \"x\", \"10\"]))", "expected": "[3, 10]"},
+    {"call": "list(solution([\"-4\", \"2.5\", \"7\"]))", "expected": "[-4, 7]"},
+    {"call": "next(solution([\"a\", \"b\", \"8\"]))", "expected": "8"},
+    {"call": "type(solution([\"1\"])).__name__", "expected": "'generator'"},
+    {"call": "list(solution([]))", "expected": "[]"},
+    {"call": "list(solution([\"\", \"12\", \"1e3\", \"007\", \"--3\"]))", "expected": "[12, 7]"},
+    {"call": "list(solution([\"one\", \"two\"]))", "expected": "[]"},
+    {"call": "sum(solution([\"5\", \"five\", \"-5\", \"20\"]))", "expected": "20"}
+  ]
+}

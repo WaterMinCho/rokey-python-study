@@ -5,13 +5,13 @@
   "points": 6,
   "mode": "call",
   "tags": ["findall과 finditer", "반복 메타 문자"],
-  "examples": 2,
+  "examples": 4,
   "cases": [
     {"call": "solution(\"a12 b345 c6\")", "expected": "'345'"},
-    {"call": "solution(\"no digits\")", "expected": "''"},
-    {"call": "solution(\"7 77 777 77\")", "expected": "'777'"},
     {"call": "solution(\"0012 99\")", "expected": "'0012'"},
     {"call": "solution(\"12 34\")", "expected": "'12'"},
+    {"call": "solution(\"no digits\")", "expected": "''"},
+    {"call": "solution(\"7 77 777 77\")", "expected": "'777'"},
     {"call": "solution(\"call 010-1234-5678 now\")", "expected": "'1234'"},
     {"call": "solution(\"2024\")", "expected": "'2024'"},
     {"call": "solution(\"x9y\")", "expected": "'9'"}

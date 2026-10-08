@@ -4,7 +4,7 @@
   "level": 2,
   "points": 6,
   "mode": "call",
-  "tags": ["반환값", "지역 변수"],
+  "tags": ["반환값", "평균 계산", "경계값"],
   "examples": 3,
   "cases": [
     {"call": "solution([10, 20, 30, 40, 50])", "expected": "3"},

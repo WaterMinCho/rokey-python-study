@@ -5,15 +5,16 @@
   "points": 6,
   "mode": "call",
   "tags": ["딕셔너리 누적", "dict.get", "삽입 순서"],
-  "examples": 2,
+  "examples": 4,
   "cases": [
     {"call": "solution([\"kim 300\", \"lee 500\", \"kim 250\", \"park 100\"], 500)", "expected": "['kim', 'lee']"},
     {"call": "solution([\"kim 100\", \"lee 200\"], 1000)", "expected": "[]"},
+    {"call": "solution([\"tom 1\", \"bo 1\", \"tom 1\", \"amy 3\", \"bo 1\", \"tom 1\"], 3)", "expected": "['tom', 'amy']"},
+    {"call": "solution([\"x 2\", \"y 5\", \"x 2\", \"z 1\", \"x 2\"], 6)", "expected": "['x']"},
     {"call": "solution([\"kim 100\", \"lee 200\"], 100)", "expected": "['kim', 'lee']"},
-    {"call": "solution([\"a 1\", \"b 1\", \"a 1\", \"c 3\", \"b 1\", \"a 1\"], 3)", "expected": "['a', 'c']"},
     {"call": "solution([\"solo 10\", \"solo 10\", \"solo 10\"], 30)", "expected": "['solo']"},
     {"call": "solution([], 1)", "expected": "[]"},
-    {"call": "solution([\"x 2\", \"y 5\", \"x 2\", \"z 1\", \"x 2\"], 6)", "expected": "['x']"},
+    {"call": "solution([\"zed 5\", \"amy 5\", \"bob 4\", \"moe 9\", \"bob 1\"], 5)", "expected": "['zed', 'amy', 'bob', 'moe']"},
     {"call": "solution([\"u\" + str(i % 1000) + \" 1\" for i in range(99999)] + [\"kim 1000\"], 101)", "expected": "['kim']"}
   ]
 }

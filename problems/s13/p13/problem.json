@@ -5,7 +5,7 @@
   "points": 8,
   "mode": "call",
   "tags": ["except 여러 개", "인덱싱·슬라이싱"],
-  "examples": 3,
+  "examples": 4,
   "cases": [
     {"call": "solution([80, 95, 70], [\"1\", \"x\", \"5\", \"-1\"])", "expected": "[95, '번호 오류', '없는 번호', 70]"},
     {"call": "solution([80, 95, 70], [\"0\", \"2\", \"3\"])", "expected": "[80, 70, '없는 번호']"},

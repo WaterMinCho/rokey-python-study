@@ -1,0 +1,35 @@
+{
+  "title": "범위 센서와 경보 센서",
+  "type": "fill",
+  "level": 3,
+  "points": 8,
+  "mode": "exec",
+  "tags": [
+    "여러 단계 상속",
+    "super()",
+    "오버라이딩"
+  ],
+  "examples": 2,
+  "cases": [
+    {
+      "code": "s = AlarmSensor(\"온도\", 0, 50)\ns.read(20)\ns.read(70)\ns.read(35)\ns.report()",
+      "stdout": "온도 [20, 35]\n경보 1\n"
+    },
+    {
+      "code": "r = RangeSensor(\"습도\", 10, 90)\nr.read(5)\nr.read(10)\nr.read(90)\nr.read(91)\nr.report()",
+      "stdout": "습도 [10, 90]\n"
+    },
+    {
+      "code": "b = Sensor(\"기본\")\nb.read(-5)\nb.read(999)\nb.report()",
+      "stdout": "기본 [-5, 999]\n"
+    },
+    {
+      "code": "s = AlarmSensor(\"압력\", 1, 3)\nfor v in [0, 4, 5]:\n    s.read(v)\ns.report()\nprint(s.low, s.high, s.alarms, len(s.values))",
+      "stdout": "압력 []\n경보 3\n1 3 3 0\n"
+    },
+    {
+      "code": "a = AlarmSensor(\"A\", 0, 9)\nb = AlarmSensor(\"B\", 0, 9)\na.read(3)\nb.read(12)\nb.read(7)\na.report()\nb.report()",
+      "stdout": "A [3]\n경보 0\nB [7]\n경보 1\n"
+    }
+  ]
+}

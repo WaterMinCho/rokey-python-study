@@ -4,7 +4,7 @@
   "level": 1,
   "points": 4,
   "mode": "io",
-  "tags": ["print 형식"],
+  "tags": ["따옴표와 문자열", "print 형식"],
   "examples": 1,
   "cases": [
     {"stdout": "Tom's robot\n로봇이 말했다. \"준비 완료\"\n"}

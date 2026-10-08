@@ -1,0 +1,29 @@
+{
+  "title": "math 모듈 불러 쓰기",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "io",
+  "tags": [
+    "import 형태"
+  ],
+  "examples": 2,
+  "cases": [
+    {
+      "stdin": "5\n",
+      "stdout": "120\n24\n"
+    },
+    {
+      "stdin": "1\n",
+      "stdout": "1\n1\n"
+    },
+    {
+      "stdin": "7\n",
+      "stdout": "5040\n720\n"
+    },
+    {
+      "stdin": "10\n",
+      "stdout": "3628800\n362880\n"
+    }
+  ]
+}

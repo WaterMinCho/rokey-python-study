@@ -5,14 +5,14 @@
   "points": 4,
   "mode": "call",
   "tags": ["콤보박스", "인덱스 범위"],
-  "examples": 2,
+  "examples": 5,
   "cases": [
     {"call": "solution([\"소\", \"중\", \"대\"], 1)", "expected": "'중'"},
     {"call": "solution([\"소\", \"중\", \"대\"], 0)", "expected": "'소'"},
-    {"call": "solution([\"소\", \"중\", \"대\"], 2)", "expected": "'대'"},
     {"call": "solution([\"소\", \"중\", \"대\"], 3)", "expected": "''"},
     {"call": "solution([], 0)", "expected": "''"},
     {"call": "solution([\"Option 1\"], -1)", "expected": "''"},
+    {"call": "solution([\"소\", \"중\", \"대\"], 2)", "expected": "'대'"},
     {"call": "solution([\"Option 1\", \"Option 2\", \"Option 3\"], 15)", "expected": "''"}
   ]
 }

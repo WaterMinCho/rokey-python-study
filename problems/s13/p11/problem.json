@@ -5,12 +5,13 @@
   "points": 6,
   "mode": "io",
   "tags": ["try-except 흐름", "출력 형식"],
-  "examples": 1,
+  "examples": 2,
   "cases": [
     {"stdin": "5\n4\nabc\n7\n5\n0\n", "stdout": "무시: abc (숫자 아님)\n무시: 7 (범위 밖)\n무시: 0 (범위 밖)\n유효 응답 2개\n합계 9\n"},
-    {"stdin": "3\n1\n5\n3\n", "stdout": "유효 응답 3개\n합계 9\n"},
     {"stdin": "0\n", "stdout": "유효 응답 0개\n합계 0\n"},
+    {"stdin": "3\n1\n5\n3\n", "stdout": "유효 응답 3개\n합계 9\n"},
     {"stdin": "4\n3.0\n-2\n6\n2\n", "stdout": "무시: 3.0 (숫자 아님)\n무시: -2 (범위 밖)\n무시: 6 (범위 밖)\n유효 응답 1개\n합계 2\n"},
-    {"stdin": "2\n다섯\n4\n", "stdout": "무시: 다섯 (숫자 아님)\n유효 응답 1개\n합계 4\n"}
+    {"stdin": "2\n다섯\n4\n", "stdout": "무시: 다섯 (숫자 아님)\n유효 응답 1개\n합계 4\n"},
+    {"stdin": "3\n05\n007\n1\n", "stdout": "무시: 007 (범위 밖)\n유효 응답 2개\n합계 6\n"}
   ]
 }

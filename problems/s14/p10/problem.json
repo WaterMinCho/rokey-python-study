@@ -5,11 +5,11 @@
   "points": 6,
   "mode": "io",
   "tags": ["문자 클래스", "반복 메타 문자", "findall과 finditer"],
-  "examples": 1,
+  "examples": 2,
   "cases": [
     {"stdin": "#python #re_study 2024 #day1\n", "stdout": "3\n#python\n#re_study\n#day1\n"},
-    {"stdin": "no tags here\n", "stdout": "0\n"},
     {"stdin": "# empty #a#b\n", "stdout": "2\n#a\n#b\n"},
+    {"stdin": "no tags here\n", "stdout": "0\n"},
     {"stdin": "price #1 is 100\n", "stdout": "1\n#1\n"},
     {"stdin": "#Rokey11 and #Rokey_11!\n", "stdout": "2\n#Rokey11\n#Rokey_11\n"},
     {"stdin": "##double #x-y\n", "stdout": "2\n#double\n#x\n"}

@@ -5,14 +5,14 @@
   "points": 8,
   "mode": "call",
   "tags": ["정렬", "선택 정렬", "동점 처리"],
-  "examples": 2,
+  "examples": 4,
   "cases": [
     {"call": "solution([80, 95, 80, 70, 95, 60], 3)", "expected": "[80, 4]"},
     {"call": "solution([80, 95, 80, 70, 95, 60], 1)", "expected": "[95, 2]"},
-    {"call": "solution([80, 95, 80, 70, 95, 60], 6)", "expected": "[60, 6]"},
     {"call": "solution([50, 50, 50, 50], 2)", "expected": "[50, 4]"},
-    {"call": "solution([73], 1)", "expected": "[73, 1]"},
     {"call": "solution([10, 20, 30, 40, 50], 2)", "expected": "[40, 2]"},
+    {"call": "solution([80, 95, 80, 70, 95, 60], 6)", "expected": "[60, 6]"},
+    {"call": "solution([73], 1)", "expected": "[73, 1]"},
     {"call": "solution([100, 0, 100, 0, 100], 4)", "expected": "[0, 5]"},
     {"call": "solution([(i * 37) % 101 for i in range(1000)], 500)", "expected": "[50, 505]"},
     {"call": "solution([(i * 7) % 13 for i in range(1000)], 1)", "expected": "[12, 77]"}

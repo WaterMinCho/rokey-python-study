@@ -1,4 +1,4 @@
-# 16차시 퀴즈 — 알고리즘(1)
+# 16차시 퀴즈: 알고리즘(1)
 
 > 코드를 실행하지 말고 눈으로 풀어 보세요. 답은 `submissions/<내 ID>/s16/quiz.py` 에 적습니다.
 
@@ -24,7 +24,7 @@
 
 다음 중 강의에서 **큐(Queue)** 의 활용 사례로 소개한 것은?
 
-1. 함수 호출 스택
+1. 문자열 회문 검사
 2. 웹 브라우저의 뒤로 가기
 3. 괄호 짝 검사
 4. 운영체제의 작업 대기열(프로세스 관리)
@@ -185,8 +185,140 @@ print(len(numbers))
 
 ## Q13 (단답 · 3점)
 
-큐(Queue)에 데이터를 삽입하는 연산을 부르는 이름을 영어로 적으세요.
+큐(Queue)에 데이터를 삽입하는 연산의 이름을 영어로 적으세요. 스택의 push 에 해당하는 이름을 묻는 문제이고, 리스트 메서드 `append` 는 답이 아닙니다.
 
 ## Q14 (단답 · 3점)
 
 `deque` 클래스가 들어 있는 파이썬 내장 모듈의 이름을 적으세요. (`from 모듈 import deque` 에서 `모듈` 자리에 들어가는 이름)
+
+## Q15 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+class Queue:
+    def __init__(self):
+        self.queue = []
+
+    def enqueue(self, data):
+        self.queue.append(data)
+
+    def dequeue(self):
+        if not self.is_empty():
+            return self.queue.pop(0)
+        return
+
+    def is_empty(self):
+        if len(self.queue) == 0:
+            return True
+        return False
+
+    def status_queue(self):
+        return self.queue
+
+
+q = Queue()
+q.dequeue()
+q.enqueue("a")
+q.enqueue("b")
+view = q.status_queue()
+q.enqueue("c")
+print(q.dequeue(), view)
+view.append("z")
+print(q.dequeue(), q.dequeue(), q.dequeue(), q.dequeue())
+print(view, q.is_empty())
+```
+
+## Q16 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요. `Line` 은 `Stack` 을 상속하면서 `pop` 메서드만 다시 정의한 클래스입니다.
+
+```python
+class Stack:
+    def __init__(self):
+        self.stack = []
+
+    def push(self, data):
+        self.stack.append(data)
+
+    def pop(self):
+        if not self.is_empty():
+            return self.stack.pop()
+        return
+
+    def is_empty(self):
+        if len(self.stack) == 0:
+            return True
+        return False
+
+    def peak(self):
+        if not self.is_empty():
+            return self.stack[-1]
+        return
+
+
+class Line(Stack):
+    def pop(self):
+        if not self.is_empty():
+            return self.stack.pop(0)
+        return
+
+
+s = Stack()
+q = Line()
+for n in [3, 6, 9]:
+    s.push(n)
+    q.push(n)
+print(s.pop(), q.pop())
+print(s.peak(), q.peak())
+q.pop()
+q.pop()
+print(q.pop(), q.is_empty())
+print(s.stack, q.stack)
+```
+
+## Q17 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+data = [3, 1, 4]
+out = []
+try:
+    while True:
+        out.append(data.pop(0))
+        out.append(data.pop())
+except IndexError:
+    print("stop", out)
+finally:
+    print(data)
+print(len(out))
+```
+
+## Q18 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+from collections import deque
+
+dq = deque()
+for ch in "abc":
+    dq.appendleft(ch)
+print(dq)
+dq.appendleft(dq.pop())
+print(dq)
+print(dq.pop(), dq.popleft(), dq.pop())
+print(dq, len(dq))
+```
+
+## Q19 (객관식 · 2점)
+
+리스트 `data = [1, 2, 3, 4, 5]` 를 왼쪽으로 2만큼 회전하면 `[3, 4, 5, 1, 2]` 가 됩니다.
+처음 상태의 `data` 에 각 보기를 따로 실행했을 때 `data` 가 `[3, 4, 5, 1, 2]` 가 되는 것을 **모두** 고르세요.
+
+1. `data.append(data.pop(0))` 을 2번 실행
+2. `data.insert(0, data.pop())` 을 2번 실행
+3. `data.insert(0, data.pop())` 을 3번 실행
+4. `data.append(data.pop())` 을 2번 실행
+5. `data = data[2:] + data[:2]` 를 1번 실행

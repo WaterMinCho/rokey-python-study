@@ -55,6 +55,16 @@
       "expect_files": {
         "report.txt": "합계: 55\n"
       }
+    },
+    {
+      "files": {
+        "scores.txt": "수아,40\n도윤,60\n",
+        "report.txt": "합계: 999\n지난 기록\n"
+      },
+      "stdout": "수아: 40\n도윤: 60\n합계: 100\n",
+      "expect_files": {
+        "report.txt": "합계: 100\n"
+      }
     }
   ]
 }

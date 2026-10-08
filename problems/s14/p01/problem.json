@@ -5,12 +5,12 @@
   "points": 4,
   "mode": "io",
   "tags": ["문자 클래스", "반복 메타 문자", "findall과 finditer"],
-  "examples": 2,
+  "examples": 3,
   "cases": [
     {"stdin": "we love regex\n", "stdout": "['we', 'love', 'regex']\n3\n"},
     {"stdin": "Hi there 2024\n", "stdout": "['i', 'there']\n2\n"},
-    {"stdin": "a1b2 c3\n", "stdout": "['a', 'b', 'c']\n3\n"},
     {"stdin": "2024\n", "stdout": "[]\n0\n"},
+    {"stdin": "a1b2 c3\n", "stdout": "['a', 'b', 'c']\n3\n"},
     {"stdin": "ROKEY rokey_11\n", "stdout": "['rokey']\n1\n"}
   ]
 }

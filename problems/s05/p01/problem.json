@@ -5,7 +5,7 @@
   "points": 4,
   "tags": ["range 끝값", "인덱스"],
   "mode": "io",
-  "examples": 2,
+  "examples": 1,
   "cases": [
     {"stdin": "3\n", "stdout": "1 김밥\n2 라면\n3 떡볶이\n"},
     {"stdin": "1\n", "stdout": "1 김밥\n"},

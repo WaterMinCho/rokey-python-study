@@ -1,0 +1,16 @@
+{
+  "title": "대기 인원이 정해진 큐",
+  "type": "print",
+  "level": 3,
+  "points": 8,
+  "mode": "exec",
+  "tags": ["큐 클래스", "super()", "오버라이딩"],
+  "examples": 2,
+  "cases": [
+    {"code": "q = LimitedQueue(2)\nq.enqueue(\"A\")\nq.enqueue(\"B\")\nq.enqueue(\"C\")\nprint(q.status_queue())\nprint(q.dequeue())\nq.enqueue(\"C\")\nprint(q.status_queue())", "stdout": "등록: A\n등록: B\n가득 참: C\n['A', 'B']\n호출: A\nA\n등록: C\n['B', 'C']\n"},
+    {"code": "q = LimitedQueue(1)\nprint(q.dequeue())\nprint(q.is_empty(), q.limit)\nq.enqueue(7)\nprint(q.is_empty())", "stdout": "대기 없음\nNone\nTrue 1\n등록: 7\nFalse\n"},
+    {"code": "q = LimitedQueue(3)\nq.enqueue(0)\nq.enqueue(5)\nx = q.dequeue()\nprint(x)\nprint(q.status_queue())", "stdout": "등록: 0\n등록: 5\n호출: 0\n0\n[5]\n"},
+    {"code": "a = LimitedQueue(1)\nb = LimitedQueue(2)\np = Queue()\na.enqueue(\"x\")\nb.enqueue(\"y\")\nb.enqueue(\"z\")\na.enqueue(\"w\")\np.enqueue(\"k\")\nprint(a.status_queue(), b.status_queue(), p.status_queue())\nprint(p.dequeue(), p.dequeue())", "stdout": "등록: x\n등록: y\n등록: z\n가득 참: w\n['x'] ['y', 'z'] ['k']\nk None\n"},
+    {"code": "q = LimitedQueue(2)\nq.enqueue(1)\nprint(q.dequeue(), q.dequeue())\nq.enqueue(2)\nq.enqueue(3)\nq.enqueue(4)\nq.dequeue()\nq.enqueue(4)\nprint(q.status_queue(), q.is_empty())", "stdout": "등록: 1\n호출: 1\n대기 없음\n1 None\n등록: 2\n등록: 3\n가득 참: 4\n호출: 2\n등록: 4\n[3, 4] False\n"}
+  ]
+}

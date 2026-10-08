@@ -1,4 +1,4 @@
-# 6차시 퀴즈 — 함수(1)
+# 6차시 퀴즈: 함수(1)
 
 > 코드를 실행하지 말고 눈으로 풀어 보세요. 답은 `submissions/<내 ID>/s06/quiz.py` 에 적습니다.
 
@@ -185,4 +185,92 @@ def step(n):
     return n * 3 + 1
 
 x = step(step(6))
+```
+
+## Q15 (객관식 · 2점)
+
+다음 코드에 대한 설명으로 옳은 것을 **모두** 고르세요.
+
+```python
+def scale(value, ratio):
+    result = value * ratio
+    return result
+
+base = 4
+out = scale(base, 2.5)
+```
+
+1. `value` 와 `ratio` 는 매개변수이고, `base` 와 `2.5` 는 인수이다.
+2. `scale(base, 2.5)` 를 호출하면 `ratio` 에 `4` 가 대입된다.
+3. 코드를 끝까지 실행하면 `out` 에 `10.0` 이 저장된다.
+4. 마지막 줄 아래에 `print(result)` 를 추가하면 `10.0` 이 출력된다.
+
+## Q16 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+def first_over(nums, limit):
+    for n in nums:
+        if n > limit:
+            return n
+        print("skip", n)
+    return -1
+
+print(first_over([3, 8, 12, 5], 7))
+print(first_over([6, 7], 7))
+```
+
+## Q17 (객관식 · 2점)
+
+다음 코드를 실행한 결과로 옳은 것은?
+
+```python
+def report():
+    print("보고 시작")
+    line()
+    print("보고 끝")
+
+def line():
+    print("-----")
+
+report()
+```
+
+1. 아무것도 출력되지 않고 오류가 발생한다.
+2. `보고 시작` 만 출력된 뒤 오류가 발생한다.
+3. `보고 시작`, `-----`, `보고 끝` 이 차례로 출력된다.
+4. `-----`, `보고 시작`, `보고 끝` 이 차례로 출력된다.
+
+## Q18 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+def order(a, b):
+    if a < b:
+        return a, b
+    return b, a
+
+r = order(9, 4)
+print(r)
+print(r[0] + r[1] * 2)
+print(order(5, 5))
+```
+
+## Q19 (출력 예측 · 3점)
+
+다음 코드의 출력 결과를 그대로 적으세요.
+
+```python
+def twice(n):
+    print(n * 2)
+
+def triple(n):
+    return n * 3
+
+a = twice(4)
+b = triple(4)
+print(a, b)
+print(twice(triple(1)))
 ```

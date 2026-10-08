@@ -6,7 +6,7 @@
   "mode": "exec",
   "tags": [
     "raise",
-    "클래스 메서드",
+    "메서드 정의",
     "출력 형식"
   ],
   "examples": 2,

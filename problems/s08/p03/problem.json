@@ -4,7 +4,7 @@
   "level": 1,
   "points": 4,
   "mode": "call",
-  "tags": ["딕셔너리 매개변수"],
+  "tags": ["딕셔너리 매개변수", "누적 패턴"],
   "examples": 3,
   "cases": [
     {"call": "solution({'pen': 1200, 'note': 2500, 'eraser': 800})", "expected": "4500"},

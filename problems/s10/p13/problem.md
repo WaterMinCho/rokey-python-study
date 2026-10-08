@@ -4,8 +4,8 @@
 
 ## Car 클래스
 
-1. **생성자** `Car(plate, hours)` — 번호판과 주차 시간을 인스턴스 변수 `plate`, `hours` 에 저장합니다.
-2. **`fee()`** — 요금 `hours × 1000` 을 **반환**합니다.
+1. **생성자** `Car(plate, hours)`: 번호판과 주차 시간을 인스턴스 변수 `plate`, `hours` 에 저장합니다.
+2. **`fee()`**: 요금 `hours × 1000` 을 **반환**합니다.
 
 ## Motorcycle 클래스 (Car 상속)
 
@@ -14,7 +14,7 @@
 
 ## Truck 클래스 (Car 상속)
 
-1. **생성자** `Truck(plate, hours, tons)` — 부모의 생성자로 `plate`, `hours` 를 저장하고, 적재 톤수를 인스턴스 변수 `tons` 에 저장합니다.
+1. **생성자** `Truck(plate, hours, tons)`: 부모의 생성자로 `plate`, `hours` 를 저장하고, 적재 톤수를 인스턴스 변수 `tons` 에 저장합니다.
 2. **`fee()`** 를 재정의해 `hours × 1000 + tons × 2000` 을 **반환**합니다.
 
 ## settle 함수

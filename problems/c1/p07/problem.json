@@ -5,7 +5,7 @@
   "points": 6,
   "mode": "call",
   "tags": ["최댓값 찾기", "인덱스 추적", "초깃값"],
-  "examples": 3,
+  "examples": 4,
   "cases": [
     {"call": "solution([4, 9, 2, 9])", "expected": "1"},
     {"call": "solution([7])", "expected": "0"},

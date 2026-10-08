@@ -9,7 +9,7 @@
     "문자열 인덱싱",
     "문자열 누적"
   ],
-  "examples": 3,
+  "examples": 4,
   "cases": [
     {
       "call": "solution(\"read only memory\")",

@@ -1,0 +1,18 @@
+{
+  "title": "이메일 주소 뽑기",
+  "type": "fill",
+  "level": 2,
+  "points": 6,
+  "mode": "io",
+  "tags": ["문자 클래스", "반복 메타 문자", "findall과 finditer"],
+  "examples": 3,
+  "cases": [
+    {"stdin": "send to help@rokey.kr or kim.lee@mail.rokey.co.kr\n", "stdout": "['help@rokey.kr', 'kim.lee@mail.rokey.co.kr']\n2\n"},
+    {"stdin": "my address is park-01@my-site.net.\n", "stdout": "['park-01@my-site.net']\n1\n"},
+    {"stdin": "no mail here\n", "stdout": "[]\n0\n"},
+    {"stdin": "bad@site and @rokey.kr and ok_1@a.b\n", "stdout": "['ok_1@a.b']\n1\n"},
+    {"stdin": "a@b.c,d@e.f\n", "stdout": "['a@b.c', 'd@e.f']\n2\n"},
+    {"stdin": "Kim_Lee@Rokey.KR B2@c3.d4\n", "stdout": "['Kim_Lee@Rokey.KR', 'B2@c3.d4']\n2\n"},
+    {"stdin": "(help@rokey.kr) <kim@rokey.kr>; mail:lee@rokey.kr!\n", "stdout": "['help@rokey.kr', 'kim@rokey.kr', 'lee@rokey.kr']\n3\n"}
+  ]
+}

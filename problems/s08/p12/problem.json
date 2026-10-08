@@ -1,0 +1,18 @@
+{
+  "title": "점수 순위 출력",
+  "type": "print",
+  "level": 3,
+  "points": 8,
+  "mode": "exec",
+  "tags": ["선택 정렬", "딕셔너리 매개변수", "출력 형식"],
+  "examples": 1,
+  "cases": [
+    {"code": "score = {\"kim\": 80, \"lee\": 95, \"park\": 62}\nprint_rank(score)\nprint(score)", "stdout": "1 lee 95\n2 kim 80\n3 park 62\n{'kim': 80, 'lee': 95, 'park': 62}\n"},
+    {"code": "s = {\"p\": 10, \"q\": 20, \"r\": 30, \"s\": 40, \"t\": 50}\nprint_rank(s)\nprint(s)", "stdout": "1 t 50\n2 s 40\n3 r 30\n4 q 20\n5 p 10\n{'p': 10, 'q': 20, 'r': 30, 's': 40, 't': 50}\n"},
+    {"code": "a = {\"na\": 55, \"da\": 100, \"ra\": 0, \"ma\": 73}\nb = a\nprint_rank(b)\nprint_rank(a)\nprint(a)", "stdout": "1 da 100\n2 ma 73\n3 na 55\n4 ra 0\n1 da 100\n2 ma 73\n3 na 55\n4 ra 0\n{'na': 55, 'da': 100, 'ra': 0, 'ma': 73}\n"},
+    {"code": "s = {\"x\": 90, \"y\": 70, \"z\": 50}\nprint_rank(s)\nprint(s)", "stdout": "1 x 90\n2 y 70\n3 z 50\n{'x': 90, 'y': 70, 'z': 50}\n"},
+    {"code": "s = {\"solo\": 0}\nprint_rank(s)\nprint(s)", "stdout": "1 solo 0\n{'solo': 0}\n"},
+    {"code": "s = {\"b2\": 3, \"a1\": 9, \"c3\": 6, \"d4\": 1, \"e5\": 8, \"f6\": 2}\nprint_rank(s)", "stdout": "1 a1 9\n2 e5 8\n3 c3 6\n4 b2 3\n5 f6 2\n6 d4 1\n"},
+    {"code": "s = {}\nprint_rank(s)\nprint(s)", "stdout": "{}\n"}
+  ]
+}

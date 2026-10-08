@@ -38,6 +38,14 @@
     {
       "call": "solution([60])",
       "expected": "'합격'"
+    },
+    {
+      "call": "solution([20, 30, 100])",
+      "expected": "'불합격'"
+    },
+    {
+      "call": "solution([100, 100, 0, 40])",
+      "expected": "'합격'"
     }
   ]
 }

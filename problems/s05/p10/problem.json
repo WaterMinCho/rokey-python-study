@@ -5,7 +5,7 @@
   "points": 8,
   "tags": ["이중 for", "인덱스", "print end"],
   "mode": "io",
-  "examples": 3,
+  "examples": 1,
   "cases": [
     {"stdin": "4\n", "stdout": "R\nR O\nR O K\nR O K E\n"},
     {"stdin": "1\n", "stdout": "R\n"},
