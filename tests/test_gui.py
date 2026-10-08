@@ -242,10 +242,10 @@ class FirstRunTest(GuiTest):
         click(buttons[0])
         click(buttons[1])
         self.assertEqual([b.isChecked() for b in buttons[:2]], [False, True])
-        self.assertIn("작성함", page.listw.item(choice["no"] - 1).text())
+        self.assertTrue(page.listw.item(choice["no"] - 1).data(Qt.ItemDataRole.UserRole))  # 목록의 동그라미가 채워짐
         click(buttons[1])
         self.assertFalse(any(b.isChecked() for b in buttons))
-        self.assertIn("안 풂", page.listw.item(choice["no"] - 1).text())
+        self.assertFalse(page.listw.item(choice["no"] - 1).data(Qt.ItemDataRole.UserRole))
         click(buttons[1])
         pump(save_delay())  # 다른 문항으로 가지 않아도 잠시 뒤 저장됨
         self.assertEqual(self.saved_quiz("d1")[choice["id"]], 2)
