@@ -547,6 +547,16 @@ class GitFlowTest(unittest.TestCase):
         self.assertEqual(self.server.pr_commits("study/alice"), 1)
         self.merge()
 
+    def test_main_history_rewritten_and_fetched_by_hand_first(self):
+        """main·study/<ID> 가 아닌 브랜치에서 손으로 git fetch 를 먼저 해도 개발 폴더로 보지 않고 받음."""
+        pc = self.pc
+        mine = pc.solve(); self.sync()
+        git(pc.path, "switch", "-q", "-c", "alice/day2")
+        self.server.rewrite_main()
+        git(pc.path, "fetch", "-q", "origin")
+        self.sync(after=mine)
+        pc.solve(); self.submit(); self.merge()
+
     def test_main_history_rewritten_while_my_pr_is_open(self):
         """열려 있는 PR 이 옛 기록 위에 있어도 받기와 제출이 이어지고, PR 의 변경 범위는 내 폴더뿐임."""
         pc = self.pc

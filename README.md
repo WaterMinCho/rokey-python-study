@@ -43,13 +43,13 @@ ID 를 잘못 넣었으면 프로그램을 끄고 `submissions/<잘못 넣은 ID
 
 ### 예전 버전을 받아 뒀거나 문제 받기가 계속 오류로 끝날 때
 
-터미널에서 쓰던 예전 버전을 받아 뒀거나, 프로그램을 켤 때마다 "문제를 받다가 오류가 났습니다"가 나오면 그 폴더에서 아래 네 줄을 차례로 실행한 뒤 프로그램을 켜세요. 새로 clone 하지 않아도 되고, 풀이 폴더(`submissions`)는 건드리지 않아서 풀던 기록이 새 프로그램에서 이어집니다.
+터미널에서 쓰던 예전 버전을 받아 뒀거나, 프로그램을 켤 때마다 "문제를 받다가 오류가 났습니다"가 나오면 `start.bat` 이 있는 폴더에서 아래 네 줄을 차례로 실행한 뒤 프로그램을 켜세요. 새로 clone 하지 않아도 되고, 풀이 폴더(`submissions`)는 건드리지 않아서 풀던 기록이 새 프로그램에서 이어집니다. 따옴표까지 그대로 넣습니다.
 
 ```bash
 git fetch origin main
 git reset -q FETCH_HEAD
-git checkout -q -- . ":(exclude)submissions"
-git clean -fdq problems
+git checkout -q -- ":(top)" ":(top,exclude)submissions"
+git clean -fdq ":(top)problems"
 ```
 
 ## 문제 풀기
