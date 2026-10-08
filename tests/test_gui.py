@@ -16,7 +16,7 @@ from unittest import mock
 
 try:
     from PyQt6.QtCore import QEventLoop, QMimeData, QSettings, Qt, QTimer, qInstallMessageHandler
-    from PyQt6.QtGui import QGuiApplication, QTextCursor
+    from PyQt6.QtGui import QContextMenuEvent, QGuiApplication, QTextCursor
     from PyQt6.QtTest import QTest
     from PyQt6.QtWidgets import QApplication, QPushButton
 except ImportError:
@@ -545,6 +545,25 @@ class HomeAndGitTest(GuiTest):
         self.choose("ok")
         self.assertEqual(sum(1 for v in self.saved_quiz("d1").values() if v is not None), 4)
 
+    def test_copy_paste_and_right_click_are_blocked(self):
+        self.boot()
+        click(self.win.home.action_btn)
+        page = self.win.round_page
+        clipboard = QApplication.clipboard()
+        clipboard.setText("밖에서 복사한 글")
+        for box in (page.body, page.text_panel.multi, page.code_panel.editor):
+            box.setPlainText("화면의 글")
+            box.selectAll()
+            for key in (Qt.Key.Key_C, Qt.Key.Key_X, Qt.Key.Key_V):
+                QTest.keyClick(box, key, Qt.KeyboardModifier.ControlModifier)
+            self.assertEqual((box.toPlainText(), clipboard.text()), ("화면의 글", "밖에서 복사한 글"))
+            menu = QContextMenuEvent(QContextMenuEvent.Reason.Mouse, box.rect().center())
+            QApplication.sendEvent(box.viewport(), menu)
+            self.assertIsNone(QApplication.activePopupWidget())
+        self.assertIn("막아 두었습니다", page.status.text())
+        QTest.keyClick(page.code_panel.editor, Qt.Key.Key_A)  # 보통 글자는 그대로 들어감
+        self.assertEqual(page.code_panel.editor.toPlainText(), "a")
+
     def test_font_size_is_adjustable_and_remembered(self):
         self.boot()
         page = self.win.round_page
@@ -553,7 +572,7 @@ class HomeAndGitTest(GuiTest):
         self.win.set_zoom(2)
         self.assertEqual(page.code_panel.editor.font().pixelSize(), theme.CODE_PX + 2)
         self.assertEqual(page.text_panel.multi.font().pixelSize(), theme.CODE_PX + 2)
-        self.assertIn("font-size: 16px", page.body.document().defaultStyleSheet())
+        self.assertIn("body { font-size: %dpx" % (14 + theme.DOC_PX + 2), page.body.document().defaultStyleSheet())
         self.win.set_zoom(99)
         self.assertEqual(self.win.zoom, theme.ZOOM_RANGE[1])
         self.win.activateWindow()
