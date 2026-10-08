@@ -352,7 +352,8 @@ class GitFlow:
         name = self._branch()
         if name in ("main", self.branch) or name.startswith("study/") or not self._has(MAIN):  # study/* 는 이 프로그램이 만든 브랜치(ID 를 고친 뒤 등)
             return None
-        if self._ok("diff", "--quiet", MAIN + "...HEAD", "--", *self.outside) \
+        related = self._ok("merge-base", MAIN, "HEAD")  # main 기록이 다시 쓰였으면 갈라진 지점이 없어 커밋한 변경은 견주지 못함
+        if (not related or self._ok("diff", "--quiet", MAIN + "...HEAD", "--", *self.outside)) \
                 and (self._ok("diff", "--quiet", "HEAD", "--", *self.outside) or self._pulling()):
             return None
         return name or "분리된 HEAD"
