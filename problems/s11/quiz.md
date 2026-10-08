@@ -213,7 +213,7 @@ tkinter 와 PyQt6 를 비교한 설명으로 옳지 **않은** 것은?
 
 ## Q16 (출력 예측 · 3점)
 
-`connect(함수명)` 처럼 함수를 괄호 없이 넘기면 어떤 일이 생기는지 흉내 낸 코드입니다. 출력 결과를 그대로 적으세요. (여러 줄이면 `"""` 로 감싸서 줄을 나눠 적습니다)
+`connect(함수명)` 처럼 함수를 괄호 없이 넘기면 어떤 일이 생기는지 흉내 낸 코드입니다. 출력 결과를 그대로 적으세요.
 
 ```python
 def hello():
@@ -420,7 +420,7 @@ sys.exit(app.exec())
 
 ## Q27 (출력 예측 · 3점)
 
-`btn.clicked.connect(lambda: show(size, count))` 처럼 `lambda` 로 감싼 슬롯이 어느 시점의 값을 읽는지 흉내 낸 코드입니다. 출력 결과를 그대로 적으세요. (여러 줄이면 `"""` 로 감싸서 줄을 나눠 적습니다)
+`btn.clicked.connect(lambda: show(size, count))` 처럼 `lambda` 로 감싼 슬롯이 어느 시점의 값을 읽는지 흉내 낸 코드입니다. 출력 결과를 그대로 적으세요.
 
 ```python
 class Button:
