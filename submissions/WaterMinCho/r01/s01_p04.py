@@ -1,3 +1,3 @@
-Print("IDLE")
+print("IDLE")
+print("VSCode")
 print("Colab")
-print(VSCode)

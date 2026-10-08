@@ -169,8 +169,118 @@
    "retest": [],
    "shortages": [],
    "created": "2026-10-08T16:25:12",
+   "tries": 1,
+   "avg_level": 1.89,
+   "results": {
+    "s03/Q5": "ok",
+    "s05/Q13": "wrong",
+    "s07/Q7": "ok",
+    "s09/Q10": "ok",
+    "s10/Q12": "ok",
+    "s11/Q15": "ok",
+    "s11/Q23": "ok",
+    "s12/Q9": "ok",
+    "s13/Q10": "ok",
+    "s13/Q11": "wrong",
+    "s14/Q15": "skipped",
+    "s01/p04": "ok",
+    "s02/p02": "ok",
+    "s09/p10": "ok",
+    "s10/p05": "skipped",
+    "s12/p08": "ok",
+    "s12/p11": "ok",
+    "s14/p12": "ok"
+   },
+   "last_graded": "2026-10-09T00:06:39",
+   "score": "54/69",
+   "unanswered": 0,
+   "completed_at": "2026-10-09T00:06:39",
+   "first_score": "54/69"
+  },
+  {
+   "id": "r02",
+   "kind": "round",
+   "size_reason": "보강할 단원 13개",
+   "focus": [
+    {
+     "unit": "s11",
+     "level": 2,
+     "count": 3
+    },
+    {
+     "unit": "s14",
+     "level": 2,
+     "count": 3
+    },
+    {
+     "unit": "s04",
+     "level": 1,
+     "count": 2
+    },
+    {
+     "unit": "s05",
+     "level": 2,
+     "count": 2
+    },
+    {
+     "unit": "s08",
+     "level": 2,
+     "count": 2
+    },
+    {
+     "unit": "s16",
+     "level": 2,
+     "count": 2
+    },
+    {
+     "unit": "s01",
+     "level": 2,
+     "count": 1
+    },
+    {
+     "unit": "s06",
+     "level": 1,
+     "count": 1
+    },
+    {
+     "unit": "s10",
+     "level": 2,
+     "count": 1
+    },
+    {
+     "unit": "s15",
+     "level": 2,
+     "count": 1
+    }
+   ],
+   "items": [
+    "s04/Q3",
+    "s04/Q8",
+    "s05/Q12",
+    "s06/Q8",
+    "s08/Q15",
+    "s11/Q22",
+    "s11/Q28",
+    "s14/Q2",
+    "s14/Q9",
+    "s16/Q7",
+    "s16/Q8",
+    "s01/p05",
+    "s05/p09",
+    "s08/p06",
+    "s10/p04",
+    "s11/p08",
+    "s14/p05",
+    "s15/p10"
+   ],
+   "retest": [
+    "s04/Q8",
+    "s06/Q8"
+   ],
+   "shortages": [],
+   "created": "2026-10-09T00:06:39",
    "tries": 0,
-   "avg_level": 1.89
+   "avg_level": 1.83
   }
  ],
  "attempts": [
@@ -397,6 +507,134 @@
    "try": 1,
    "ok": true,
    "at": "2026-10-08T16:25:12"
+  },
+  {
+   "round": "r01",
+   "item": "s03/Q5",
+   "try": 1,
+   "ok": true,
+   "at": "2026-10-09T00:06:39"
+  },
+  {
+   "round": "r01",
+   "item": "s05/Q13",
+   "try": 1,
+   "ok": false,
+   "at": "2026-10-09T00:06:39"
+  },
+  {
+   "round": "r01",
+   "item": "s07/Q7",
+   "try": 1,
+   "ok": true,
+   "at": "2026-10-09T00:06:39"
+  },
+  {
+   "round": "r01",
+   "item": "s09/Q10",
+   "try": 1,
+   "ok": true,
+   "at": "2026-10-09T00:06:39"
+  },
+  {
+   "round": "r01",
+   "item": "s10/Q12",
+   "try": 1,
+   "ok": true,
+   "at": "2026-10-09T00:06:39"
+  },
+  {
+   "round": "r01",
+   "item": "s11/Q15",
+   "try": 1,
+   "ok": true,
+   "at": "2026-10-09T00:06:39"
+  },
+  {
+   "round": "r01",
+   "item": "s11/Q23",
+   "try": 1,
+   "ok": true,
+   "at": "2026-10-09T00:06:39"
+  },
+  {
+   "round": "r01",
+   "item": "s12/Q9",
+   "try": 1,
+   "ok": true,
+   "at": "2026-10-09T00:06:39"
+  },
+  {
+   "round": "r01",
+   "item": "s13/Q10",
+   "try": 1,
+   "ok": true,
+   "at": "2026-10-09T00:06:39"
+  },
+  {
+   "round": "r01",
+   "item": "s13/Q11",
+   "try": 1,
+   "ok": false,
+   "at": "2026-10-09T00:06:39"
+  },
+  {
+   "round": "r01",
+   "item": "s14/Q15",
+   "try": 1,
+   "ok": false,
+   "at": "2026-10-09T00:06:39",
+   "skipped": true
+  },
+  {
+   "round": "r01",
+   "item": "s01/p04",
+   "try": 1,
+   "ok": true,
+   "at": "2026-10-09T00:06:39"
+  },
+  {
+   "round": "r01",
+   "item": "s02/p02",
+   "try": 1,
+   "ok": true,
+   "at": "2026-10-09T00:06:39"
+  },
+  {
+   "round": "r01",
+   "item": "s09/p10",
+   "try": 1,
+   "ok": true,
+   "at": "2026-10-09T00:06:39"
+  },
+  {
+   "round": "r01",
+   "item": "s10/p05",
+   "try": 1,
+   "ok": false,
+   "at": "2026-10-09T00:06:39",
+   "skipped": true
+  },
+  {
+   "round": "r01",
+   "item": "s12/p08",
+   "try": 1,
+   "ok": true,
+   "at": "2026-10-09T00:06:39"
+  },
+  {
+   "round": "r01",
+   "item": "s12/p11",
+   "try": 1,
+   "ok": true,
+   "at": "2026-10-09T00:06:39"
+  },
+  {
+   "round": "r01",
+   "item": "s14/p12",
+   "try": 1,
+   "ok": true,
+   "at": "2026-10-09T00:06:39"
   }
  ]
 }
