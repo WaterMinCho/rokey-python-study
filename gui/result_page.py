@@ -145,9 +145,10 @@ class ResultPage(QWidget):
         """끝난 회차의 결과를 올림. result 는 방금 채점한 결과(session.grade)이고, 없으면 기록된 결과를 보여 줌."""
         session = self.win.session
         view = session.open_round(rid)
-        states = {it["id"]: it["state"] for it in result["items"]} if result else {}
+        graded = {it["id"]: it for it in result["items"]} if result else {}
         for item in view["items"]:
-            item["state"] = states.get(item["id"], item["result"])
+            item["state"] = graded[item["id"]]["state"] if item["id"] in graded else item["result"]
+            item["detail"] = graded[item["id"]]["detail"] if item["id"] in graded else None  # None 이면 이번에 채점하지 않았음
         earned = sum(item["points"] for item in view["items"] if item["state"] == "ok")
         total = sum(item["points"] for item in view["items"])
         overview = session.overview()
@@ -219,8 +220,12 @@ class ResultPage(QWidget):
 
     def item_html(self, item):
         name, color = theme.result_label(item["state"])
-        parts = ['<p><b><span style="color:%s;">%s</span></b></p>' % (color, name), md_html(item["body_md"]),
-                 band("내 답"), my_answer_html(item)]
+        parts = ['<p><b><span style="color:%s;">%s</span></b></p>' % (color, name)]
+        if item["detail"]:  # 채점기가 남긴 틀린 이유(통과한 테스트 수, 처음 틀린 테스트)
+            parts += [band("틀린 이유"), code_box(item["detail"])]
+        elif item["detail"] is None and item["kind"] == "code" and item["state"] == "wrong":
+            parts.append("<p>틀린 이유는 '다시 풀기'에서 '다시 채점'을 누르면 나옵니다.</p>")
+        parts += [md_html(item["body_md"]), band("내 답"), my_answer_html(item)]
         if item["id"] in self.revealed:
             info = self.win.session.explain(self.view["id"], item["id"])
             parts.append(band("정답과 해설", "answer"))

@@ -87,7 +87,10 @@ def profile_path(user):
 def load_profile(user):
     path = profile_path(user)
     if os.path.isfile(path):
-        return study.read_json(path)
+        prof = study.read_json(path)
+        if isinstance(prof, dict):
+            prof["user"] = user  # 폴더 이름을 바꿨어도(ID 를 고친 경우) 저장은 지금 폴더에 함
+        return prof
     return {"user": user, "created": now(), "seed": random.randint(1, 10 ** 6), "rounds": [], "attempts": []}
 
 
@@ -463,6 +466,8 @@ def grade_round(user, rnd, cat):
         name = fname_of(key)
         if it["kind"] == "quiz":
             state, detail = ("wrong", error) if error else (study.check_quiz_answer(it["q"], answers.get(name)), "")
+            if answers.get(name) is study.UNPARSED:
+                detail = study.UNPARSED_NOTE % name
             label = "%s · %s" % (it["unit_title"], study.QTYPE_LABEL[it["type"]])
         else:
             state, detail = study.grade_problem(it["spec"], os.path.join(folder, name + ".py"))

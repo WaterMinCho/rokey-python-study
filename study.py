@@ -202,6 +202,7 @@ def set_title(s):
 # 퀴즈 채점
 
 UNPARSED = object()
+UNPARSED_NOTE = '답을 읽지 못했습니다. 글자로 된 답은 따옴표로 감싸 주세요. 예) %s = "답"'  # Q18 = key 처럼 따옴표 없이 적은 경우
 
 
 def parse_quiz_answers(path):
@@ -488,7 +489,9 @@ def grade_set(s, sub_dir):
             if error:
                 add(q["id"], QTYPE_LABEL[q["type"]], q["points"], "wrong", error)
             else:
-                add(q["id"], QTYPE_LABEL[q["type"]], q["points"], check_quiz_answer(q, answers.get(q["id"])))
+                value = answers.get(q["id"])
+                add(q["id"], QTYPE_LABEL[q["type"]], q["points"], check_quiz_answer(q, value),
+                    UNPARSED_NOTE % q["id"] if value is UNPARSED else "")
     for p in s["problems"]:
         state, detail = grade_problem(p, os.path.join(sub_dir, p["id"] + ".py"))
         add(p["id"], "%s · %s" % (TYPE_LABEL[p["type"]], p["title"]), p["points"], state, detail)
@@ -511,7 +514,7 @@ def elapsed_note(s, sub_dir):
     return "경과 %d분 / 제한 %d분%s" % (minutes, limit, " · 시간 초과" if minutes > limit else "")
 
 
-def print_report(s, items, sub_dir):
+def print_report(s, items, sub_dir, explain_hint=True):
     print("\n[%s] %s" % (s["id"], set_title(s)))
     for it in items:
         print("  %s %-4s %s  (%d/%d점)" % (MARK[it["state"]], it["id"], it["label"], it["earned"], it["points"]))
@@ -524,7 +527,7 @@ def print_report(s, items, sub_dir):
     if note:
         print("  ── " + note)
     wrong = [it["id"] for it in items if it["state"] == "wrong"]
-    if wrong:
+    if wrong and explain_hint:
         target = wrong[0] if "_" in wrong[0] else "%s %s" % (s["id"], wrong[0])  # 라운드 문항은 s03_Q4 꼴
         print("  틀린 문제는 다시 풀어 본 뒤 해설 확인: python study.py explain %s" % target)
 
@@ -748,6 +751,20 @@ def cmd_board(args):
     print(render_board())
 
 
+def in_open_round(key):
+    """풀고 있는(제출 전) 회차에 든 문항인지 봄. 화면처럼 그런 문항의 해설은 열지 않음."""
+    import adaptive
+    import session
+    user = session.saved_user()
+    if not user:
+        return False
+    try:
+        rounds = adaptive.load_profile(user)["rounds"]
+    except (ValueError, KeyError, TypeError, OSError):
+        return False
+    return any(not r.get("completed_at") and key in r["items"] for r in rounds)
+
+
 def cmd_explain(args):
     set_token, item = args.set, args.item
     if item is None and "_" in set_token:  # 라운드 문항 ID: s03_Q4
@@ -755,6 +772,9 @@ def cmd_explain(args):
     if item is None:
         die("문항을 지정하세요. 예) python study.py explain 3 Q4  또는  python study.py explain s03_Q4")
     s = load_set(resolve_set(set_token))
+    for found in s["questions"] + s["problems"]:
+        if found["id"].lower() == item.lower() and in_open_round("%s/%s" % (s["id"], found["id"])):
+            die("풀고 있는 회차의 문항입니다. 해설은 회차를 끝낸(제출한) 뒤에 볼 수 있습니다.")
     for q in s["questions"]:
         if q["id"].lower() == item.lower():
             if q["type"] == "choice":
@@ -812,7 +832,7 @@ def print_round_result(sess, result):
     """회차 채점 결과와 가이드를 출력함."""
     import adaptive
     rnd = adaptive.find_round(sess.prof, result["round"]["id"])
-    print_report(round_as_set(rnd), result["items"], sess.folder(rnd["id"]))
+    print_report(round_as_set(rnd), result["items"], sess.folder(rnd["id"]), explain_hint=result["completed"])  # 해설은 회차를 끝낸 뒤에만
     if result["unanswered"]:
         print("\n아직 답하지 않은 문항 %d개가 있습니다. 마저 풀고 다시 python study.py go 를 실행하세요." % result["unanswered"])
         return
@@ -846,6 +866,21 @@ def cmd_go(args):
     if created:
         announce_round(user, rnd, sess.folder(rnd["id"]))
         return
+    try:
+        pending = sess.pending(rnd["id"])
+    except session.SessionError as error:
+        die(str(error))
+    written = pending["total"] - len(pending["blank"])
+    if written:  # 화면에서 풀다 만 답이 묻지도 않고 첫 시도로 기록되지 않게 함
+        print("%s: 작성한 문항 %d개, 비어 있는 문항 %d개" % (adaptive.round_title(rnd), written, len(pending["blank"])))
+        print("지금 채점하면 작성한 답이 첫 시도로 기록됩니다(쓰다 만 답 포함). 숙달 판정에는 첫 시도만 반영됩니다.")
+        try:
+            answer = input("채점할까요? [y/N] ")
+        except EOFError:
+            answer = ""
+        if answer.strip().lower() not in ("y", "yes", "ㅛ", "예", "네"):
+            print("채점하지 않았습니다. 기록은 바뀌지 않았습니다.")
+            return
     result = sess.grade(rnd["id"])
     if result["untouched"]:
         print("%s 를 아직 풀지 않았습니다." % adaptive.round_title(rnd))

@@ -3,12 +3,16 @@
 
 실행: python -m unittest discover -s tests
 """
+import argparse
 import ast
+import contextlib
+import io
 import os
 import shutil
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import adaptive  # noqa: E402
@@ -259,6 +263,35 @@ class SessionTest(unittest.TestCase):
         info = self.sess.explain(rid, code["id"])
         self.assertTrue(info["solution"] and info["markdown"])
 
+    def test_terminal_go_asks_first_and_explain_stays_locked(self):
+        """화면에서 풀다 만 회차를 터미널 go 가 묻지 않고 채점하지 않고, 풀고 있는 회차의 해설도 열지 않음."""
+        session.save_user("tester")
+        self.sess.ensure_round()
+        self.answer_all("d1", only={1})
+        first = self.sess.open_round("d1")["items"][0]
+        out = io.StringIO()
+        with mock.patch("builtins.input", return_value=""), contextlib.redirect_stdout(out):
+            study.cmd_go(argparse.Namespace())
+        self.assertEqual(adaptive.load_profile("tester")["attempts"], [])
+        self.assertIn("채점하지 않았습니다", out.getvalue())
+        with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
+            study.cmd_explain(argparse.Namespace(set=first["id"], item=None))
+        with mock.patch("builtins.input", return_value="y"), contextlib.redirect_stdout(out):
+            study.cmd_go(argparse.Namespace())
+        self.assertEqual(len(adaptive.load_profile("tester")["attempts"]), 1)
+        self.assertNotIn("explain", out.getvalue())  # 회차가 끝나기 전에는 해설 명령을 권하지 않음
+
+    def test_unquoted_text_answer_is_explained(self):
+        """터미널 방식으로 quiz.py 에 따옴표 없이 글자를 적으면 오답 사유에 적는 법이 나옴."""
+        rnd, _ = self.sess.ensure_round()
+        view = next(v for v in self.sess.open_round("d1")["items"] if v["kind"] == "quiz")
+        path = os.path.join(self.sess.folder("d1"), "quiz.py")
+        lines = [view["id"] + " = abc" if line.startswith(view["id"] + " = ") else line for line in study.read_text(path).split("\n")]
+        study.write_text(path, "\n".join(lines))
+        graded = next(it for it in adaptive.grade_round("tester", rnd, self.sess.cat) if it["id"] == view["id"])
+        self.assertEqual(graded["state"], "wrong")
+        self.assertIn("따옴표", graded["detail"])
+
     # 현황
 
     def test_overview_tracks_progress(self):
@@ -338,6 +371,17 @@ class SessionTest(unittest.TestCase):
         self.sess.grade("d1")  # 앞서 열어 둔 세션이 고쳐서 채점
         attempts = [a for a in session.Session("tester").prof["attempts"] if a["item"] == first["key"]]
         self.assertEqual([(a["try"], a["ok"]) for a in attempts], [(1, False), (2, True)])
+
+    def test_renamed_folder_keeps_the_record_in_one_place(self):
+        """ID 를 고치려고 풀이 폴더 이름을 바꾼 뒤에도 기록이 옛 ID 폴더로 갈라지지 않음."""
+        self.sess.ensure_round()
+        os.rename(os.path.join(study.SUBMISSIONS_DIR, "tester"), os.path.join(study.SUBMISSIONS_DIR, "fixed"))
+        result = session.Session("fixed").grade("d1", finalize=True)
+        self.assertTrue(result["completed_now"])
+        self.assertFalse(os.path.exists(os.path.join(study.SUBMISSIONS_DIR, "tester")))
+        prof = session.Session("fixed").prof
+        self.assertEqual(prof["user"], "fixed")
+        self.assertEqual([r["id"] for r in prof["rounds"]], ["d1", "r01"])
 
     def test_corrupt_profile_raises_readable_error(self):
         self.sess.ensure_round()

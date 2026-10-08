@@ -84,7 +84,8 @@ class IdDialog(QDialog):
         box.setSpacing(10)
         head = QLabel("깃허브 ID 를 입력해 주세요")
         head.setObjectName("h2")
-        why = QLabel("내 풀이를 저장하는 폴더 이름(submissions/ID)과 제출할 때 올라가는 브랜치 이름에 쓰입니다. "
+        why = QLabel("깃허브 주소 github.com/ 뒤에 나오는 이름입니다(메일 주소나 실명이 아닙니다). "
+                     "내 풀이를 저장하는 폴더 이름(submissions/ID)과 제출할 때 올라가는 브랜치 이름에 쓰입니다. "
                      "한 번만 입력하면 됩니다.")
         why.setWordWrap(True)
         why.setObjectName("muted")
