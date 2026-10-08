@@ -4,19 +4,30 @@ import os
 import subprocess
 import sys
 
-from PyQt6.QtCore import QLockFile, QSettings
+from PyQt6.QtCore import QLibraryInfo, QLockFile, QSettings, QTranslator
 from PyQt6.QtWidgets import QApplication
 
 import study
-from gui import errors, theme
+from gui import errors, icon, theme
 from gui.dialogs import MessageDialog
 from gui.window import MainWindow
+
+
+def korean(app):
+    """답 칸의 우클릭 메뉴처럼 Qt 가 만드는 글자를 한글로 바꿈. 번역 파일이 없으면 영어로 남음."""
+    translator = QTranslator(app)
+    if translator.load("qtbase_ko", QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)):
+        app.installTranslator(translator)
+    return translator
 
 
 def main(argv=None):
     app = QApplication(sys.argv[:1] + list(sys.argv[1:] if argv is None else argv))
     app.setApplicationName("ROKEY 파이썬 스터디")
-    theme.apply(app)
+    settings = QSettings("rokey-python-study", "study")
+    theme.apply(app, settings.value("theme", "system", type=str))
+    icon.install(app)
+    korean(app)
     errors.install(os.path.join(study.ROOT, ".study_logs"))
 
     lock = QLockFile(os.path.join(study.ROOT, ".study.lock"))  # 창 두 개가 같은 풀이 기록을 덮어쓰지 않게 하나만 띄움
@@ -28,7 +39,7 @@ def main(argv=None):
         MessageDialog(None, "ROKEY 파이썬 스터디", text).exec()
         return 1
 
-    window = MainWindow(QSettings("rokey-python-study", "study"))
+    window = MainWindow(settings)
     window.show()
     window.boot()
     code = app.exec()

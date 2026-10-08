@@ -12,7 +12,8 @@ from PyQt6.QtWidgets import (QFrame, QHBoxLayout, QLabel, QListWidget, QListWidg
 import mdlite
 import study
 from gui import theme
-from gui.widgets import ChoicePanel, CodePanel, TextPanel
+from gui.guard import NOTE
+from gui.widgets import ChoicePanel, CodePanel, PasteBlock, TextPanel
 from session import SessionError
 
 SAVE_DELAY_MS = 400  # 입력이 멈춘 뒤 자동 저장까지
@@ -37,6 +38,7 @@ def dot(color, filled):
             icon.addPixmap(pixmap, mode)
         _dots[color, filled] = icon
     return _dots[color, filled]
+PASTE_NOTE_MS = 4000  # 복사·붙여넣기를 막았다는 안내를 보여 주는 시간
 
 
 def split_input(text):
@@ -48,25 +50,25 @@ def split_input(text):
 
 
 def run_html(run):
-    """'코드 실행' 결과(session.try_run)를 예시별 표로 만듦."""
-    note = '<span style="color:%s;">예시만 실행하며 기록되지 않습니다.</span>' % theme.MUTED
+    """'코드 실행' 결과(session.try_run)를 예시별 표로 만듦. 색은 본문 CSS 의 클래스로 주어 테마가 바뀌어도 그대로 다시 넣을 수 있음."""
+    note = '<span class="muted">예시만 실행하며 기록되지 않습니다.</span>'
     cases = run["cases"]
     if cases:
         parts = ["<p><b>예시 %d개 중 %d개 통과</b> · %s</p>" % (len(cases), sum(1 for case in cases if case["ok"]), note)]
     else:
         parts = ["<p>%s</p>" % note]
     if run["message"]:
-        parts.append('<p style="color:%s; white-space:pre-wrap;"><b>%s</b></p>' % (theme.RED, html.escape(run["message"], quote=False)))
+        parts.append('<p class="wrong" style="white-space:pre-wrap;"><b>%s</b></p>' % html.escape(run["message"], quote=False))
     elif not cases:
         parts.append("<p>실행 결과가 없습니다.</p>")
     for number, case in enumerate(cases, 1):
         head, body = split_input(case["input"])
         value = "반환값" if head == "호출" else "출력"
-        label, color = ("통과", theme.GREEN) if case["ok"] else ("실패", theme.RED)
+        label, mark = ("통과", "ok") if case["ok"] else ("실패", "wrong")
         rows = [(head, body), ("기대한 " + value, case["want"]), ("실제 " + value, case["got"])]
         if case["printed"]:
             rows.append(("함수 안 출력", case["printed"]))
-        parts.append('<p><b>예시 %d · <span style="color:%s;">%s</span></b></p>' % (number, color, label))
+        parts.append('<p><b>예시 %d · <span class="%s">%s</span></b></p>' % (number, mark, label))
         parts.append('<table class="grid" border="1" cellspacing="0" cellpadding="4">%s</table>' % "".join(
             '<tr><th align="left">%s</th><td><pre>%s</pre></td></tr>' % (name, html.escape(text, quote=False)) for name, text in rows))
     return "<body>%s</body>" % "".join(parts)
@@ -126,6 +128,9 @@ class RoundPage(QWidget):
         for panel in (self.choice_panel, self.text_panel, self.code_panel):
             self.stack.addWidget(panel)
             panel.changed.connect(self.on_answer_changed)
+        self.paste_block = PasteBlock(self)
+        for edit in (self.code_panel.editor, self.text_panel.multi, self.text_panel.single, self.choice_panel.entry):
+            self.paste_block.watch(edit)
         right_box.addWidget(self.pane_title)
         right_box.addWidget(self.stack, 1)
         for widget in (self.listw, mid, right):
@@ -133,7 +138,7 @@ class RoundPage(QWidget):
         split.setStretchFactor(0, 0)
         split.setStretchFactor(1, 5)
         split.setStretchFactor(2, 4)
-        split.setSizes([225, 555, 475])
+        split.setSizes([245, 535, 475])
         split.setChildrenCollapsible(False)
         root.addWidget(split, 1)
 
@@ -145,6 +150,10 @@ class RoundPage(QWidget):
         self.next_btn = QPushButton("다음")
         self.status = QLabel("")
         self.status.setObjectName("muted")
+        self.paste_note = QLabel(NOTE)  # 자동 저장 문구가 곧바로 덮지 않게 상태 글과 따로 둠
+        self.paste_note.setObjectName("warn")
+        self.paste_note.setMinimumWidth(1)  # 창이 좁으면 창을 넓히지 않고 글이 잘림
+        self.paste_note.hide()
         self.busy_bar = QProgressBar()
         self.busy_bar.setRange(0, 0)  # 끝을 모르는 진행 표시
         self.busy_bar.setTextVisible(False)
@@ -154,6 +163,7 @@ class RoundPage(QWidget):
         self.submit_btn = QPushButton("회차 제출")
         self.submit_btn.setObjectName("primary")
         bar_box.addWidget(self.status, 1)
+        bar_box.addWidget(self.paste_note)
         bar_box.addWidget(self.busy_bar)
         bar_box.addWidget(self.run_btn)
         bar_box.addSpacing(16)
@@ -167,6 +177,11 @@ class RoundPage(QWidget):
         self.save_timer.setSingleShot(True)
         self.save_timer.setInterval(SAVE_DELAY_MS)
         self.save_timer.timeout.connect(lambda: self.flush(commit=False))  # 타이머 저장은 조합 중인 한글을 끊지 않음
+        self.note_timer = QTimer(self)
+        self.note_timer.setSingleShot(True)
+        self.note_timer.setInterval(PASTE_NOTE_MS)
+        self.note_timer.timeout.connect(self.paste_note.hide)
+        self.paste_block.blocked.connect(self.note_blocked)
         self.listw.currentRowChanged.connect(self.show_item)
         self.prev_btn.clicked.connect(lambda: self.listw.setCurrentRow(self.listw.currentRow() - 1))
         self.next_btn.clicked.connect(lambda: self.listw.setCurrentRow(self.listw.currentRow() + 1))
@@ -205,12 +220,12 @@ class RoundPage(QWidget):
         """목록의 한 줄. 답을 적은 문항은 초록 동그라미, 아직이면 빈 동그라미. 다시 풀기에서는 채점 결과의 색과 이름을 씀."""
         row = self.listw.item(item["no"] - 1)
         if self.review:
-            state, color = theme.result_label(item["result"])
+            state, token = theme.result_label(item["result"])
             row.setText("%d. %s · %s\n%s" % (item["no"], item["type_label"], state, item["unit_title"]))
-            row.setIcon(dot(color, color != theme.GRAY))
+            row.setIcon(dot(theme.color(token), token != "blank"))
         else:
             row.setText("%d. %s\n%s" % (item["no"], item["type_label"], item["unit_title"]))
-            row.setIcon(dot(theme.GREEN if item["answered"] else theme.GRAY, item["answered"]))
+            row.setIcon(dot(theme.color("ok" if item["answered"] else "blank"), item["answered"]))
         row.setData(Qt.ItemDataRole.UserRole, bool(item["answered"]))
 
     def _update_progress(self):
@@ -226,7 +241,7 @@ class RoundPage(QWidget):
         if item["kind"] == "code":
             label = "%s · %s" % (item["title"], label)
         self.item_title.setText("%d. %s%s" % (item["no"], label, " · 지난번에 틀린 문항" if item["retest"] else ""))
-        self.body.setHtml(mdlite.to_html(item["body_md"]))
+        self.body.setHtml(self.body_html(item))
         if item["kind"] == "code":
             panel, name = self.code_panel, "코드"
         elif item["type"] == "choice":
@@ -241,15 +256,33 @@ class RoundPage(QWidget):
         self.prev_btn.setEnabled(row > 0)
         self.next_btn.setEnabled(row < len(self.view["items"]) - 1)
 
-    def apply_zoom(self):
+    @staticmethod
+    def body_html(item):
+        """본문 칸에 넣을 HTML. 보기를 카드로 보여 주는 객관식은 지문만 넣음."""
+        return mdlite.blocks_html(item["stem"]) if item.get("options") else mdlite.to_html(item["body_md"])
+
+    def note_blocked(self):
+        """복사나 붙여넣기를 막았다는 안내를 잠깐 보여 줌."""
+        self.paste_note.show()
+        self.note_timer.start()
+
+    def restyle(self):
+        """글자 크기나 테마가 바뀌면 부름. 본문 CSS 와 입력칸 글꼴을 다시 주고, 읽던 자리는 지킴."""
         css, font = theme.doc_css(self.win.zoom), theme.code_font(self.win.zoom)
         for browser in (self.body, self.code_panel.console):
             browser.document().setDefaultStyleSheet(css)
+        self.choice_panel.restyle(css)
         for widget in (self.code_panel.editor, self.text_panel.multi, self.text_panel.single, self.choice_panel.entry):
             widget.setFont(font)
         if self.current:  # 스타일은 다음에 넣는 HTML 부터 적용되므로 본문을 다시 넣음
-            self.body.setHtml(mdlite.to_html(self.current["body_md"]))
+            bars = [browser.verticalScrollBar() for browser in (self.body, self.code_panel.console)]
+            places = [bar.value() for bar in bars]
+            self.body.setHtml(self.body_html(self.current))
             self.code_panel.show_console(self.code_panel.console_html)
+            for bar, place in zip(bars, places):
+                bar.setValue(place)
+        for item in self.view["items"] if self.view else []:  # 목록의 동그라미 색도 테마를 따라감
+            self._fill_row(item)
 
     # 자동 저장
 
@@ -304,6 +337,7 @@ class RoundPage(QWidget):
             widget.setEnabled(not busy)
         self.busy_bar.setVisible(busy)
         if busy:
+            self.paste_note.hide()  # 진행 글과 막대가 들어갈 자리를 비움
             self.status.setText(text)
         else:
             row = self.listw.currentRow()

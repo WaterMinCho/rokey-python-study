@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
-"""홈 화면: 시험 준비도 · 단원 띠 · 지금 할 일 · 지난 회차 · 제출."""
+"""홈 화면: 시험 준비도 · 단원 띠 · 지금 할 일 · 지난 회차 · 제출. 머리줄에서 팀 현황을 열고 테마를 바꿈."""
 import html
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QFrame, QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QProgressBar, QPushButton, QScrollArea,
                              QVBoxLayout, QWidget)
 
-from gui import errors
-from gui.widgets import UnitStrip
+from gui import errors, motion, theme
+from gui.mascot import Mascot
+from gui.widgets import LinkLabel, UnitStrip
 
 
 def card(title):
@@ -52,11 +53,21 @@ class HomePage(QWidget):
         title.setObjectName("h1")
         self.user = muted()
         self.user.setWordWrap(False)
+        self.team_btn = QPushButton("팀 현황")
+        self.team_btn.setToolTip("팀원들의 준비도와 단원별 상태를 봅니다.")
+        self.theme_btn = QPushButton()
+        self.theme_btn.setObjectName("quiet")
+        self.theme_btn.setToolTip("누를 때마다 시스템 → 밝게 → 어둡게 순서로 바뀝니다. 시스템은 운영체제 설정을 따릅니다.")
+        head.addWidget(Mascot(34))
+        head.addSpacing(4)
         head.addWidget(title)
         head.addStretch(1)
         head.addWidget(self.user)
+        head.addSpacing(8)
+        head.addWidget(self.team_btn)
+        head.addWidget(self.theme_btn)
         root.addLayout(head)
-        self.notice = QLabel()
+        self.notice = LinkLabel()
         self.notice.setObjectName("notice")
         self.notice.setWordWrap(True)
         self.notice.setTextFormat(Qt.TextFormat.RichText)  # refresh 가 html.escape 한 글을 넣음. 링크가 없는 글에서도 &#x27; 가 글자로 보이지 않게 함
@@ -142,12 +153,14 @@ class HomePage(QWidget):
         bottom.addLayout(column, 2)
         root.addLayout(bottom, 1)
 
-        foot = QLabel("모의고사: 전 단원을 숙달한 뒤 터미널에서 <code>python study.py start m1</code> · 글자 크기: Ctrl(맥은 Cmd) 과 +, -, 0 · "
-                      '<a href="%s">불편한 점 신고하기</a>' % errors.ISSUE_URL)
-        foot.setObjectName("muted")
-        foot.setOpenExternalLinks(True)
-        root.addWidget(foot)
+        self.foot = LinkLabel("모의고사: 전 단원을 숙달한 뒤 터미널에서 <code>python study.py start m1</code>(2회는 <code>m2</code>) · 글자 크기: Ctrl(맥은 Cmd) 과 +, -, 0 · "
+                              '<a href="%s">불편한 점 신고하기</a>' % errors.ISSUE_URL)
+        self.foot.setObjectName("muted")
+        self.foot.setOpenExternalLinks(True)
+        root.addWidget(self.foot)
 
+        self.team_btn.clicked.connect(win.show_team)
+        self.theme_btn.clicked.connect(win.cycle_theme)
         self.action_btn.clicked.connect(win.start_next)
         self.git_btn.clicked.connect(win.submit_pr)
         self.sync_btn.clicked.connect(win.fetch_problems)
@@ -157,8 +170,8 @@ class HomePage(QWidget):
         win = self.win
         overview = win.session.overview()
         self.user.setText("ID: %s" % overview["user"])
-        self.ready.setText("%d%%" % overview["readiness"])
-        self.ready_bar.setValue(overview["readiness"])
+        motion.count_text(self.ready, "%d%%", overview["readiness"])
+        motion.count(self.ready_bar, overview["readiness"], self.ready_bar.setValue)
         self.mastered.setText("숙달한 단원 %d / %d" % (overview["mastered"], overview["total_units"]))
         self.strip.set_units(overview["units"])
         tags = overview["weak_tags"]
@@ -185,8 +198,11 @@ class HomePage(QWidget):
             more = ' <a href="detail">자세히</a>' if note.get("detail") else ""
             self.notice.setText(html.escape(note.get("message") or "") + more)
 
+    def restyle(self):
+        self.theme_btn.setText("테마: %s" % theme.MODES[theme.state["mode"]])
+
     def set_busy(self, busy, text=""):
-        for widget in (self.action_btn, self.rounds):
+        for widget in (self.action_btn, self.rounds, self.team_btn):
             widget.setEnabled(not busy)
         for widget in (self.git_btn, self.sync_btn):
             widget.setEnabled(not busy and self.win.gitflow is not None)

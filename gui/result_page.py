@@ -4,12 +4,14 @@ import html
 import re
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor
-from PyQt6.QtWidgets import (QFrame, QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QProgressBar, QPushButton, QSplitter,
-                             QTextBrowser, QVBoxLayout, QWidget)
+from PyQt6.QtWidgets import (QFrame, QHBoxLayout, QLabel, QListWidget, QProgressBar, QPushButton, QSplitter, QTextBrowser,
+                             QVBoxLayout, QWidget)
 
 import mdlite
-from gui import theme
+from gui import motion, theme
+from gui.mascot import Mascot
+
+PARTY_RATIO = 90  # 득점률이 이 이상이면 마스코트가 웃고, 방금 제출한 회차면 색종이가 떨어짐
 
 
 def md_html(text):
@@ -25,7 +27,7 @@ def code_box(text):
 def band(title, anchor=""):
     """구역 제목. 문제 본문 안의 제목과 섞이지 않게 띠로 만듦."""
     return ('<a name="%s"></a><table width="100%%" cellspacing="0" cellpadding="6" border="0" style="margin-top:14px; margin-bottom:8px;">'
-            '<tr><td style="background-color:#eaeef2;"><b>%s</b></td></tr></table>' % (anchor, title))
+            '<tr><td class="band"><b>%s</b></td></tr></table>' % (anchor, title))
 
 
 def my_answer_html(item):
@@ -43,7 +45,7 @@ class ResultPage(QWidget):
         super().__init__()
         self.setObjectName("page")
         self.win = win
-        self.view, self.verdicts, self.revealed = None, None, set()
+        self.view, self.verdicts, self.revealed, self.busy = None, None, set(), False
 
         root = QVBoxLayout(self)
         root.setContentsMargins(14, 12, 14, 0)
@@ -60,6 +62,7 @@ class ResultPage(QWidget):
         card.setObjectName("card")
         card_box = QHBoxLayout(card)
         card_box.setContentsMargins(20, 10, 20, 10)
+        self.mascot = Mascot(52)
         self.score = QLabel()
         self.score.setObjectName("big")
         self.ratio = QLabel()
@@ -78,6 +81,8 @@ class ResultPage(QWidget):
         ready_box.addWidget(self.ready)
         ready_box.addWidget(self.ready_bar)
         ready_box.addStretch(1)
+        card_box.addWidget(self.mascot)
+        card_box.addSpacing(10)
         card_box.addWidget(self.score)
         card_box.addSpacing(14)
         card_box.addWidget(self.ratio)
@@ -110,7 +115,7 @@ class ResultPage(QWidget):
         split.addWidget(right)
         split.setStretchFactor(0, 0)
         split.setStretchFactor(1, 1)
-        split.setSizes([330, 920])
+        split.setSizes([345, 905])
         split.setChildrenCollapsible(False)
         root.addWidget(split, 1)
 
@@ -143,6 +148,7 @@ class ResultPage(QWidget):
 
     def load(self, rid, result=None):
         """끝난 회차의 결과를 올림. result 는 방금 채점한 결과(session.grade)이고, 없으면 기록된 결과를 보여 줌."""
+        motion.clear_confetti(self)  # 앞서 본 결과에서 떨어지던 색종이가 이 결과 위에 남지 않게
         session = self.win.session
         view = session.open_round(rid)
         graded = {it["id"]: it for it in result["items"]} if result else {}
@@ -154,13 +160,18 @@ class ResultPage(QWidget):
         overview = session.overview()
         self.view, self.verdicts, self.revealed = view, result["verdicts"] if result else None, set()
         self.title.setText("%s 결과" % view["title"])
-        self.score.setText("%d / %d점" % (earned, total))
-        self.ratio.setText("득점률 %d%%" % (round(100 * earned / total) if total else 0))
+        ratio = round(100 * earned / total) if total else 0
+        motion.count_text(self.score, "%%d / %d점" % total, earned)
+        motion.count_text(self.ratio, "득점률 %d%%", ratio)
+        self.mascot.set_happy(ratio >= PARTY_RATIO)
+        mastered = any(v["kind"] in ("mastered", "done") for v in self.verdicts or [])
+        if result and result["completed_now"] and (ratio >= PARTY_RATIO or mastered):  # 지난 회차를 다시 열거나 다시 채점할 때는 떨어뜨리지 않음
+            motion.confetti(self)
         first = view["first_score"]
         self.note.setText("첫 제출은 %s점이었습니다. 숙달 판정에는 첫 제출만 반영됩니다." % first.replace("/", " / ")
                           if first and first != "%d/%d" % (earned, total) else "")
         self.ready.setText("시험 준비도 %d%%" % overview["readiness"])
-        self.ready_bar.setValue(overview["readiness"])
+        motion.count(self.ready_bar, overview["readiness"], self.ready_bar.setValue)
         self.next_btn.setText(self.win.next_action(overview)[0])
         self.git_btn.setEnabled(self.win.gitflow is not None)
         self.git_btn.setToolTip(self.win.git_reason)
@@ -169,12 +180,11 @@ class ResultPage(QWidget):
         self.listw.clear()
         self.listw.addItem("단원별 판정")
         for item in view["items"]:
-            name, color = theme.result_label(item["state"])
-            row = QListWidgetItem("%s  %d. %s · %s" % (name, item["no"], item["type_label"], item["unit_title"]))
-            row.setForeground(QColor(color))
-            self.listw.addItem(row)
+            name = theme.result_label(item["state"])[0]
+            self.listw.addItem("%s  %d. %s · %s" % (name, item["no"], item["type_label"], item["unit_title"]))
         self.listw.setCurrentRow(0)
         self.listw.blockSignals(False)
+        self.color_rows()
         self.show_row(0)
 
     def selected(self):
@@ -191,8 +201,9 @@ class ResultPage(QWidget):
             label = "%s · %s · %d점" % (item["type_label"], item["unit_title"], item["points"])
             self.item_title.setText("%d. %s" % (item["no"], "%s · %s" % (item["title"], label) if item["kind"] == "code" else label))
             self.detail.setHtml(self.item_html(item))
-        self.explain_btn.setEnabled(item is not None and item["id"] not in self.revealed)
-        self.retry_btn.setEnabled(item is not None and item["state"] != "ok")
+        usable = item is not None and not self.busy  # 제출이 도는 중에 글자 크기나 테마가 바뀌어 다시 그려도 잠근 버튼은 켜지 않음
+        self.explain_btn.setEnabled(usable and item["id"] not in self.revealed)
+        self.retry_btn.setEnabled(usable and item["state"] != "ok")
 
     def reveal(self):
         self.revealed.add(self.selected()["id"])
@@ -205,7 +216,7 @@ class ResultPage(QWidget):
             count[item["state"] if item["state"] in count else "blank"] += 1
         parts = ["<p>정답 %d문항 · 오답 %d문항 · 미응답 %d문항</p>" % (count["ok"], count["wrong"], count["blank"])]
         if self.verdicts:
-            rows = "".join('<tr><td><b><span style="color:%s;">%s</span></b></td><td>%s %s</td><td>%s</td></tr>' % (
+            rows = "".join('<tr><td><b><span class="%s">%s</span></b></td><td>%s %s</td><td>%s</td></tr>' % (
                 theme.VERDICT[v["kind"]][1], theme.VERDICT[v["kind"]][0], v["unit"], html.escape(v["title"]), html.escape(v["text"]))
                 for v in self.verdicts)
             parts.append('<table class="grid" border="1" cellspacing="0" cellpadding="6">'
@@ -214,13 +225,14 @@ class ResultPage(QWidget):
             parts.append("<p>진단 결과로 단원별 출발 레벨을 정했습니다. 단원별 상태는 홈의 단원 띠에서 볼 수 있습니다.</p>")
         else:
             parts.append("<p>단원별 판정은 제출한 직후에 보여 줍니다. 지금 단원별 상태는 홈의 단원 띠에서 볼 수 있습니다.</p>")
-        parts.append("<h2>문항 다시 보기</h2><p>왼쪽에서 문항을 고르면 문제와 내 답이 나옵니다. 틀린 문항은 '다시 풀기'로 먼저 고쳐 보고, "
+        parts.append('<p class="h2">문항 다시 보기</p>'
+                     "<p>왼쪽에서 문항을 고르면 문제와 내 답이 나옵니다. 틀린 문항은 '다시 풀기'로 먼저 고쳐 보고, "
                      "'해설 보기'로 정답과 해설을 확인하세요.</p>")
         return "<body>%s</body>" % "".join(parts)
 
     def item_html(self, item):
-        name, color = theme.result_label(item["state"])
-        parts = ['<p><b><span style="color:%s;">%s</span></b></p>' % (color, name)]
+        name, mark = theme.result_label(item["state"])
+        parts = ['<p><b><span class="%s">%s</span></b></p>' % (mark, name)]
         if item["detail"]:  # 채점기가 남긴 틀린 이유(통과한 테스트 수, 처음 틀린 테스트)
             parts += [band("틀린 이유"), code_box(item["detail"])]
         elif item["detail"] is None and item["kind"] == "code" and item["state"] == "wrong":
@@ -240,12 +252,22 @@ class ResultPage(QWidget):
                 parts += [band("모범 답안"), code_box(info["solution"])]
         return "<body>%s</body>" % "".join(parts)
 
-    def apply_zoom(self):
+    def color_rows(self):
+        for row, item in enumerate(self.view["items"], 1):
+            self.listw.item(row).setForeground(theme.qcolor(theme.result_label(item["state"])[1]))
+
+    def restyle(self):
+        """글자 크기나 테마가 바뀌면 부름. 본문 CSS 와 목록의 결과 색을 다시 주고, 읽던 자리는 지킴."""
         self.detail.document().setDefaultStyleSheet(theme.doc_css(self.win.zoom))
         if self.view:
+            self.color_rows()
+            bar = self.detail.verticalScrollBar()
+            place = bar.value()
             self.show_row(self.listw.currentRow())
+            bar.setValue(place)
 
     def set_busy(self, busy, text=""):
+        self.busy = busy
         for widget in (self.listw, self.explain_btn, self.retry_btn, self.home_btn, self.next_btn):
             widget.setEnabled(not busy)
         self.git_btn.setEnabled(not busy and self.win.gitflow is not None)

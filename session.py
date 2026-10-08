@@ -85,6 +85,21 @@ def choice_count(body):
     return last or labeled
 
 
+def split_choices(body):
+    """객관식 본문을 (지문 블록, 보기별 블록)으로 나눔. 보기는 choice_count 와 같은 규칙으로 찾음:
+    마지막 번호 목록의 항목, 없으면 `**N번**` 문단 뒤부터 다음 `**N번**` 문단 앞까지.
+    지문이나 어느 보기가 비면 나누지 않고 ([], []) 를 돌려줌."""
+    blocks = mdlite.parse(body)
+    lists = [n for n, block in enumerate(blocks) if block["t"] == "ol"]
+    marks = [n for n, block in enumerate(blocks) if block["t"] == "para" and LABEL_RE.fullmatch(block["text"].strip())]
+    if lists:
+        stem, options = blocks[:lists[-1]] + blocks[lists[-1] + 1:], blocks[lists[-1]]["items"]
+    else:
+        stem = blocks[:marks[0]] if marks else []
+        options = [blocks[start + 1:end] for start, end in zip(marks, marks[1:] + [len(blocks)])]
+    return (stem, options) if stem and options and all(options) else ([], [])
+
+
 def literal(value):
     """quiz.py 에 적을 파이썬 리터럴. 여러 줄 문자열은 PR 에서 읽기 좋게 삼중 따옴표로 적음(되읽은 값이 같을 때만)."""
     if isinstance(value, str) and "\n" in value and '"""' not in value and "\\" not in value:
@@ -270,6 +285,7 @@ class Session:
                         body_md=body, answer=value, answered=value not in (None, "", []))
             if it["type"] == "choice":
                 view["choices"] = choice_count(body)  # 0 이면 화면은 번호 입력칸을 보여 줌
+                view["stem"], view["options"] = split_choices(body)  # 나누지 못하면 둘 다 비고, 화면은 본문 전체와 번호만 든 카드를 보여 줌
                 view["multi"] = len(it["q"]["answer"]) > 1  # 복수 정답 문항은 본문에도 '모두 고르세요'가 있음(은행 검증)
         else:
             spec = it["spec"]
@@ -447,15 +463,19 @@ class Session:
 
     # 현황
 
-    def overview(self):
-        states = adaptive.all_states(self.prof, self.cat)
+    def _unit_views(self, states):
+        """단원 상태(adaptive.unit_state)를 단원 띠에 쓰는 모양으로 바꿈."""
         priority = adaptive.unit_priority()
-        units = [{
+        return [{
             "unit": st["unit"], "title": adaptive.cat_unit_title(self.cat, st["unit"]), "level": st["level"],
             "label": adaptive.state_label(st), "accuracy": st["accuracy"], "attempted": st["attempted"],
             "mastered": st["mastered"], "done": st["done"], "tested": st["tested"], "retry": st["retry"],
             "score": adaptive.unit_score(st), "priority": priority.get(st["unit"], 1.0),
         } for st in states]
+
+    def overview(self):
+        states = adaptive.all_states(self.prof, self.cat)
+        units = self._unit_views(states)
         latest = self.latest()
         hint = None
         if self.prof["rounds"] and not all(st["mastered"] for st in states):
@@ -471,3 +491,19 @@ class Session:
             "current": self._round_summary(latest) if latest and not latest.get("completed_at") else None,
             "next_hint": hint,
         }
+
+    def team(self):
+        """팀 현황: 풀이 기록(profile.json)이 있는 사람마다 요약 하나, 준비도가 높은 순. 읽을 수 없는 기록은 건너뜀.
+        내 것은 이 컴퓨터의 기록이고, 다른 사람 것은 문제 받기 때 받은 main 의 기록임."""
+        rows = []
+        for user in adaptive.users_with_profile():
+            try:
+                row = adaptive.user_summary(user, self.cat)
+                row["last"] = str(row["last"])[:10] if row["last"] else ""
+            except (ValueError, KeyError, TypeError, OSError):
+                continue
+            row["me"] = user == self.user
+            row["units"] = self._unit_views(row.pop("states").values())
+            rows.append(row)
+        rows.sort(key=lambda row: (-row["readiness"], -row["mastered"], row["user"]))
+        return rows
