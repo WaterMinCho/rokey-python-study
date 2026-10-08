@@ -118,6 +118,11 @@ class Server:
         git(self.dir, "push", "-q", "origin", "study/" + name)
         self.merge("study/" + name, delete=True)
 
+    def rewrite_main(self):
+        """스터디장이 main 기록을 다시 씀. 내용은 같고 이전 커밋과 이어지지 않음."""
+        tree = git(self.origin, "rev-parse", "main^{tree}").stdout.strip()
+        git(self.origin, "update-ref", "refs/heads/main", git(self.origin, "commit-tree", tree, "-m", "다시 쓴 기록").stdout.strip())
+
     def update_branch(self, branch):
         """PR 화면의 Update branch 버튼. main 을 PR 브랜치에 병합한 커밋이 원격에 생기고, 이미 최신이면 빈 커밋이 생김."""
         self.refresh()
@@ -528,6 +533,28 @@ class GitFlowTest(unittest.TestCase):
         flow.pr_wait, flow.sleep = gitflow.PR_WAIT, github_moves_the_ref
         result = self.submit()
         self.assertEqual((result["message"], result["pr_url"]), (gitflow.M_ADDED, OPEN_PR))
+
+    def test_main_history_rewritten(self):
+        """스터디장이 main 기록을 다시 써서 내 브랜치와 이어지지 않게 된 경우. 풀이를 둔 채 새 main 위로 옮기고 제출도 이어짐."""
+        pc = self.pc
+        mine = pc.solve(); self.sync()
+        self.server.rewrite_main()
+        self.server.add_problems("s17")
+        result = self.sync(after=mine)
+        self.assertEqual((result["restart"], result["backup"]), (True, None))
+        self.assertEqual(git(pc.path, "merge-base", "--is-ancestor", "origin/main", "HEAD", check=False).returncode, 0)
+        pc.solve(); self.submit()
+        self.assertEqual(self.server.pr_commits("study/alice"), 1)
+        self.merge()
+
+    def test_main_history_rewritten_while_my_pr_is_open(self):
+        """열려 있는 PR 이 옛 기록 위에 있어도 받기와 제출이 이어지고, PR 의 변경 범위는 내 폴더뿐임."""
+        pc = self.pc
+        pc.solve(); self.submit()
+        self.server.rewrite_main()
+        self.sync()
+        pc.solve(); self.submit()
+        self.merge()
 
     def test_other_people_merged_first(self):
         pc = self.pc

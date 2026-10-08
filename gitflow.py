@@ -500,7 +500,8 @@ class GitFlow:
         손으로 커밋해 버린 밖 변경은 브랜치를 옮기면 작업 폴더에서 사라지므로 사본만 남김. 사본을 남긴 경로를 돌려줌."""
         changed = set(self._paths("diff", "--name-only", "-z", "HEAD", "--", *self.outside))
         changed |= set(self._paths("diff", "--name-only", "-z", "--cached", "HEAD", "--", *self.outside))
-        committed = set(self._paths("diff", "--name-only", "-z", MAIN + "...HEAD", "--", *self.outside))
+        related = self._ok("merge-base", MAIN, "HEAD")  # main 기록이 다시 쓰였으면 갈라진 지점이 없어 손으로 커밋한 변경을 가려내지 못함
+        committed = set(self._paths("diff", "--name-only", "-z", MAIN + "...HEAD", "--", *self.outside)) if related else set()
         self._copy_out(changed | committed)
         if changed:
             self._git("checkout", "-q", "HEAD", "--", *self.outside)  # 사본을 만든 뒤 추적 파일을 원본으로
