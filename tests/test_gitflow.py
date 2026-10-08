@@ -200,11 +200,11 @@ class PC:
             sess.grade(rnd["id"], finalize=True)
         return self.read()
 
-    def read(self):
-        """내 폴더의 {저장소 기준 경로: 내용}."""
+    def read(self, outside=False):
+        """내 폴더의 {저장소 기준 경로: 내용}. outside 면 내 폴더와 .git 을 뺀 나머지 작업 폴더."""
         found = {}
-        for base, dirs, files in os.walk(self.folder):
-            dirs[:] = [d for d in dirs if d != "__pycache__"]
+        for base, dirs, files in os.walk(self.path if outside else self.folder):
+            dirs[:] = [d for d in dirs if d != "__pycache__" and not (outside and os.path.join(base, d) in (self.folder, self.gitdir()))]
             for name in files:
                 full = os.path.join(base, name)
                 with open(full, "rb") as f:
@@ -216,9 +216,15 @@ class PC:
             return len(json.load(f)["attempts"])
 
     def state(self):
-        """브랜치·커밋·작업 폴더 상태. 원격을 얼마나 따라갔는지는 뺌. 제출이 이 컴퓨터를 바꾸지 않았는지 볼 때 씀."""
+        """브랜치·커밋·인덱스·작업 폴더 상태. 원격을 얼마나 따라갔는지는 뺌. 이 컴퓨터의 git 상태가 그대로인지 볼 때 씀."""
         lines = git(self.path, "status", "--porcelain=v2", "--branch").stdout.splitlines()
         return [line for line in lines if not line.startswith(("# branch.upstream", "# branch.ab"))]
+
+    def status(self, mine=None):
+        """git status 에 바뀐 것으로 나오는 줄. mine 이 True 면 내 폴더만, False 면 내 폴더 밖만."""
+        rel = "submissions/" + self.user
+        where = [] if mine is None else [rel] if mine else [".", ":(exclude)" + rel]
+        return git(self.path, "status", "--porcelain", "--", *where).stdout.splitlines()
 
     def gitdir(self, *parts):
         return os.path.join(self.path, ".git", *parts)
@@ -314,16 +320,30 @@ class GitFlowTest(unittest.TestCase):
             self.assertIn("# branch.head study/" + pc.user, pc.state())
         return result
 
-    def submit(self, pc=None, expect="ok", after=None):
+    def submit(self, pc=None, expect="ok", after=None, settles=True):
+        """제출함. 내 폴더 밖의 작업 파일은 바이트 단위로 그대로여야 함.
+        올렸거나 올릴 것이 없었으면(이미 반영됨) git status 에 내 폴더는 없고 밖은 전과 같은 줄이 나와야 함.
+        그러느라 커밋이나 브랜치가 바뀌었으면 브랜치는 study/<ID> 여야 함. 커밋이 올린 것과 같은지는 테스트마다 따로 봄.
+        올리지 못했거나 settles=False(올렸지만 이 컴퓨터를 맞추지 않고 넘어가는 경우)면 브랜치·커밋·인덱스가 그대로여야 함."""
         pc = pc or self.pc
-        state = pc.state()
+        state, status, outside = pc.state(), pc.status(mine=False), pc.read(outside=True)
         result = self.call(pc, "submit", expect, after)
+        self.assertEqual(digest(pc.read(outside=True)), digest(outside), "제출이 내 폴더 밖의 파일을 바꿨습니다")
         if expect == "ok":
             self.check_remote(pc)
             self.assertTrue(result["pr_url"])
-        if after is None:
-            self.assertEqual(pc.state(), state, "제출이 이 컴퓨터의 브랜치·커밋·작업 폴더를 바꿨습니다")
+        if settles and (expect == "ok" or result["message"].endswith(gitflow.M_NOTHING)):
+            self.assertEqual((pc.status(mine=True), pc.status(mine=False)), ([], status), "제출한 뒤의 git status 가 기대와 다릅니다")
+            if pc.state()[:2] != state[:2]:
+                self.assertEqual(pc.state()[1], "# branch.head study/" + pc.user)
+        elif after is None:
+            self.assertEqual(pc.state(), state, "제출이 이 컴퓨터의 브랜치·커밋·인덱스를 바꿨습니다")
         return result
+
+    def on_uploaded_commit(self, pc=None):
+        """이 컴퓨터의 브랜치가 study/<ID> 이고 원격에 올라간 바로 그 커밋에 있어야 함."""
+        pc = pc or self.pc
+        self.assertEqual(pc.state()[:2], ["# branch.oid " + self.server.rev("study/" + pc.user), "# branch.head study/" + pc.user])
 
     def check_remote(self, pc):
         """원격 브랜치의 내 폴더 = 내 컴퓨터, PR 변경 범위 = 내 폴더뿐(충돌 없이 합쳐짐)."""
@@ -407,6 +427,209 @@ class GitFlowTest(unittest.TestCase):
         self.assertEqual(self.submit(expect="nothing")["pr_url"], None)
         self.assertEqual(self.server.rev("study/alice"), "")  # 올릴 것이 없으면 브랜치도 만들지 않음
 
+    # 제출한 뒤 이 컴퓨터의 git 상태
+
+    def test_submit_leaves_git_status_clean(self):
+        """제출하면 이 컴퓨터의 브랜치가 올린 커밋으로 옮겨져 git status 에 풀이가 남지 않음. 받기를 거치지 않았어도 같음."""
+        pc = self.pc
+        main = git(pc.path, "rev-parse", "main").stdout
+        pc.solve()
+        self.assertEqual(pc.status(), ["?? submissions/alice/"])
+        self.submit()  # 받기 전이라 브랜치가 main 임
+        self.assertEqual(pc.status(), [])
+        self.on_uploaded_commit()
+        self.assertEqual(git(pc.path, "rev-parse", "main").stdout, main)  # 있던 브랜치는 옮기지 않음
+        pc.solve()
+        self.assertTrue(pc.status())
+        self.submit()  # study/alice 에서 한 번 더
+        self.assertEqual(pc.status(), [])
+        self.on_uploaded_commit()
+        tip = self.server.rev("study/alice")
+        self.assertEqual(self.submit()["message"], gitflow.M_NO_OPEN_PR)  # 바뀐 것이 없어도 그대로 깨끗함
+        self.assertEqual((pc.status(), self.server.rev("study/alice")), ([], tip))
+        result = self.sync()  # 받기가 더 옮길 것이 없음
+        self.assertEqual((result["changed"], result["backup"], pc.state()[0]), (False, None, "# branch.oid " + tip))
+        self.merge(delete=True)  # 내 PR 이 머지돼 main 이 움직여도 바뀐 곳이 내 폴더뿐이라 다음 제출도 올린 커밋으로 옮겨짐
+        pc.solve(); self.submit()
+        self.assertEqual(pc.status(), [])
+        self.on_uploaded_commit()
+
+    def test_answers_saved_while_submitting_stay_marked_as_changed(self):
+        """올릴 커밋을 만든 뒤에 저장된 답은 올라가지 않았으므로 제출 뒤에도 바뀐 파일로 보임. 그사이 main 이 움직였어도 같음."""
+        pc = self.pc
+        pc.solve(); self.submit()
+        push = pc.flow._push
+        for main_moved in (False, True):
+            sent, late = pc.solve(), {}
+
+            def slow_push(commit):  # 올리는 동안 답이 더 저장됨
+                late.update(pc.solve(grade=False))
+                return push(commit)
+            if main_moved:
+                self.server.other_user("bob")
+            pc.flow._push = slow_push
+            self.call(pc, "submit", "ok", late)
+            self.assertEqual(self.server.folder("study/alice", "alice"), digest(sent))
+            self.assertEqual(git(pc.path, "rev-parse", "HEAD:submissions/alice").stdout,
+                             git(self.origin, "rev-parse", "study/alice:submissions/alice").stdout)  # 이 컴퓨터의 커밋에는 올린 것까지만 들어감
+            unsent = sorted(rel for rel in late if late[rel] != sent.get(rel))
+            seen = [git(pc.path, *args).stdout.split("\0")[:-1] for args in (
+                ("diff", "--cached", "--name-only", "-z"), ("diff", "--name-only", "-z"), ("ls-files", "-z", "--others", "--exclude-standard"))]
+            self.assertEqual((seen[0], sorted(seen[1] + seen[2])), ([], unsent))
+            self.assertTrue(unsent)
+            pc.flow._push = push
+            self.submit()  # 다시 누르면 나머지도 올라감
+            self.assertEqual(pc.status(), [])
+
+    def test_submit_cleans_git_status_when_main_moved(self):
+        """프로그램을 켠 뒤 main 이 움직였으면 올린 커밋의 내 폴더 밖이 이 컴퓨터와 다름. 밖은 그대로 두고 내 폴더만 올린 것으로 바꾼
+        커밋을 이 컴퓨터에 만들어 git status 를 비움. 새 문제를 가져오는 것은 다음 받기의 일임."""
+        pc = self.pc
+
+        def head(rev="HEAD"):
+            return git(pc.path, "rev-parse", rev).stdout.strip()
+        self.sync()
+        before = head()
+        pc.solve()
+        self.server.add_problems("s17")
+        self.submit()
+        self.assertEqual(pc.status(), [])
+        self.assertFalse(os.path.exists(os.path.join(pc.path, "problems", "s17")))
+        self.assertEqual(head("HEAD^"), before)  # 부모가 전의 HEAD 라서 받기가 main 의 변경을 내가 커밋한 것으로 보지 않음
+        self.assertEqual(git(pc.path, "diff", "--name-only", before, "HEAD", "--", ".", ":(exclude)submissions/alice").stdout, "")
+        self.assertEqual(head("HEAD:submissions/alice"), git(self.origin, "rev-parse", "study/alice:submissions/alice").stdout.strip())
+        local = head()
+        self.assertNotEqual(local, self.server.rev("study/alice"))  # 올린 커밋과 다른, 이 컴퓨터에만 있는 커밋
+        self.assertEqual(self.submit()["message"], gitflow.M_NO_OPEN_PR)  # 바뀐 것 없이 다시 눌러도 커밋이 늘지 않음
+        self.assertEqual(head(), local)
+        self.server.other_user("bob")  # 남의 PR 이 머지돼도 내 폴더 밖이 달라짐
+        pc.solve(); self.submit()
+        self.assertEqual((pc.status(), head("HEAD^")), ([], local))
+        self.merge(delete=True)
+        self.submit(expect="nothing")
+        result = self.sync()
+        self.assertEqual((result["restart"], result["backup"], pc.status()), (True, None, []))
+        self.assertTrue(os.path.isfile(os.path.join(pc.path, "problems", "s17", "quiz.md")))
+        pc.solve(); self.submit()
+        self.on_uploaded_commit()
+
+    def test_main_history_rewritten_after_submit_when_main_moved(self):
+        """이 컴퓨터에만 있는 커밋에 올라가 있어도, main 기록이 다시 쓰인 뒤의 받기와 제출이 이어짐."""
+        pc = self.pc
+        self.sync()
+        mine = pc.solve()
+        self.server.add_problems("s17")
+        self.submit()
+        self.server.rewrite_main()
+        result = self.sync(after=mine)
+        self.assertEqual((result["restart"], result["backup"], pc.status()), (True, None, []))
+        pc.solve(); self.submit()
+        self.on_uploaded_commit()
+
+    def test_submit_stays_on_the_branch_where_outside_files_are_being_edited(self):
+        """study/<ID> 가 아닌 브랜치에서 내 폴더 밖을 고치던 중이면 제출이 브랜치를 바꾸지 않음. 바꾸면 그 뒤의 커밋이 study/<ID> 에 쌓였다가 다음 받기 때 브랜치에서 떨어짐."""
+        pc, tool = self.pc, os.path.join(self.pc.path, "gui", "app.py")
+        pc.solve()
+        write(tool, "# 고치는 중\n", "a")
+        self.submit(settles=False)
+        git(pc.path, "add", "gui/app.py")
+        write(tool, "# 화면\n")  # add 한 뒤 파일만 되돌려 둔 경우
+        pc.solve(); self.submit(settles=False)
+        git(pc.path, "commit", "-q", "-m", "화면 수정")
+        self.assertEqual(git(pc.path, "branch", "--format=%(refname:short)", "--contains", "HEAD").stdout.split(), ["main"])
+
+    def test_submit_keeps_changes_staged_outside_my_folder(self):
+        """내 폴더 밖에 손으로 add 해 둔 변경은 제출 뒤에도 add 한 내용 그대로 남음. 인덱스는 내 폴더만 바꿈."""
+        pc = self.pc
+        pc.solve(); self.sync()
+        tool = os.path.join(pc.path, "study.py")
+        write(tool, "# add 한 줄\n", "a")
+        write(os.path.join(pc.path, "새 파일.md"), "add 만 한 파일\n")
+        git(pc.path, "add", "study.py", "새 파일.md")
+        write(tool, "# add 하지 않은 줄\n", "a")
+        staged = git(pc.path, "diff", "--cached").stdout
+        pc.solve(); self.submit()
+        self.assertEqual(git(pc.path, "diff", "--cached").stdout, staged)
+        self.assertEqual(git(pc.path, "diff", "--cached", "--name-only").stdout.splitlines(), ["study.py", "새 파일.md"])
+        self.assertEqual(git(pc.path, "diff", "--name-only").stdout.splitlines(), ["study.py"])
+
+    def test_submit_succeeds_when_this_computer_cannot_be_settled(self):
+        """다른 프로그램이 잠금을 잡고 있어 인덱스나 브랜치를 옮기지 못해도 제출은 되고, 이 컴퓨터는 제출 전 상태로 남음."""
+        pc = self.pc
+        for lock, failed in ((("HEAD.lock",), "symbolic-ref"),  # 브랜치가 main 일 때: study/alice 는 만들었지만 HEAD 를 못 옮김
+                             (("index.lock",), "write-tree"),
+                             (("refs", "heads", "study", "alice.lock"), "update-ref")):  # 인덱스를 바꾼 뒤라 되돌려야 함
+            pc.solve()
+            write(pc.gitdir(*lock), "")
+            done = len(pc.flow.log)
+            self.submit(settles=False)
+            self.assertRegex("\n".join(pc.flow.log[done:]), r"git %s\b.* → [1-9]" % failed)
+            self.assertTrue(pc.status(mine=True))
+            os.remove(pc.gitdir(*lock))
+            self.assertEqual(self.submit()["message"], gitflow.M_NO_OPEN_PR)  # 잠금이 풀린 뒤 다시 누르면 새로 올리지 않고 맞추기만 함
+            self.assertEqual(pc.status(), [])
+
+    def test_submit_result_survives_errors_while_settling(self):
+        """올린 뒤 이 컴퓨터를 맞추다 git 을 실행하지 못해도(백신이 막는 경우 등) 제출은 성공으로 알리고, 이 컴퓨터는 제출 전 상태로 남음."""
+        pc, real = self.pc, self.pc.flow._git
+        pc.solve(); self.submit()
+        for step in ("write-tree", "reset", "update-ref"):
+            def failing(*args, **options):
+                if args[0] == step and "GIT_INDEX_FILE" not in (options.get("env") or {}):  # 올릴 커밋을 만드는 쪽은 그대로 둠
+                    raise OSError("git 을 실행하지 못함")
+                return real(*args, **options)
+            pc.solve()
+            pc.flow._git = failing
+            self.submit(settles=False)
+            self.assertIn("git 을 실행하지 못함", pc.flow.log[-1])
+            pc.flow._git = real
+            self.assertEqual(self.submit()["message"], gitflow.M_NO_OPEN_PR)
+            self.assertEqual(pc.status(), [])
+
+        def late(*args, **options):  # 브랜치는 옮겨졌는데 git 이 제때 끝나지 않아 실패로 보고됨
+            run = real(*args, **options)
+            if args[0] == "update-ref":
+                raise gitflow.GitError(run._replace(code=None))
+            return run
+        pc.solve()
+        pc.flow._git = late
+        self.submit()  # 옮겨진 브랜치에 맞춰 둔 인덱스를 되돌리지 않음
+        self.on_uploaded_commit()
+
+    def test_nothing_to_submit_still_cleans_git_status(self):
+        """올릴 것이 없다고 끝나는 제출도 이 컴퓨터를 main 에 들어간 풀이에 맞춤."""
+        pc, pc2 = self.pc, self.new_pc("pc2")
+        pc.solve()
+        write(pc.gitdir("index.lock"), "")
+        self.submit(settles=False)  # 올렸지만 이 컴퓨터는 맞추지 못함
+        os.remove(pc.gitdir("index.lock"))
+        self.merge(delete=True)
+        self.assertEqual(pc.status(), ["?? submissions/alice/"])
+        self.assertEqual(self.submit(expect="nothing")["message"], gitflow.M_NOTHING)
+        self.assertEqual(pc.status(), [])
+        self.sync(pc2, after=pc.read())
+        theirs = pc2.solve(); self.submit(pc2); self.merge(pc2, delete=True)
+        result = self.submit(expect="nothing", after=theirs)  # 다른 컴퓨터에서 올린 풀이를 가져오며 끝남
+        self.assertEqual((result["changed"], pc.status()), (True, []))  # 가져온 파일이 add 된 변경으로 남지 않음
+        self.sync()
+        pc.solve(); self.submit()
+
+    def test_deleted_folder_that_was_never_uploaded_stays_marked(self):
+        """올린 적 없는 풀이 폴더를 지우고 제출하면 올릴 것이 없다고만 알리고, 지운 표시는 git status 에 남겨 둠."""
+        pc = self.pc
+        pc.solve(); self.sync()  # 풀이는 받기가 만든 이 컴퓨터의 커밋에만 있음
+        shutil.rmtree(pc.folder)
+        self.assertEqual(self.submit(expect="nothing")["message"], gitflow.M_EMPTY)
+        self.assertTrue(pc.status(mine=True))
+
+    def test_branch_used_by_another_worktree_is_not_moved(self):
+        """study/<ID> 를 다른 worktree 가 쓰고 있으면 옮기지 않음. 옮기면 그 폴더의 파일이 전부 바뀐 것으로 보임."""
+        pc, other = self.pc, os.path.join(self.tmp, "worktree")
+        git(pc.path, "worktree", "add", "-q", "-b", "study/alice", other)
+        pc.solve()
+        self.submit(settles=False)
+        self.assertEqual(git(other, "status", "--porcelain").stdout, "")
+
     # 문제 받기
 
     def test_new_problems_on_main(self):
@@ -432,7 +655,7 @@ class GitFlowTest(unittest.TestCase):
         write(os.path.join(pc.path, "problems", "s01", "quiz.md"), "실수로 고친 줄\n", "a")
         git(pc.path, "add", "-A"); git(pc.path, "commit", "-q", "-m", "내 풀이")  # 문제 파일까지 main 에 커밋
         self.server.add_problems("s17")  # main 도 같은 파일을 고침
-        self.submit()  # PR 에는 내 폴더만 실림
+        self.submit(settles=False)  # PR 에는 내 폴더만 실림. 풀이를 이미 커밋해 둬서 이 컴퓨터에서는 맞출 것이 없음
         pc.solve()
         result = self.sync()
         self.assertIn("실수로 고친 줄", pc.backup_text(result))
@@ -449,7 +672,7 @@ class GitFlowTest(unittest.TestCase):
         write(os.path.join(pc.path, "새 파일.md"), "올려 두기만 한 파일\n")
         git(pc.path, "add", "새 파일.md")
         os.remove(os.path.join(pc.path, "problems", "s02", "quiz.md"))  # 문제 파일을 지움
-        self.submit()  # 제출은 밖 파일을 건드리지도 싣지도 않음
+        self.submit(settles=False)  # 제출은 밖 파일을 건드리지도 싣지도 않음. main 에서 밖을 고친 상태라 브랜치도 그대로 둠
         self.server.add_problems("s17")
         result = self.sync()
         self.assertEqual((result["changed"], result["restart"]), (True, True))
@@ -569,11 +792,14 @@ class GitFlowTest(unittest.TestCase):
     def test_other_people_merged_first(self):
         pc = self.pc
         self.server.other_user("bob")  # 내가 시작하기도 전에 bob 것이 머지됨
-        pc.solve(); self.submit()
+        pc.solve(); self.submit(settles=False)  # 받기를 거치지 않아 브랜치가 main 이고 밖이 올린 커밋과 다름. 이때는 그대로 둠
         self.server.other_user("carol")  # 내 PR 이 열린 동안 carol 것이 먼저 머지됨
-        pc.solve(); self.submit()
+        pc.solve(); self.submit(settles=False)
         self.server.other_user("dave")
         self.sync()
+        self.assertEqual(pc.status(), [])
+        self.server.other_user("erin")  # 받은 뒤에 또 머지됨
+        pc.solve(); self.submit()
         self.merge()
         for other in ("bob", "carol", "dave"):
             self.assertTrue(self.server.folder("main", other), other)
@@ -624,6 +850,18 @@ class GitFlowTest(unittest.TestCase):
         self.assertEqual((result["changed"], result["backup"], result["message"]), (True, None, gitflow.M_TOOK + " " + gitflow.M_LATEST))
         pc2.solve(); self.submit(pc2)
         self.merge(pc2)
+
+    def test_first_computer_takes_what_the_second_uploaded(self):
+        """제출해 둔 컴퓨터가 다른 컴퓨터에서 이어 올린 풀이를 받고, 거기서 다시 이어 올림."""
+        pc = self.pc
+        pc.solve(); self.submit()
+        pc2 = self.new_pc("pc2")
+        self.sync(pc2, after=pc.read())
+        theirs = pc2.solve(); self.submit(pc2)
+        self.assertEqual(self.sync(pc, after=theirs)["changed"], True)
+        self.assertEqual(pc.status(), [])
+        pc.solve(); self.submit(pc)
+        self.merge(pc)
 
     def test_new_computer_that_already_made_an_empty_profile(self):
         pc, pc2 = self.pc, self.new_pc("pc2")
@@ -694,6 +932,8 @@ class GitFlowTest(unittest.TestCase):
         mine = pc.read()
         result = self.call(pc, "resolve", "ok", pc2.read(), "remote")  # 원격에 없는 파일까지 지워 원격과 같게 만듦
         self.assertEqual((result["changed"], result["message"]), (True, gitflow.M_TOOK_OVER))
+        self.assertEqual(pc.status(), [])  # 가져온 풀이가 add 된 변경으로 남지 않음
+        self.on_uploaded_commit()
         with open(os.path.join(result["backup"], "replaced", "profile.json"), "rb") as f:
             self.assertEqual(f.read(), mine["submissions/alice/profile.json"])
         self.sync()
@@ -708,6 +948,7 @@ class GitFlowTest(unittest.TestCase):
         self.assertEqual(result["pr_url"], NEW_PR)
         self.check_remote(pc)
         self.assertTrue(self.server.is_ancestor(theirs, "study/alice"))  # 강제 푸시가 아니라 이어 붙임
+        self.assertEqual((pc.status(), pc.state()[0]), ([], "# branch.oid " + self.server.rev("study/alice")))  # 제출과 같이 이 컴퓨터도 맞춤
         self.sync()
         self.merge()
 
@@ -728,9 +969,11 @@ class GitFlowTest(unittest.TestCase):
     # 손으로 git 을 쓴 폴더
 
     def stalled_pull(self, *options):
-        """PR 이 squash 머지된 뒤 예전 안내대로 손으로 커밋하고 git pull 해서 충돌로 멈추게 함. 멈추기 전의 내 폴더를 돌려줌."""
+        """PR 이 squash 머지된 뒤 예전 안내대로 손으로 커밋하고 git pull 해서 충돌로 멈추게 함. 멈추기 전의 내 폴더를 돌려줌.
+        제출이 브랜치를 올린 커밋으로 옮기므로, 한 번 올린 PR 이면 rebase 가 그 커밋을 main 과 같은 변경으로 보고 넘어가 멈추지 않음."""
         pc = self.pc
-        pc.solve(); self.submit(); self.merge()
+        pc.solve(); self.submit()
+        pc.solve(); self.submit(); self.merge()  # 두 번 올린 PR 이 main 에는 커밋 하나로 들어감
         mine = pc.solve()
         git(pc.path, "add", "-A"); git(pc.path, "commit", "-q", "-m", "2회차")
         self.assertNotEqual(git(pc.path, "pull", *options, "origin", "main", check=False).returncode, 0)
@@ -832,11 +1075,35 @@ class GitFlowTest(unittest.TestCase):
         git(pc.path, "commit", "-q", "-am", "GUI 개발")
         write(os.path.join(pc.path, "gui", "app.py"), "# 개발 중(커밋 안 함)\n", "a")
         state = pc.state()
-        self.submit()  # 제출은 이 컴퓨터를 바꾸지 않으므로 개발 브랜치에서도 됨(내 폴더만 올라감)
+        self.submit(settles=False)  # 개발 브랜치에서도 됨(내 폴더만 올라감). 브랜치와 인덱스는 그대로 둠
         result = self.sync(expect="blocked")  # 받기는 문제·도구 파일을 바꾸므로 멈춤
         self.assertEqual(result["message"], gitflow.M_DEV % "feature/gui")
         self.assertEqual(pc.state(), state)
         self.merge()
+
+    def test_dev_branch_with_uncommitted_edits_only(self):
+        """커밋하지 않은 수정뿐이라 내 폴더 밖이 올린 커밋과 같아도, 개발 중인 폴더의 브랜치는 제출이 옮기지 않음."""
+        pc = self.pc
+        pc.solve()
+        git(pc.path, "switch", "-q", "-c", "feature/gui")
+        write(os.path.join(pc.path, "gui", "app.py"), "# 개발 중\n", "a")
+        self.submit(settles=False)
+        self.assertEqual(pc.state()[1], "# branch.head feature/gui")
+
+    def test_dev_branch_whose_work_is_already_on_main(self):
+        """개발 브랜치의 변경이 squash 로 main 에 들어가 내 폴더 밖이 main 과 같아졌어도, 개발 브랜치는 제출이 옮기지 않음."""
+        pc = self.pc
+        git(pc.path, "switch", "-q", "-c", "feature/gui")
+        write(os.path.join(pc.path, "gui", "app.py"), "# 새 화면\n", "a")
+        git(pc.path, "commit", "-q", "-am", "GUI 개발")
+        git(pc.path, "push", "-q", "origin", "feature/gui")
+        self.server.merge("feature/gui")
+        mine = pc.solve()
+        self.submit(settles=False)
+        self.merge()
+        self.submit(expect="nothing", settles=False)  # 올릴 것이 없다고 끝날 때도 옮기지 않음
+        self.call(pc, "resolve", "ok", mine, "remote")  # 올려 둔 풀이를 가져올 때도 옮기지 않음
+        self.assertEqual(pc.state()[1], "# branch.head feature/gui")
 
     def test_stalled_work_on_dev_branch_is_left_alone(self):
         pc = self.pc
@@ -876,6 +1143,10 @@ class GitFlowTest(unittest.TestCase):
         pc = self.pc
         pc.solve()
         self.sync(); self.submit()
+        os.environ["GIT_CONFIG_GLOBAL"] = self.config
+        self.server.other_user("bob")  # main 이 움직인 뒤의 제출은 이 컴퓨터에만 두는 커밋도 만듦
+        os.environ["GIT_CONFIG_GLOBAL"] = self.config_no_identity
+        pc.solve(); self.submit()
         os.environ["GIT_CONFIG_GLOBAL"] = self.config
         author = git(self.origin, "log", "-1", "--format=%an <%ae> / %cn <%ce>", "study/alice").stdout.strip()
         self.assertEqual(author, "alice <alice@users.noreply.github.com> / alice <alice@users.noreply.github.com>")
@@ -947,7 +1218,7 @@ class GitFlowTest(unittest.TestCase):
         self.server.add_problems("s17")
         pc.solve()
         write(pc.gitdir("index.lock"), "")  # 다른 git 프로그램이 돌고 있거나 비정상 종료로 남은 잠금
-        self.submit()  # 제출은 진짜 인덱스를 쓰지 않음
+        self.submit(settles=False)  # 올릴 때는 진짜 인덱스를 쓰지 않음
         result = self.sync(expect="error")  # 받기는 멈추지만 풀이는 안 바뀜
         self.assertIn("index.lock", result["detail"])
         os.remove(pc.gitdir("index.lock"))
