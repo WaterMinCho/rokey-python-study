@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """테마(시스템 · 밝게 · 어둡게) · 글꼴 · 색. 화면 코드는 색 값을 직접 적지 않고 color(토큰 이름)으로 꺼내 씀.
 테마가 바뀌면 signals.changed 가 나옴. 직접 그리는 위젯과 HTML 을 만들어 넣는 화면은 이 신호를 받아 다시 그림."""
+import os
 import re
 import sys
 
@@ -10,7 +11,8 @@ from PyQt6.QtWidgets import QApplication
 
 import mdlite
 
-CLEAR_FONTS = ("NanumGothic", "Nanum Gothic", "Noto Sans KR", "Noto Sans CJK KR")  # 설치돼 있으면 화면 글꼴로 먼저 씀
+FONT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts")  # 같이 배포하는 나눔고딕
+CLEAR_FONTS = ("NanumGothic", "Nanum Gothic", "Noto Sans KR", "Noto Sans CJK KR")  # 화면 글꼴로 먼저 씀
 UI_FONTS = CLEAR_FONTS + ("Malgun Gothic", "Apple SD Gothic Neo")  # 한글이 있는 글꼴
 CODE_FONTS = ("D2Coding", "Consolas", "Menlo", "Cascadia Mono", "DejaVu Sans Mono", "Courier New")
 UI_PX = 14  # 버튼·목록·안내 글자 크기
@@ -171,6 +173,10 @@ def system_scheme():
 def apply(app, mode="system"):
     """시작할 때 한 번 부름. 글꼴과 스타일을 정하고 mode 의 테마를 칠함."""
     app.setStyle("Fusion")
+    for name in sorted(os.listdir(FONT_DIR)) if os.path.isdir(FONT_DIR) else []:  # 어느 컴퓨터에서나 같은 글꼴로 보이게 등록함
+        if name.endswith(".ttf"):
+            QFontDatabase.addApplicationFont(os.path.join(FONT_DIR, name))
+    _fonts.clear()
     family = _installed(CLEAR_FONTS) or (_installed(("Malgun Gothic",)) if sys.platform == "win32" else [])
     font = app.font()
     if family:  # 또렷한 글꼴이 있으면 그것을 쓰고, Windows 에서는 굴림 대신 맑은 고딕을 씀

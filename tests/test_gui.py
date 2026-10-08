@@ -18,7 +18,8 @@ from unittest import mock
 
 try:
     from PyQt6.QtCore import QEvent, QEventLoop, QMimeData, QPoint, QPointF, QSettings, Qt, QTimer, qInstallMessageHandler
-    from PyQt6.QtGui import QColor, QContextMenuEvent, QDragEnterEvent, QDropEvent, QGuiApplication, QKeyEvent, QTextCursor, qGray
+    from PyQt6.QtGui import (QColor, QContextMenuEvent, QDragEnterEvent, QDropEvent, QFontDatabase, QGuiApplication, QKeyEvent,
+                             QTextCursor, qGray)
     from PyQt6.QtTest import QTest
     from PyQt6.QtWidgets import QApplication, QLabel, QPushButton
 except ImportError:
@@ -1262,6 +1263,15 @@ class WidgetTest(unittest.TestCase):
         long.resize(1600, narrow)
         long.arrange()
         self.assertGreater(narrow, long.height())  # 좁으면 긴 코드 줄을 잘라 내지 않고 줄바꿈함
+
+    def test_bundled_font_is_used_everywhere(self):
+        """같이 배포하는 나눔고딕이 등록되고 화면 글꼴로 쓰임. 굵은 글자도 같은 글꼴의 Bold 로 나옴."""
+        theme.apply(APP)
+        self.addCleanup(theme.apply, APP)
+        self.assertIn("NanumGothic", QFontDatabase.families())
+        self.assertEqual(APP.font().family(), "NanumGothic")
+        self.assertIn("Bold", QFontDatabase.styles("NanumGothic"))
+        self.assertEqual(theme.code_families()[-1], "NanumGothic")  # 편집기의 한글도 같은 글꼴
 
     def test_corner_between_two_scroll_bars_is_not_drawn_as_a_box(self):
         edit = CodeEditor()

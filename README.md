@@ -195,4 +195,6 @@ tools/, tests/           출제와 CI 에 쓰는 도구, 테스트
 
 프로그램 코드(`study.py`, `adaptive.py`, `session.py`, `gitflow.py`, `bootstrap.py`, `mdlite.py`, `gui/`, `tools/`, `tests/`)는 [GPL-3.0](LICENSE)입니다. 화면에 쓰는 PyQt6 가 GPL-3.0 이라 같은 조건을 따릅니다.
 
+`gui/fonts/` 의 나눔고딕 글꼴은 [SIL OFL 1.1](gui/fonts/OFL.txt)을 따릅니다.
+
 `problems/` 의 문제, 해설, 개념 정리는 이 스터디의 학습 자료이고 GPL 적용 대상이 아닙니다. 다른 곳에 옮겨 쓰려면 스터디장에게 문의해 주세요.
