@@ -636,7 +636,7 @@ class HomeAndGitTest(GuiTest):
         click(self.win.home.action_btn)
         self.select(lambda it: it["type"] == "choice")
         card = page.choice_panel.buttons[0]
-        self.assertIn("font-size: 14px", card.doc.defaultStyleSheet())
+        self.assertIn("body { font-size: %dpx" % (14 + theme.DOC_PX), card.doc.defaultStyleSheet())
         self.win.set_zoom(2)
         self.assertEqual(page.code_panel.editor.font().pixelSize(), theme.CODE_PX + 2)
         self.assertEqual(page.text_panel.multi.font().pixelSize(), theme.CODE_PX + 2)
