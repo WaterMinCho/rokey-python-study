@@ -214,8 +214,8 @@ class GitFlow:
         return self._run("sync", self._sync)
 
     def submit(self):
-        """내 폴더를 study/<ID> 에 올리고 PR 주소를 돌려줌. 이 컴퓨터의 파일·브랜치는 바꾸지 않음.
-        멈춘 git 작업이 있거나 원격에 더 새 판이 있을 때만 바꾸고, 그때는 문구와 backup 으로 알림."""
+        """내 폴더를 study/<ID> 에 올리고 PR 주소를 돌려줌. 올린 뒤 이 컴퓨터의 브랜치와 인덱스를 올린 풀이에 맞춤(_settle).
+        파일은 멈춘 git 작업이 있거나 원격에 더 새 판이 있을 때만 바꾸고, 그때는 문구와 backup 으로 알림."""
         return self._run("submit", self._submit)
 
     def resolve(self, choice):
@@ -556,6 +556,49 @@ class GitFlow:
             return "behind", text  # non-fast-forward · fetch first: 원격의 내 브랜치에 모르는 커밋이 있음
         return remote_problem(run.err), text
 
+    def _settle(self, src):
+        """브랜치와 인덱스의 내 폴더를 src(올린 커밋, 올릴 것이 없었으면 main)에 맞춰, 올라가 있는 풀이가 git status 에 바뀐 파일로 남지 않게 함.
+        작업 폴더의 파일은 쓰지 않아서 src 뒤에 저장된 답은 바뀐 파일로 남음.
+        내 폴더 밖이 src 와 같으면 브랜치를 src 로 옮김. 다르면(받은 뒤 main 이 바뀜) _beside 의 커밋으로 옮기고 새 main 은 다음 받기가 가져옴.
+        study/<ID> 가 아닌 브랜치에서는 밖이 src 와 같고 고친 파일도 없을 때만 옮김. 밖을 고치던 사람의 다음 커밋은 그 브랜치에 남아야 함.
+        덤으로 하는 일이라 실패해도 예외를 올리지 않음. 인덱스를 먼저 바꾸고, HEAD 가 옮겨지지 않았으면 인덱스를 되돌림."""
+        mine, why = "refs/heads/" + self.branch, "제출한 풀이에 맞추기"
+        try:
+            if self._folder_tree("HEAD") == self._folder_tree(src) and self._ok("diff", "--quiet", "--cached", "HEAD", "--", self.rel):
+                return  # 이미 맞아 있음
+            here = self._branch() == self.branch
+            same = self._ok("diff", "--quiet", "HEAD", src, "--", *self.outside)
+            if not here and not (same and self._ok("diff", "--quiet", "HEAD", "--", *self.outside)
+                                 and self._ok("diff", "--quiet", "--cached", "HEAD", "--", *self.outside)):
+                return
+            index = self._out("write-tree")  # 되돌릴 때 쓸 지금 인덱스. 인덱스가 잠겨 있으면 여기서 그만둠
+            target = src if same else self._beside(src)
+            try:
+                self._git("reset", "-q", src, "--", self.rel)  # 내 폴더만 바꿔서 밖에 add 해 둔 변경은 남음
+                if here:
+                    self._git("update-ref", "-m", why, mine, target)
+                else:  # branch -f 는 다른 worktree 가 쓰는 브랜치면 거부함
+                    self._git("branch", "-f", self.branch, target)
+                    self._git("symbolic-ref", "-m", why, "HEAD", mine)
+            except Exception:
+                if self._commit_of("HEAD") != target:
+                    self._git("reset", "-q", index, "--", self.rel, check=False)
+                raise
+        except Exception as error:
+            self.log.append("제출한 풀이에 맞추지 못함: %s" % error)
+
+    def _beside(self, src):
+        """HEAD 의 트리에서 내 폴더만 src 의 것으로 바꾼 커밋을 만듦. 올리지 않고 이 컴퓨터에만 둠.
+        부모가 HEAD 라서 다음 받기가 main 이 바뀐 차이를 손으로 커밋한 변경으로 보지 않음."""
+        env = {"GIT_INDEX_FILE": self._drop_index()}
+        try:
+            self._git("read-tree", "HEAD", env=env)
+            self._git("reset", "-q", src, "--", self.rel, env=env)
+            tree = self._out("write-tree", env=env)
+        finally:
+            self._drop_index()
+        return self._out("commit-tree", tree, "-p", "HEAD", "-m", "제출한 풀이 반영(이 컴퓨터에만 둠)", env=self._identity())
+
     def _pulls(self):
         """원격의 {PR 번호: 그 PR 의 끝 커밋}(refs/pull/N/head). GitHub 는 열린 PR 의 것만 push 때마다 옮기고,
         닫힌 PR 의 것은 닫힐 때의 커밋에 남겨 둠. 조회하지 못하면 {}."""
@@ -610,7 +653,8 @@ class GitFlow:
         return self._result("ok", M_RESTART if restart else M_NEW if changed else M_LATEST, restart=restart, changed=changed)
 
     def _submit(self, force=False):
-        if not self._dev_branch():  # 개발 중인 폴더의 멈춘 작업은 건드리지 않음
+        dev = self._dev_branch()
+        if not dev:  # 개발 중인 폴더의 멈춘 작업은 건드리지 않음
             self._preflight()
         broken = self._broken_files()
         if broken:
@@ -623,11 +667,15 @@ class GitFlow:
             snap = self._snapshot("풀이 제출: %s" % self.user)
             mine = self._folder_tree(snap)
             if mine == self._folder_tree(self._base):
+                if mine and not dev:  # 개발 중인 폴더의 브랜치와, 올린 적 없는 풀이를 지운 표시는 그대로 둠
+                    self._settle(self._base)
                 return self._result("nothing", M_NOTHING if mine else M_EMPTY)
             pushed = snap != self._tip
             before = self._pulls() if pushed else {}
             kind, text = self._push(snap) if pushed else ("ok", "")
             if kind == "ok":
+                if not dev:
+                    self._settle(snap)
                 url, state = self._pr(snap, pushed, before)
                 if state == "open":
                     message = M_ADDED if pushed else M_SAME
@@ -642,11 +690,15 @@ class GitFlow:
             self._remote_stop(kind, text, "올리지")
 
     def _take_remote(self):
-        if not self._dev_branch():
+        dev = self._dev_branch()
+        if not dev:
             self._preflight()
         self._fetch()
         copies = self._remote_copies()
         if not copies:
             return self._result("nothing", M_NO_REMOTE_COPY)
-        self._take(max(copies, key=lambda copy: len(copy[1]))[0], exact=True)
+        ref = max(copies, key=lambda copy: len(copy[1]))[0]
+        self._take(ref, exact=True)
+        if not dev:
+            self._settle(ref)  # 가져온 풀이가 add 된 변경으로 남지 않게 함
         return self._result("ok", "")
