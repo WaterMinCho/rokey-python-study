@@ -1,0 +1,31 @@
+{
+  "title": "재생 목록 클래스",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "exec",
+  "tags": [
+    "__init__",
+    "self",
+    "객체별 상태"
+  ],
+  "examples": 2,
+  "cases": [
+    {
+      "code": "p = Playlist(\"출근길\")\np.add(\"봄날\")\np.add(\"밤편지\")\nprint(p.title, p.count())\nprint(p.songs)",
+      "stdout": "출근길 2\n['봄날', '밤편지']\n"
+    },
+    {
+      "code": "a = Playlist(\"A\")\nb = Playlist(\"B\")\na.add(\"x\")\nprint(a.count(), b.count())",
+      "stdout": "1 0\n"
+    },
+    {
+      "code": "p = Playlist(\"빈 목록\")\nprint(p.count(), p.songs)",
+      "stdout": "0 []\n"
+    },
+    {
+      "code": "p = Playlist(\"반복\")\nfor s in [\"a\", \"b\", \"a\"]:\n    p.add(s)\nprint(p.count())\nprint(p.songs[-1], p.title)",
+      "stdout": "3\na 반복\n"
+    }
+  ]
+}

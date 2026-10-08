@@ -1,0 +1,63 @@
+{
+  "title": "연속으로 겹친 값 건너뛰기",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": [
+    "제너레이터와 yield",
+    "next와 StopIteration",
+    "인덱스"
+  ],
+  "examples": 4,
+  "cases": [
+    {
+      "call": "list(solution([1, 1, 2, 2, 2, 3, 1]))",
+      "expected": "[1, 2, 3, 1]"
+    },
+    {
+      "call": "list(solution([\"a\", \"a\", \"a\"]))",
+      "expected": "['a']"
+    },
+    {
+      "call": "list(solution([]))",
+      "expected": "[]"
+    },
+    {
+      "call": "next(solution([7, 7, 8]))",
+      "expected": "7"
+    },
+    {
+      "call": "list(solution([0, 0, 1, 0]))",
+      "expected": "[0, 1, 0]"
+    },
+    {
+      "call": "list(solution([5]))",
+      "expected": "[5]"
+    },
+    {
+      "call": "list(solution([3, 4, 3, 4, 4, 3]))",
+      "expected": "[3, 4, 3, 4, 3]"
+    },
+    {
+      "call": "list(solution([\"go\", \"go\", \"stop\", \"go\", \"go\"]))",
+      "expected": "['go', 'stop', 'go']"
+    },
+    {
+      "call": "next(solution([\"x\"]))",
+      "expected": "'x'"
+    },
+    {
+      "call": "list(solution([-1, -1, 0, 0, -1]))",
+      "expected": "[-1, 0, -1]"
+    },
+    {
+      "call": "list(solution([\"\", \"\", \"a\", \"\"]))",
+      "expected": "['', 'a', '']"
+    },
+    {
+      "call": "type(solution([1, 2])).__name__",
+      "expected": "'generator'"
+    }
+  ]
+}

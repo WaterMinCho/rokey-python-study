@@ -1,0 +1,46 @@
+{
+  "title": "가장 큰 값과 가장 작은 값의 차",
+  "type": "fill",
+  "level": 1,
+  "points": 4,
+  "mode": "call",
+  "tags": [
+    "최댓값·최솟값",
+    "비교 연산자"
+  ],
+  "examples": 3,
+  "cases": [
+    {
+      "call": "gap([3, 9, 4])",
+      "expected": "6"
+    },
+    {
+      "call": "gap([5])",
+      "expected": "0"
+    },
+    {
+      "call": "gap([-2, -8, -5])",
+      "expected": "6"
+    },
+    {
+      "call": "gap([10, 1, 10, 4])",
+      "expected": "9"
+    },
+    {
+      "call": "gap([7, 7, 7])",
+      "expected": "0"
+    },
+    {
+      "call": "gap([1, 2, 3, 100])",
+      "expected": "99"
+    },
+    {
+      "call": "gap([100, 3, 2, 1])",
+      "expected": "99"
+    },
+    {
+      "call": "gap([0, -5, 5])",
+      "expected": "10"
+    }
+  ]
+}

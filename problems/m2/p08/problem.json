@@ -1,0 +1,51 @@
+{
+  "title": "색상 코드 골라내기",
+  "type": "fill",
+  "level": 3,
+  "points": 6,
+  "mode": "io",
+  "tags": [
+    "컴파일 옵션",
+    "match와 search",
+    "슬라이싱"
+  ],
+  "examples": 2,
+  "cases": [
+    {
+      "stdin": "#12abEF #fff x#000000 #00ff7f\n",
+      "stdout": "12abEF\n00ff7f\n2\n"
+    },
+    {
+      "stdin": "red blue\n",
+      "stdout": "0\n"
+    },
+    {
+      "stdin": "#ABCDEF\n",
+      "stdout": "ABCDEF\n1\n"
+    },
+    {
+      "stdin": "#1234567 #12345 #123456\n",
+      "stdout": "123456\n1\n"
+    },
+    {
+      "stdin": "#GGGGGG #00000g #aBcDeF\n",
+      "stdout": "aBcDeF\n1\n"
+    },
+    {
+      "stdin": "a#ff0000 ##ff0000 #ff0000\n",
+      "stdout": "ff0000\n1\n"
+    },
+    {
+      "stdin": "FF8800 #FF8800 #ff88-0\n",
+      "stdout": "FF8800\n1\n"
+    },
+    {
+      "stdin": "#000000 #FFFFFF #09Af3c #9\n",
+      "stdout": "000000\nFFFFFF\n09Af3c\n3\n"
+    },
+    {
+      "stdin": "#abcdef# #abcdefg\n",
+      "stdout": "0\n"
+    }
+  ]
+}

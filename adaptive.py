@@ -580,7 +580,7 @@ def guide_text(prof, cat, rnd=None, show_next=False):
     if not prof["rounds"]:
         lines.append("아직 진단 전입니다. 프로그램을 실행하면 진단 테스트부터 시작합니다.")
     elif all(st["mastered"] for st in states):
-        lines.append("전 단원을 숙달했습니다. python study.py start m1 로 실전 모의고사(120분)를 볼 수 있고, 계속 풀면 심화(레벨3) 회차가 나옵니다.")
+        lines.append("전 단원을 숙달했습니다. python study.py start m1 (2회는 m2)로 실전 모의고사(120분)를 볼 수 있고, 계속 풀면 심화(레벨3) 회차가 나옵니다.")
     else:
         ranked = [st for st in rank_units(states) if not st["mastered"]][:FOCUS_UNITS]
         size, reason = round_size(prof, states)

@@ -1,0 +1,43 @@
+{
+  "title": "온라인 강좌 클래스",
+  "type": "fill",
+  "level": 2,
+  "points": 6,
+  "mode": "exec",
+  "tags": [
+    "super()",
+    "자식 __init__",
+    "오버라이딩"
+  ],
+  "examples": 2,
+  "cases": [
+    {
+      "code": "c = OnlineCourse(\"파이썬\", 40, \"rokey.kr\")\nprint(c.summary())",
+      "stdout": "파이썬 40시간 (rokey.kr)\n"
+    },
+    {
+      "code": "c = OnlineCourse(\"ROS\", 32, \"edu.net\")\nprint(c.title, c.hours, c.site)\nprint(Course(\"수학\", 20).summary())",
+      "stdout": "ROS 32 edu.net\n수학 20시간\n"
+    },
+    {
+      "code": "b = Course(\"C 언어\", 8)\nprint(b.summary())\nprint(b.title, b.hours)",
+      "stdout": "C 언어 8시간\nC 언어 8\n"
+    },
+    {
+      "code": "for c in [Course(\"영어\", 12), OnlineCourse(\"회화\", 6, \"abc.com\"), Course(\"작문\", 3)]:\n    print(c.summary())",
+      "stdout": "영어 12시간\n회화 6시간 (abc.com)\n작문 3시간\n"
+    },
+    {
+      "code": "a = OnlineCourse(\"A\", 1, \"a.kr\")\nb = OnlineCourse(\"B\", 2, \"b.kr\")\na.hours = a.hours + 5\na.site = \"new.kr\"\nprint(a.summary())\nprint(b.summary())",
+      "stdout": "A 6시간 (new.kr)\nB 2시간 (b.kr)\n"
+    },
+    {
+      "code": "def brief(self):\n    return \"<\" + self.title + \">\"\n\nCourse.summary = brief\nprint(OnlineCourse(\"파이썬\", 40, \"rokey.kr\").summary())\nprint(Course(\"수학\", 20).summary())",
+      "stdout": "<파이썬> (rokey.kr)\n<수학>\n"
+    },
+    {
+      "code": "def new_init(self, title, hours):\n    self.title = \"[\" + title + \"]\"\n    self.hours = hours * 2\n\nCourse.__init__ = new_init\nc = OnlineCourse(\"ROS\", 3, \"edu.net\")\nprint(c.title, c.hours, c.site)\nprint(c.summary())",
+      "stdout": "[ROS] 6 edu.net\n[ROS] 6시간 (edu.net)\n"
+    }
+  ]
+}
