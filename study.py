@@ -861,7 +861,7 @@ def cmd_go(args):
     sess = session.Session(user)
     rnd, created = sess.ensure_round()
     if rnd is None:
-        print("전 단원을 심화까지 마쳤습니다. 실전 모의고사: python study.py start m1")
+        print("전 단원을 심화까지 마쳤습니다. 실전 모의고사: python study.py start m1 (2회는 m2)")
         return
     if created:
         announce_round(user, rnd, sess.folder(rnd["id"]))
@@ -907,7 +907,7 @@ def cmd_next(args):
     prof = adaptive.load_profile(user)
     rnd = adaptive.build_round(prof, cat)
     if not rnd:
-        print("전 단원을 심화까지 마쳤습니다. 실전 모의고사: python study.py start m1")
+        print("전 단원을 심화까지 마쳤습니다. 실전 모의고사: python study.py start m1 (2회는 m2)")
         return
     prof["rounds"].append(rnd)
     adaptive.save_profile(prof)

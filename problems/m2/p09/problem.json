@@ -1,0 +1,55 @@
+{
+  "title": "정원이 있는 엘리베이터",
+  "type": "print",
+  "level": 3,
+  "points": 6,
+  "mode": "exec",
+  "tags": [
+    "오버라이딩",
+    "super()",
+    "메서드를 찾는 순서"
+  ],
+  "examples": 2,
+  "cases": [
+    {
+      "code": "e = SmallElevator(\"A\", 2)\ne.board_group(3)",
+      "stdout": "A 탑승 1\nA 탑승 2\nA 정원 초과\nA 출발 2\n"
+    },
+    {
+      "code": "e = SmallElevator(\"D\", 1)\ne.board()\ne.board()\nprint(e.name, e.people, e.capacity)",
+      "stdout": "D 탑승 1\nD 정원 초과\nD 1 1\n"
+    },
+    {
+      "code": "Elevator(\"B\").board_group(2)",
+      "stdout": "B 탑승 1\nB 탑승 2\nB 출발 2\n"
+    },
+    {
+      "code": "e = SmallElevator(\"C\", 0)\ne.board_group(1)\nprint(e.people)",
+      "stdout": "C 정원 초과\nC 출발 0\n0\n"
+    },
+    {
+      "code": "e = SmallElevator(\"E\", 3)\ne.board_group(2)\ne.board_group(2)",
+      "stdout": "E 탑승 1\nE 탑승 2\nE 출발 2\nE 탑승 3\nE 정원 초과\nE 출발 3\n"
+    },
+    {
+      "code": "a = SmallElevator(\"F\", 1)\nb = SmallElevator(\"G\", 5)\na.board_group(2)\nb.board_group(2)\nprint(a.capacity, b.capacity, a.people + b.people)",
+      "stdout": "F 탑승 1\nF 정원 초과\nF 출발 1\nG 탑승 1\nG 탑승 2\nG 출발 2\n1 5 3\n"
+    },
+    {
+      "code": "e = SmallElevator(\"H\", 4)\ne.board_group(0)\ne.board()\nprint(e.people)",
+      "stdout": "H 출발 0\nH 탑승 1\n1\n"
+    },
+    {
+      "code": "def quiet_board(self):\n    self.people += 1\n    print(self.name, \"+1\")\n\nElevator.board = quiet_board\ne = SmallElevator(\"K\", 1)\ne.board_group(2)",
+      "stdout": "K +1\nK 정원 초과\nK 출발 1\n"
+    },
+    {
+      "code": "def new_init(self, name):\n    self.name = \"[\" + name + \"]\"\n    self.people = 0\n\nElevator.__init__ = new_init\ne = SmallElevator(\"K\", 1)\ne.board()\ne.board()\nprint(e.capacity)",
+      "stdout": "[K] 탑승 1\n[K] 정원 초과\n1\n"
+    },
+    {
+      "code": "def new_group(self, size):\n    for i in range(size):\n        self.board()\n    print(self.name, \"문 닫힘\")\n\nElevator.board_group = new_group\ne = SmallElevator(\"K\", 1)\ne.board_group(2)",
+      "stdout": "K 탑승 1\nK 정원 초과\nK 문 닫힘\n"
+    }
+  ]
+}

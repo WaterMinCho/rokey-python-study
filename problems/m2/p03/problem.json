@@ -1,0 +1,75 @@
+{
+  "title": "금액의 합계와 개수",
+  "type": "return",
+  "level": 2,
+  "points": 4,
+  "mode": "call",
+  "tags": [
+    "findall과 finditer",
+    "반복 메타 문자",
+    "튜플 반환"
+  ],
+  "examples": 4,
+  "cases": [
+    {
+      "call": "solution(\"김밥 3500원, 라면 4000원\")",
+      "expected": "(7500, 2)"
+    },
+    {
+      "call": "solution(\"물 2병에 1000원\")",
+      "expected": "(1000, 1)"
+    },
+    {
+      "call": "solution(\"합계:12000원입니다\")",
+      "expected": "(12000, 1)"
+    },
+    {
+      "call": "solution(\"쿠폰 3장\")",
+      "expected": "(0, 0)"
+    },
+    {
+      "call": "solution(\"100 원\")",
+      "expected": "(0, 0)"
+    },
+    {
+      "call": "solution(\"0원 행사, 정가 900원\")",
+      "expected": "(900, 2)"
+    },
+    {
+      "call": "solution(\"100원200원\")",
+      "expected": "(300, 2)"
+    },
+    {
+      "call": "solution(\"원하는 금액은 500원\")",
+      "expected": "(500, 1)"
+    },
+    {
+      "call": "solution(\"\")",
+      "expected": "(0, 0)"
+    },
+    {
+      "call": "solution(\"2024년 5월 7일 12000원 800원 3개\")",
+      "expected": "(12800, 2)"
+    },
+    {
+      "call": "solution(\"050원 05원\")",
+      "expected": "(55, 2)"
+    },
+    {
+      "call": "solution(\"원100\")",
+      "expected": "(0, 0)"
+    },
+    {
+      "call": "solution(\"7원\")",
+      "expected": "(7, 1)"
+    },
+    {
+      "call": "solution(\"3 500원\")",
+      "expected": "(500, 1)"
+    },
+    {
+      "call": "solution(\"라면4000원과 김밥3500원\")",
+      "expected": "(7500, 2)"
+    }
+  ]
+}

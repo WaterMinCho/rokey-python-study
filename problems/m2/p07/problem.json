@@ -1,0 +1,110 @@
+{
+  "title": "파일의 n번째 줄 읽기",
+  "type": "return",
+  "level": 2,
+  "points": 6,
+  "mode": "call",
+  "tags": [
+    "except 여러 개",
+    "읽기 메서드",
+    "인덱스"
+  ],
+  "examples": 4,
+  "cases": [
+    {
+      "files": {
+        "nums.txt": "10\n20\n30\n"
+      },
+      "call": "solution(\"nums.txt\", 2)",
+      "expected": "20"
+    },
+    {
+      "files": {
+        "nums.txt": "10\n20\n30\n"
+      },
+      "call": "solution(\"nums.txt\", 4)",
+      "expected": "'줄 없음'"
+    },
+    {
+      "files": {
+        "nums.txt": "10\nabc\n30\n"
+      },
+      "call": "solution(\"nums.txt\", 2)",
+      "expected": "'숫자 아님'"
+    },
+    {
+      "call": "solution(\"none.txt\", 1)",
+      "expected": "'파일 없음'"
+    },
+    {
+      "files": {
+        "nums.txt": "10\n20\n30\n"
+      },
+      "call": "solution(\"nums.txt\", 1)",
+      "expected": "10"
+    },
+    {
+      "files": {
+        "nums.txt": "10\n20\n30"
+      },
+      "call": "solution(\"nums.txt\", 3)",
+      "expected": "30"
+    },
+    {
+      "files": {
+        "nums.txt": ""
+      },
+      "call": "solution(\"nums.txt\", 1)",
+      "expected": "'줄 없음'"
+    },
+    {
+      "files": {
+        "data.txt": "7\n\n9\n"
+      },
+      "call": "solution(\"data.txt\", 2)",
+      "expected": "'숫자 아님'"
+    },
+    {
+      "files": {
+        "data.txt": "7\n\n9\n"
+      },
+      "call": "solution(\"data.txt\", 3)",
+      "expected": "9"
+    },
+    {
+      "files": {
+        "data.txt": "3.5\n-4\n 12 \n"
+      },
+      "call": "solution(\"data.txt\", 1)",
+      "expected": "'숫자 아님'"
+    },
+    {
+      "files": {
+        "data.txt": "3.5\n-4\n 12 \n"
+      },
+      "call": "solution(\"data.txt\", 2)",
+      "expected": "-4"
+    },
+    {
+      "files": {
+        "data.txt": "3.5\n-4\n 12 \n"
+      },
+      "call": "solution(\"data.txt\", 3)",
+      "expected": "12"
+    },
+    {
+      "files": {
+        "other.txt": "1\n"
+      },
+      "call": "solution(\"nums.txt\", 1)",
+      "expected": "'파일 없음'"
+    },
+    {
+      "files": {
+        "nums.txt": "5\n"
+      },
+      "call": "solution(\"nums.txt\", 2)",
+      "expected": "'줄 없음'"
+    }
+  ]
+}

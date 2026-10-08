@@ -1,0 +1,35 @@
+{
+  "title": "사물함 클래스",
+  "type": "print",
+  "level": 2,
+  "points": 6,
+  "mode": "exec",
+  "tags": [
+    "클래스 변수와 인스턴스 변수",
+    "객체별 상태",
+    "출력 형식"
+  ],
+  "examples": 2,
+  "cases": [
+    {
+      "code": "a = Locker(3, \"민수\")\nb = Locker(7)\na.info()\nb.info()\nprint(Locker.total)",
+      "stdout": "3번 사물함: 민수\n7번 사물함: 없음\n2\n"
+    },
+    {
+      "code": "b = Locker(7)\nb.assign(\"지영\")\nb.assign(\"현우\")\nb.info()",
+      "stdout": "7번 배정: 지영\n7번 사용 중\n7번 사물함: 지영\n"
+    },
+    {
+      "code": "print(Locker.total)\nx = Locker(1)\ny = Locker(2, \"하나\")\nz = Locker(3)\nprint(x.total, Locker.total)",
+      "stdout": "0\n3 3\n"
+    },
+    {
+      "code": "a = Locker(10)\nb = Locker(11)\na.assign(\"도윤\")\nprint(a.owner, b.owner)\nprint(a.number + b.number)\nb.info()",
+      "stdout": "10번 배정: 도윤\n도윤 없음\n21\n11번 사물함: 없음\n"
+    },
+    {
+      "code": "c = Locker(5, \"서연\")\nc.assign(\"민재\")\nc.info()\nprint(Locker.total)",
+      "stdout": "5번 사용 중\n5번 사물함: 서연\n1\n"
+    }
+  ]
+}
