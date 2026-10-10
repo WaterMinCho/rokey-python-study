@@ -1,4 +1,4 @@
 def solution(total, size):
-    boxes = ____
-    rest = ____
+    boxes = total // size
+    rest = total % size 
     return boxes, rest

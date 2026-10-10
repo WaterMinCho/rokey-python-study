@@ -1,1 +1,4 @@
-# 여기에 print_sale_price 함수를 작성하세요
+def print_sale_price(price):
+    sale = int(price * 0.9)
+    print("정가:",price)
+    print("할인가:",sale)

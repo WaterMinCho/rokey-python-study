@@ -14,3 +14,11 @@ class Rect:
 
 
 # 아래에 Square 클래스를 작성하세요
+# side, width, height 1 ~ 100
+class Square(Rect):
+    kind = "정사각형"
+    
+    def __init__(self, side):
+        super().__init__(side, side)
+        
+    
